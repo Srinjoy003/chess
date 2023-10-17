@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useDrop } from "react-dnd";
 import ChessPiece from "./chessPiece";
-import ChessBoard from "./chessBoard";
 import { useCallback } from "react";
+import { useDispatch } from "react-redux";
+import { toggleTurn } from "../reduxStore/turnSlice";
+import { useSelector } from "react-redux";
+import { RootState } from "../reduxStore/store";
 
 type SquareProp = {
 	boardState: Array<Array<string>>;
@@ -10,8 +13,7 @@ type SquareProp = {
 	position: number;
 	movePiece: (fromIndex: number, toIndex: number) => void;
 	selectedPiece: number | null;
-	setSelectedPiece: (piecePosition: number) => void;
-	currentTurn: "w" | "b",
+	setSelectedPiece: (piecePosition: number | null) => void;
 };
 
 const Square = ({
@@ -21,8 +23,12 @@ const Square = ({
 	boardState,
 	selectedPiece,
 	setSelectedPiece,
-	currentTurn,
 }: SquareProp) => {
+	const dispatch = useDispatch();
+	const turn = useSelector((state: RootState) => state.turn);
+	const row = Math.floor(position / 10);
+	const col = position % 10;
+
 	const [{ isOver, canDrop }, drop] = useDrop({
 		accept: "CHESS_PIECE",
 		drop: (item: any) => {
@@ -30,10 +36,13 @@ const Square = ({
 			// setChessPiece(item.piece);
 			console.log(item.position, position);
 			movePiece(item.position, position);
-			if (selectedPiece === item.position) { //not working fix it
-				console.log("set");
+			if (selectedPiece === item.position) {
+				//not working fix it
 				setSelectedPiece(position);
 			}
+
+			if (position !== item.position) dispatch(toggleTurn());
+
 			item.position = position;
 		},
 		collect: (monitor) => ({
@@ -43,28 +52,30 @@ const Square = ({
 	});
 
 	const handlePieceSelection = useCallback(() => {
-		setSelectedPiece(position);
-	}, [setSelectedPiece, position]);
+		if (selectedPiece && selectedPiece !== position) {
+			movePiece(selectedPiece, position);
+			setSelectedPiece(null);
+			dispatch(toggleTurn());
+		} 
+		else if(boardState[row][col] !== "-"){
+			setSelectedPiece(position);
+		}
+	}, [boardState,row, col, dispatch, movePiece, selectedPiece, setSelectedPiece, position]);
 
-	const row = Math.floor(position / 10);
-	const col = position % 10;
+	
 
 	return (
 		<div
-			className={`flex flex-row w-20 h-20 border-2 border-black text-5xl items-center justify-center ${
-				selectedPiece === position && boardState[row][col] != "-"
-					? "bg-green-300"
+			className={`flex flex-row w-20 h-20 text-5xl items-center justify-center ${
+				selectedPiece === position && boardState[row][col][0] === turn
+					? "bg-chess-selected"
 					: colour
 			}`}
 			ref={drop}
 			onMouseDown={handlePieceSelection}
 		>
 			{boardState[row][col] != "-" && (
-				<ChessPiece
-					piece={boardState[row][col]}
-					position={position}
-					type="CHESS_PIECE"
-				/>
+				<ChessPiece piece={boardState[row][col]} position={position} />
 			)}
 		</div>
 	);

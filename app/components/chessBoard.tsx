@@ -67,7 +67,7 @@ export default function ChessBoard() {
 					boardState={boardState}
 					key={i * 10 + j}
 					position={i * 10 + j}
-					colour={(i + j) % 2 ? "bg-amber-950" : "bg-slate-500"}
+					colour={(i + j) % 2 ? "bg-chess-dark" : "bg-chess-light"}
 					movePiece={(fromIndex, toIndex) => movePiece(fromIndex, toIndex)}
 					selectedPiece={selectedPiece}
 					setSelectedPiece={setSelectedPiece}
