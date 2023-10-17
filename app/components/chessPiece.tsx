@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useDrag } from "react-dnd";
 import {
@@ -10,21 +10,30 @@ import {
 	FaChessRook,
 } from "react-icons/fa";
 
-type ChessPieceProps = { piece: string; type: string; position: number; colour: string};
+type ChessPieceProps = {
+	piece: string;
+	type: string;
+	position: number;
+	currentTurn: "w" | "b";
+};
 
-const ChessPiece = ({ piece, type, position, colour}: ChessPieceProps) => {
-	const [, ref] = useDrag({
-		type,
-		item: { piece, position, colour },
+const ChessPiece = ({ piece, type, position, currentTurn }: ChessPieceProps) => {
+	const [, ref] = useDrag(
+		{
+		type: "CHESS_PIECE",
+		item: { piece, position },
 	});
-
-    
 
 	return (
 		<div
-        className={`text-5xl z-10 ${piece[0] == "w" ? "text-white" : "text-black"}`}
+			className={`text-5xl z-10 ${
+				piece[0] == "w" ? "text-white" : "text-black"
+			}`}
 			ref={ref}
-			
+			// style={{
+			// 	opacity: isDragging ? 0 : 1, // Reduce opacity when dragging
+			// 	cursor: isDragging ? "grabbing" : "grab", // Change cursor style
+			// }}
 		>
 			{piece[1] == "P" && <FaChessPawn />}
 			{piece[1] == "R" && <FaChessRook />}

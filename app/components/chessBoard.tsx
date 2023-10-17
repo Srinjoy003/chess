@@ -22,7 +22,7 @@ function CreateBoardMap() {
 			} else piece = "-";
 
 			if (i > 5) colour = "w";
-			else if(i < 2) colour = "b";
+			else if (i < 2) colour = "b";
 
 			row.push(colour + piece);
 		}
@@ -36,6 +36,8 @@ function CreateBoardMap() {
 export default function ChessBoard() {
 	const boardMap = CreateBoardMap();
 	const [boardState, setBoardState] = useState(Array.from(boardMap));
+	const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
+	const [turn, setTurn] = useState<"w" | "b">("w");
 
 	// Function to move a piece and clear the original square
 	const movePiece = (fromIndex: number, toIndex: number) => {
@@ -67,6 +69,8 @@ export default function ChessBoard() {
 					position={i * 10 + j}
 					colour={(i + j) % 2 ? "bg-amber-950" : "bg-slate-500"}
 					movePiece={(fromIndex, toIndex) => movePiece(fromIndex, toIndex)}
+					selectedPiece={selectedPiece}
+					setSelectedPiece={setSelectedPiece}
 				/>
 			);
 		});
