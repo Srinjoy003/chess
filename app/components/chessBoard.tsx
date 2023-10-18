@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import Square from "./Square";
 import { useState } from "react";
 
-function CreateBoardMap() {
+export function CreateBoardMap() {
 	const board = [];
 
 	for (let i = 0; i <= 7; i++) {
@@ -21,8 +21,8 @@ function CreateBoardMap() {
 				else if (j == 4) piece = "K";
 			} else piece = "-";
 
-			if (i > 5) colour = "w";
-			else if (i < 2) colour = "b";
+			if (i < 2) colour = "w";
+			else if (i > 5) colour = "b";
 
 			row.push(colour + piece);
 		}
@@ -36,7 +36,10 @@ function CreateBoardMap() {
 export default function ChessBoard() {
 	const boardMap = CreateBoardMap();
 	const [boardState, setBoardState] = useState(Array.from(boardMap));
-	const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
+	// const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
+	const [selectedPiece, setSelectedPiece] = useState<[number, string] | null>(
+		null
+	);
 	const [turn, setTurn] = useState<"w" | "b">("w");
 
 	// Function to move a piece and clear the original square
@@ -53,9 +56,6 @@ export default function ChessBoard() {
 
 			updatedBoard[i2][j2] = updatedBoard[i1][j1];
 			updatedBoard[i1][j1] = "-";
-			console.log(boardState);
-			console.log(updatedBoard);
-
 			setBoardState(updatedBoard);
 		}
 	};
@@ -82,7 +82,7 @@ export default function ChessBoard() {
 	});
 
 	return (
-		<div className="flex flex-col w-screen h-screen items-center justify-center bg-slate-700">
+		<div className="flex flex-col-reverse w-screen h-screen items-center justify-center bg-slate-700">
 			{board}
 		</div>
 	);
