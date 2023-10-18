@@ -29,12 +29,6 @@ const Square = ({
 	const turn = useSelector((state: RootState) => state.turn);
 	const row = Math.floor(position / 10);
 	const col = position % 10;
-	// let moveList: number[] = [];
-
-	// if (selectedPiece) {
-	// 	moveList= MoveList(selectedPiece[1], selectedPiece[0], boardState);
-	// 	console.log(moveList, selectedPiece);
-	// }
 
 	const moveList = useMemo(() => {
 		if (selectedPiece) {
@@ -86,13 +80,24 @@ const Square = ({
 		turn,
 	]);
 
+	const pieceColour = boardState[row][col][0];
+
+	const selectedPieceColour = useMemo(() => {
+		if (selectedPiece) {
+			return selectedPiece[1][0];
+		}
+		return "";
+	}, [selectedPiece]);
+
 	return (
 		<div
 			className={`flex flex-row w-20 h-20 text-5xl items-center justify-center ${
 				selectedPiece &&
 				selectedPiece[0] === position &&
 				boardState[row][col][0] === turn
-					? "bg-chess-selected"
+					? colour === "bg-chess-light"
+						? "bg-chess-selected-light"
+						: "bg-chess-selected-dark"
 					: colour
 			}`}
 			ref={drop}
@@ -102,7 +107,27 @@ const Square = ({
 				<ChessPiece piece={boardState[row][col]} position={position} />
 			)}
 
-			{moveList.includes(position) && "x"}
+			{moveList.includes(position) && boardState[row][col] === "-" && (
+				<div
+					className={`w-7 h-7 rounded-full ${
+						colour === "bg-chess-light"
+							? "bg-chess-move-light"
+							: "bg-chess-move-dark"
+					}`}
+				></div>
+			)}
+
+			{moveList.includes(position) &&
+				boardState[row][col] !== "-" &&
+				pieceColour !== selectedPieceColour && (
+					<div
+						className={`w-20 h-20 border-8 rounded-full absolute ${
+							colour === "bg-chess-light"
+								? "border-chess-move-light"
+								: "border-chess-move-dark"
+						}`}
+					></div>
+				)}
 		</div>
 	);
 };

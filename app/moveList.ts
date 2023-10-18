@@ -99,7 +99,7 @@ function PawnMoveList( //refactor later
 	return moveList;
 }
 
-function KingMoveList(
+function OpponentPawnCaptureMoveList( //no forward moves recorded
 	currentPiece: string,
 	position: number,
 	boardState: string[][]
@@ -108,31 +108,30 @@ function KingMoveList(
 	const row = Math.floor(position / 10); //0 to 7
 	const col = position % 10;
 	const pieceColour = currentPiece[0];
+	const direction = pieceColour === "w" ? 1 : -1;
 
-	const directions = [
-		[-1, -1],
-		[-1, 0],
-		[-1, 1],
-		[0, -1],
-		[0, 1],
-		[1, -1],
-		[1, 0],
-		[1, 1],
-	];
+	if (row < 7) {
+		if (col > 0) {
+			//left diagonal capture
+			const leftCaptureRow = row + direction;
+			const leftCaptureCol = col - 1;
+			const leftCapturePosition = leftCaptureRow * 10 + leftCaptureCol;
 
-	for (const [dx, dy] of directions) {
-		const moveRow = row + dx;
-		const moveCol = col + dy;
-
-		if (moveRow >= 0 && moveRow <= 7 && moveCol >= 0 && moveCol <= 7) {
-			const movePieceColour = boardState[moveRow][moveCol][0];
-			if (movePieceColour !== pieceColour) {
-				const movePosition = moveRow * 10 + moveCol;
-				moveList.push(movePosition);
-			}
+			//if opposite colour piece exists
+			moveList.push(leftCapturePosition);
 		}
-	}
 
+		if (col < 7) {
+			//right diagonal capture
+			const rightCaptureRow = row + direction;
+			const rightCaptureCol = col + 1;
+			const rightCapturePosition = rightCaptureRow * 10 + rightCaptureCol;
+
+			//if opposite colour piece exists
+			moveList.push(rightCapturePosition);
+		}
+
+	}
 	return moveList;
 }
 
@@ -307,6 +306,141 @@ function KnightMoveList(
 	return moveList;
 }
 
+function OpponentKingCaptureMoveList(
+	currentPiece: string,
+	position: number,
+	boardState: string[][]
+): number[] {
+	const moveList = [];
+	const row = Math.floor(position / 10); //0 to 7
+	const col = position % 10;
+	const pieceColour = currentPiece[0];
+
+	const directions = [
+		[-1, -1],
+		[-1, 0],
+		[-1, 1],
+		[0, -1],
+		[0, 1],
+		[1, -1],
+		[1, 0],
+		[1, 1],
+	];
+
+	for (const [dx, dy] of directions) {
+		const moveRow = row + dx;
+		const moveCol = col + dy;
+
+		if (moveRow >= 0 && moveRow <= 7 && moveCol >= 0 && moveCol <= 7) {
+			const movePieceColour = boardState[moveRow][moveCol][0];
+			if (movePieceColour !== pieceColour) {
+				const movePosition = moveRow * 10 + moveCol;
+				moveList.push(movePosition);
+			}
+		}
+	}
+
+	return moveList;
+}
+
+export function OpponentPieceMoveList(
+	piece: string,
+	position: number,
+	boardState: string[][]
+): number[] {
+	if (piece !== "-") {
+		if (piece[1] === "P") {
+			return OpponentPawnCaptureMoveList(piece, position, boardState);
+		}
+
+		if (piece[1] === "K") {
+			return OpponentKingCaptureMoveList(piece, position, boardState);
+		}
+
+		if (piece[1] === "R") {
+			return RookMoveList(piece, position, boardState);
+		}
+
+		if (piece[1] === "B") {
+			return BishopMoveList(piece, position, boardState);
+		}
+
+		if (piece[1] === "Q") {
+			return QueenMoveList(piece, position, boardState);
+		}
+
+		if (piece[1] === "H") {
+			return KnightMoveList(piece, position, boardState);
+		}
+	}
+
+	return [];
+}
+
+function OpponentMoveList(
+	currentPiece: string,
+	boardState: string[][]
+): number[] {
+	const totalMoveList = [];
+	const opponent = currentPiece[0] === "w" ? "b" : "w";
+
+	for (let row = 0; row < 8; row++) {
+		for (let col = 0; col < 8; col++) {
+			const piece = boardState[row][col];
+			const position = row * 10 + col;
+
+			if (piece[0] === opponent) {
+				const moveList = OpponentPieceMoveList(piece, position, boardState);
+				totalMoveList.push(...moveList);
+			}
+		}
+	}
+
+	return totalMoveList;
+}
+
+function KingMoveList(
+	currentPiece: string,
+	position: number,
+	boardState: string[][]
+): number[] {
+	const moveList = [];
+	const row = Math.floor(position / 10); //0 to 7
+	const col = position % 10;
+	const pieceColour = currentPiece[0];
+
+	const directions = [
+		[-1, -1],
+		[-1, 0],
+		[-1, 1],
+		[0, -1],
+		[0, 1],
+		[1, -1],
+		[1, 0],
+		[1, 1],
+	];
+
+	for (const [dx, dy] of directions) {
+		const moveRow = row + dx;
+		const moveCol = col + dy;
+
+		if (moveRow >= 0 && moveRow <= 7 && moveCol >= 0 && moveCol <= 7) {
+			const movePieceColour = boardState[moveRow][moveCol][0];
+			if (movePieceColour !== pieceColour) {
+				const movePosition = moveRow * 10 + moveCol;
+				moveList.push(movePosition);
+			}
+		}
+	}
+
+	const opponentCaptureMoveList = OpponentMoveList(currentPiece, boardState);
+	const finalMoveList = moveList.filter(
+		(move) => !opponentCaptureMoveList.includes(move)
+	);
+
+	return finalMoveList;
+}
+
 export function MoveList(
 	piece: string,
 	position: number,
@@ -341,10 +475,4 @@ export function MoveList(
 	return [];
 }
 
-const board = CreateBoardMap();
-board[1][3] = "bP";
-board[1][4] = "-";
 
-// console.log(board);
-
-console.log(KingMoveList("wK", 4, board));

@@ -36,11 +36,9 @@ export function CreateBoardMap() {
 export default function ChessBoard() {
 	const boardMap = CreateBoardMap();
 	const [boardState, setBoardState] = useState(Array.from(boardMap));
-	// const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
 	const [selectedPiece, setSelectedPiece] = useState<[number, string] | null>(
 		null
 	);
-	const [turn, setTurn] = useState<"w" | "b">("w");
 
 	// Function to move a piece and clear the original square
 	const movePiece = (fromIndex: number, toIndex: number) => {

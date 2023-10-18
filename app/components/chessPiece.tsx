@@ -1,6 +1,6 @@
 "use client";
 
-import { DragPreviewOptions,useDrag } from "react-dnd";
+import { useDrag } from "react-dnd";
 import {
 	FaChessBishop,
 	FaChessKing,
@@ -11,7 +11,12 @@ import {
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
-import { useState, useCallback } from "react";
+import { BlackBishop, WhiteBishop } from "../pieceSvg/Bishop";
+import { BlackKnight, WhiteKnight } from "../pieceSvg/Knight";
+import { BlackPawn, WhitePawn } from "../pieceSvg/Pawn";
+import { BlackRook, WhiteRook } from "../pieceSvg/Rook";
+import { BlackKing, WhiteKing } from "../pieceSvg/King";
+import { BlackQueen,WhiteQueen } from "../pieceSvg/Queen";
 
 type ChessPieceProps = {
 	piece: string;
@@ -21,33 +26,40 @@ type ChessPieceProps = {
 const ChessPiece = ({ piece, position }: ChessPieceProps) => {
 	const turn = useSelector((state: RootState) => state.turn);
 
-	const [{ isDragging }, dragRef, dragPreviewRef] = useDrag({
+	const [{ isDragging }, dragRef] = useDrag({
 		type: "CHESS_PIECE",
 		item: { piece, position },
 		canDrag: piece[0] === turn,
 		collect: (monitor) => ({
 			isDragging: !!monitor.isDragging(),
 		}),
-	
 	});
 
-	return (
+	const size = 80;
 
+	return (
 		<div
-			className={`text-5xl z-10 ${
-				piece[0] == "w" ? "text-white" : "text-black"
-			}`}
+			className="flex flex-row items-center justify-center z-10" 
 			ref={dragRef}
 			style={{
 				opacity: isDragging ? 0 : 1, // Reduce opacity when dragging
 			}}
 		>
-			{piece[1] == "P" && <FaChessPawn />}
-			{piece[1] == "R" && <FaChessRook />}
-			{piece[1] == "K" && <FaChessKing />}
-			{piece[1] == "H" && <FaChessKnight />}
-			{piece[1] == "Q" && <FaChessQueen />}
-			{piece[1] == "B" && <FaChessBishop />}
+
+			{piece[1] === "P" && piece[0] === "b" && <BlackPawn size={size}/>}
+			{piece[1] === "Q" && piece[0] === "b" && <BlackQueen size={size}/>}
+			{piece[1] === "H" && piece[0] === "b" && <BlackKnight size={size}/>}
+			{piece[1] === "B" && piece[0] === "b" && <BlackBishop size={size}/>}
+			{piece[1] === "K" && piece[0] === "b" && <BlackKing size={size}/>}
+			{piece[1] === "R" && piece[0] === "b" && <BlackRook size={size}/>}
+
+			{piece[1] === "P" && piece[0] === "w" && <WhitePawn size={size}/>}
+			{piece[1] === "Q" && piece[0] === "w" && <WhiteQueen size={size}/>}
+			{piece[1] === "H" && piece[0] === "w" && <WhiteKnight size={size}/>}
+			{piece[1] === "B" && piece[0] === "w" && <WhiteBishop size={size}/>}
+			{piece[1] === "K" && piece[0] === "w" && <WhiteKing size={size}/>}
+			{piece[1] === "R" && piece[0] === "w" && <WhiteRook size={size}/>}
+			
 		</div>
 	);
 };
