@@ -6,8 +6,7 @@ import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
-import { MoveList } from "../moveList";
-import { IsMoveAllowed } from "../moveList";
+import { MoveList } from "../moveFunctions";
 
 type SquareProp = {
 	boardState: Array<Array<string>>;
@@ -16,6 +15,8 @@ type SquareProp = {
 	movePiece: (fromIndex: number, toIndex: number) => void;
 	selectedPiece: [number, string] | null;
 	setSelectedPiece: (newSelectedPiece: [number, string] | null) => void;
+	prevMove: [number, number] | null;
+	setPrevMove: (newPrevMove: [number, number] | null) => void;
 };
 
 const Square = ({
@@ -25,6 +26,8 @@ const Square = ({
 	boardState,
 	selectedPiece,
 	setSelectedPiece,
+	prevMove,
+	setPrevMove,
 }: SquareProp) => {
 	const dispatch = useDispatch();
 	const turn = useSelector((state: RootState) => state.turn);
@@ -33,20 +36,19 @@ const Square = ({
 
 	const moveList = useMemo(() => {
 		if (selectedPiece) {
-			return MoveList(selectedPiece[1], selectedPiece[0], boardState);
+			return MoveList(selectedPiece[1], selectedPiece[0], boardState, prevMove);
 		}
 		return [];
-	}, [selectedPiece, boardState]);
+	}, [selectedPiece, boardState, prevMove]);
 
 	const [{ isOver, canDrop }, drop] = useDrop({
 		accept: "CHESS_PIECE",
 		drop: (item: any) => {
 			// Update the state to place the chess piece in the square
 			// setChessPiece(item.piece);
-			if (
-				moveList.includes(position)
-			) {
+			if (moveList.includes(position)) {
 				movePiece(item.position, position);
+				setPrevMove([item.position, position]);
 				setSelectedPiece(null);
 				if (position !== item.position) dispatch(toggleTurn());
 				item.position = position;
@@ -62,9 +64,10 @@ const Square = ({
 		if (
 			selectedPiece &&
 			selectedPiece[0] !== position &&
-			moveList.includes(position) 
+			moveList.includes(position)
 		) {
 			movePiece(selectedPiece[0], position);
+			setPrevMove([selectedPiece[0], position]);
 			setSelectedPiece(null);
 			dispatch(toggleTurn());
 		} else if (boardState[row][col][0] === turn) {
@@ -81,6 +84,7 @@ const Square = ({
 		position,
 		moveList,
 		turn,
+		setPrevMove,
 	]);
 
 	const pieceColour = boardState[row][col][0];
@@ -95,9 +99,9 @@ const Square = ({
 	return (
 		<div
 			className={`flex flex-row w-20 h-20 text-5xl items-center justify-center ${
-				selectedPiece &&
+				(selectedPiece &&
 				selectedPiece[0] === position &&
-				boardState[row][col][0] === turn
+				boardState[row][col][0] === turn) || prevMove?.includes(position)
 					? colour === "bg-chess-light"
 						? "bg-chess-selected-light"
 						: "bg-chess-selected-dark"

@@ -1,37 +1,36 @@
-function CreateBoardMap() {
-	const board = [];
+export function EnPassantMoveList(
+	currentPiece: string,
+	position: number,
+	boardState: string[][],
+	prevMove: [number, number] | null
+): number[] {
+	const enpassantMoveList = [];
+	const currentPieceColour = currentPiece[0];
+	const opponentColour = currentPieceColour === "w" ? "b" : "w";
+	const prevMoveDirection = opponentColour === "w" ? -1 : 1;
+	const row = opponentColour === "w" ? 3 : 4;
 
-	for (let i = 0; i <= 7; i++) {
-		let row = [];
-		for (let j = 0; j <= 7; j++) {
-			let piece = "";
-			let colour = "";
-
-			if (i == 1 || i == 6) piece = "P";
-			else if (i == 0 || i == 7) {
-				if (j == 0 || j == 7) piece = "R";
-				else if (j == 1 || j == 6) piece = "H";
-				else if (j == 2 || j == 5) piece = "B";
-				else if (j == 3) piece = "Q";
-				else if (j == 4) piece = "K";
-			} else piece = "-";
-
-			if (i < 2) colour = "w";
-			else if (i > 5) colour = "b";
-
-			row.push(colour + piece);
+	for (let col = 0; col < 8; col++) {
+		const opponentPosition = row * 10 + col;
+		if (
+			boardState[row][col] === opponentColour + "P" &&
+			prevMove &&
+			prevMove[1] === opponentPosition &&
+			prevMove[0] === prevMove[1] + prevMoveDirection * 20 &&
+			(position === opponentPosition + 1 || position === opponentPosition - 1)
+		) {
+			enpassantMoveList.push(opponentPosition + prevMoveDirection * 10);
 		}
-
-		board.push(row);
 	}
 
-	return board;
+	return enpassantMoveList;
 }
 
 function PawnMoveList( //refactor later
 	currentPiece: string,
 	position: number,
-	boardState: string[][]
+	boardState: string[][],
+	prevMove: [number, number] | null
 ): number[] {
 	const moveList = [];
 	const row = Math.floor(position / 10); //0 to 7
@@ -96,6 +95,14 @@ function PawnMoveList( //refactor later
 				moveList.push(movePosition);
 		}
 	}
+
+	const enpassantMoveList = EnPassantMoveList(
+		currentPiece,
+		position,
+		boardState,
+		prevMove
+	);
+	moveList.push(...enpassantMoveList);
 	return moveList;
 }
 
@@ -480,7 +487,6 @@ export function IsMoveAllowed(
 
 	updatedBoard[i2][j2] = updatedBoard[i1][j1];
 	updatedBoard[i1][j1] = "-";
-	console.log(updatedBoard);
 
 	return !InCheck(currentTurn, updatedBoard);
 }
@@ -488,13 +494,14 @@ export function IsMoveAllowed(
 export function MoveList(
 	piece: string,
 	position: number,
-	boardState: string[][]
+	boardState: string[][],
+	prevMove: [number, number] | null
 ): number[] {
 	let moveList: number[] = [];
 
 	if (piece !== "-") {
 		if (piece[1] === "P") {
-			moveList = PawnMoveList(piece, position, boardState);
+			moveList = PawnMoveList(piece, position, boardState, prevMove);
 		} else if (piece[1] === "K") {
 			moveList = KingMoveList(piece, position, boardState);
 		} else if (piece[1] === "R") {
@@ -516,14 +523,27 @@ export function MoveList(
 	return moveList;
 }
 
-export function CheckMate(currentTurn: string, boardState: string[][]): boolean {
+export function CheckMate(
+	currentTurn: string,
+	boardState: string[][],
+	prevMove: [number, number] | null
+): boolean {
 	const currentKing = currentTurn + "K";
 	const kingPosition = findKing(currentTurn, boardState);
-	const kingMoveList = MoveList(currentKing, kingPosition, boardState);
+	const kingMoveList = MoveList(
+		currentKing,
+		kingPosition,
+		boardState,
+		prevMove
+	);
 
-	if (InCheck(currentTurn, boardState) && kingMoveList.length === 0){
+	if (InCheck(currentTurn, boardState) && kingMoveList.length === 0) {
 		return true;
 	}
 
 	return false;
+}
+
+function rotateMatrix180(matrix: string[][]): string[][] {
+	return matrix.map((row) => [...row].reverse()).reverse();
 }

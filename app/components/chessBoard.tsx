@@ -4,8 +4,9 @@ import Square from "./Square";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
-import { InCheck } from "../moveList";
-import { CheckMate } from "../moveList";
+import { InCheck } from "../moveFunctions";
+import { CheckMate } from "../moveFunctions";
+import { EnPassantMoveList } from "../moveFunctions";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -44,10 +45,10 @@ export default function ChessBoard() {
 		null
 	);
 
+	const [prevMove, setPrevMove] = useState<[number, number] | null>(null);
+
 	const turn = useSelector((state: RootState) => state.turn);
-
-
-	// Function to move a piece and clear the original square
+	
 	const movePiece = (fromIndex: number, toIndex: number) => {
 		if (fromIndex != toIndex) {
 			const updatedBoard = boardState.map((item) => {
@@ -56,11 +57,28 @@ export default function ChessBoard() {
 
 			const i1 = Math.floor(fromIndex / 10);
 			const j1 = fromIndex % 10;
+
 			const i2 = Math.floor(toIndex / 10);
 			const j2 = toIndex % 10;
 
 			updatedBoard[i2][j2] = updatedBoard[i1][j1];
 			updatedBoard[i1][j1] = "-";
+
+			if (selectedPiece) {
+				const enpassantMoveList = EnPassantMoveList(
+					selectedPiece[1],
+					selectedPiece[0],
+					boardState,
+					prevMove
+				);
+
+
+				if (enpassantMoveList.includes(toIndex)) {
+					const opponentPawnDirection = selectedPiece[1][0] === "w" ? -1 : 1;
+					updatedBoard[i2 + opponentPawnDirection][j2] = "-"
+				}
+			}
+
 			setBoardState(updatedBoard);
 		}
 	};
@@ -76,6 +94,8 @@ export default function ChessBoard() {
 					movePiece={(fromIndex, toIndex) => movePiece(fromIndex, toIndex)}
 					selectedPiece={selectedPiece}
 					setSelectedPiece={setSelectedPiece}
+					prevMove={prevMove}
+					setPrevMove={setPrevMove}
 				/>
 			);
 		});
@@ -93,9 +113,8 @@ export default function ChessBoard() {
 			</div>
 			<div className="absolute text-white text-5xl flex flex-col gap-10">
 				{InCheck(turn, boardState) && "CHECK"}
-				{CheckMate(turn, boardState) && "CHECKMATE"}
+				{CheckMate(turn, boardState, prevMove) && "CHECKMATE"}
 			</div>
-
 		</div>
 	);
 }
