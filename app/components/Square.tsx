@@ -7,6 +7,7 @@ import { toggleTurn } from "../reduxStore/turnSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
 import { MoveList } from "../moveList";
+import { IsMoveAllowed } from "../moveList";
 
 type SquareProp = {
 	boardState: Array<Array<string>>;
@@ -42,7 +43,9 @@ const Square = ({
 		drop: (item: any) => {
 			// Update the state to place the chess piece in the square
 			// setChessPiece(item.piece);
-			if (moveList.includes(position)) {
+			if (
+				moveList.includes(position)
+			) {
 				movePiece(item.position, position);
 				setSelectedPiece(null);
 				if (position !== item.position) dispatch(toggleTurn());
@@ -59,7 +62,7 @@ const Square = ({
 		if (
 			selectedPiece &&
 			selectedPiece[0] !== position &&
-			moveList.includes(position)
+			moveList.includes(position) 
 		) {
 			movePiece(selectedPiece[0], position);
 			setSelectedPiece(null);

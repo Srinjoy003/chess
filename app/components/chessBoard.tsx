@@ -2,6 +2,9 @@ import ChessPiece from "./chessPiece";
 import { v4 as uuidv4 } from "uuid";
 import Square from "./Square";
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../reduxStore/store";
+import { InCheck } from "../moveList";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -39,6 +42,9 @@ export default function ChessBoard() {
 	const [selectedPiece, setSelectedPiece] = useState<[number, string] | null>(
 		null
 	);
+
+	const turn = useSelector((state: RootState) => state.turn);
+
 
 	// Function to move a piece and clear the original square
 	const movePiece = (fromIndex: number, toIndex: number) => {
@@ -80,8 +86,14 @@ export default function ChessBoard() {
 	});
 
 	return (
-		<div className="flex flex-col-reverse w-screen h-screen items-center justify-center bg-slate-700">
-			{board}
+		<div className="flex flex-row gap-10">
+			<div className="flex flex-col-reverse w-screen h-screen items-center justify-center bg-slate-700">
+				{board}
+			</div>
+			<div className="absolute text-white text-5xl">
+				{InCheck(turn, boardState) && "CHECK"}
+			</div>
+
 		</div>
 	);
 }
