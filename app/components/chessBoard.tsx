@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
 import { InCheck } from "../moveList";
+import { CheckMate } from "../moveList";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -90,8 +91,9 @@ export default function ChessBoard() {
 			<div className="flex flex-col-reverse w-screen h-screen items-center justify-center bg-slate-700">
 				{board}
 			</div>
-			<div className="absolute text-white text-5xl">
+			<div className="absolute text-white text-5xl flex flex-col gap-10">
 				{InCheck(turn, boardState) && "CHECK"}
+				{CheckMate(turn, boardState) && "CHECKMATE"}
 			</div>
 
 		</div>

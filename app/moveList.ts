@@ -515,3 +515,15 @@ export function MoveList(
 
 	return moveList;
 }
+
+export function CheckMate(currentTurn: string, boardState: string[][]): boolean {
+	const currentKing = currentTurn + "K";
+	const kingPosition = findKing(currentTurn, boardState);
+	const kingMoveList = MoveList(currentKing, kingPosition, boardState);
+
+	if (InCheck(currentTurn, boardState) && kingMoveList.length === 0){
+		return true;
+	}
+
+	return false;
+}
