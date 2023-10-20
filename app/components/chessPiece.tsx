@@ -1,14 +1,6 @@
 "use client";
 
 import { useDrag } from "react-dnd";
-import {
-	FaChessBishop,
-	FaChessKing,
-	FaChessKnight,
-	FaChessPawn,
-	FaChessQueen,
-	FaChessRook,
-} from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
 import { BlackBishop, WhiteBishop } from "../pieceSvg/Bishop";
@@ -39,7 +31,7 @@ const ChessPiece = ({ piece, position }: ChessPieceProps) => {
 
 	return (
 		<div
-			className="flex flex-row items-center justify-center z-10" 
+			className="z-10 flex flex-row items-center justify-center" 
 			ref={dragRef}
 			style={{
 				opacity: isDragging ? 0 : 1, // Reduce opacity when dragging

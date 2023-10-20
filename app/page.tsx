@@ -2,7 +2,7 @@
 
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import ChessBoard from "./components/chessBoard";
+import ChessBoard from "./components/ChessBoard";
 import { Providers } from "./reduxStore/provider";
 
 export default function Home() {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useDrop } from "react-dnd";
-import ChessPiece from "./chessPiece";
+import ChessPiece from "./ChessPiece";
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";
@@ -18,8 +18,8 @@ type SquareProp = {
 	setSelectedPiece: (newSelectedPiece: [number, string] | null) => void;
 	prevMove: [number, number] | null;
 	setPrevMove: (newPrevMove: [number, number] | null) => void;
-	whiteCastling: [boolean, boolean, boolean],
-	blackCastling: [boolean, boolean, boolean]
+	whiteCastling: [boolean, boolean, boolean];
+	blackCastling: [boolean, boolean, boolean];
 };
 
 const Square = ({
@@ -32,7 +32,7 @@ const Square = ({
 	prevMove,
 	setPrevMove,
 	whiteCastling,
-	blackCastling
+	blackCastling,
 }: SquareProp) => {
 	const dispatch = useDispatch();
 	const turn = useSelector((state: RootState) => state.turn);
@@ -51,10 +51,16 @@ const Square = ({
 		return [];
 	}, [selectedPiece, boardState, prevMove]);
 
-
 	const moveList = useMemo(() => {
 		if (selectedPiece) {
-			return MoveList(selectedPiece[1], selectedPiece[0], boardState, prevMove, whiteCastling, blackCastling);
+			return MoveList(
+				selectedPiece[1],
+				selectedPiece[0],
+				boardState,
+				prevMove,
+				whiteCastling,
+				blackCastling
+			);
 		}
 		return [];
 	}, [selectedPiece, boardState, prevMove, whiteCastling, blackCastling]);

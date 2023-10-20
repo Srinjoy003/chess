@@ -1,7 +1,6 @@
-import ChessPiece from "./chessPiece";
 import { v4 as uuidv4 } from "uuid";
 import Square from "./Square";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
 import {
@@ -10,6 +9,7 @@ import {
 	EnPassantMoveList,
 	CastlingMoveList,
 } from "../moveFunctions";
+import PawnPromotion from "./PawnPromotion";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -38,6 +38,7 @@ export function CreateBoardMap() {
 		board.push(row);
 	}
 
+
 	return board;
 }
 
@@ -55,8 +56,47 @@ export default function ChessBoard() {
 	const [blackCastling, setBlackCastling] = useState<
 		[boolean, boolean, boolean]
 	>([false, false, false]);
+	const [pawnPromotionOpen, setpawnPromotionOpen] = useState(false);
+	const [promotedPiecePosition, setPromotedPiecePosition] = useState<
+		[number, number] | null
+	>(null);
 
 	const turn = useSelector((state: RootState) => state.turn);
+
+	const handlePromotion = useCallback(
+		(piece: string) => {
+			//opposite as turn is switched until choice is made
+			const promotionTurn = turn === "w" ? "b" : "w";
+
+			console.log(piece);
+
+			setpawnPromotionOpen(false);
+
+			if (promotedPiecePosition) {
+				const updatedBoard = boardState.map((item) => {
+					return item.slice();
+				});
+
+				const i1 = Math.floor(promotedPiecePosition[0] / 10);
+				const j1 = promotedPiecePosition[0] % 10;
+
+				const i2 = Math.floor(promotedPiecePosition[1] / 10);
+				const j2 = promotedPiecePosition[1] % 10;
+
+				updatedBoard[i2][j2] = piece;
+				console.log(i2, j2, promotedPiecePosition, turn);
+
+				if (promotionTurn === "w") {
+					updatedBoard[i1][j1] = "-";
+				} else {
+					updatedBoard[i1][j1] = "-";
+				}
+
+				setBoardState(updatedBoard);
+			}
+		},
+		[turn, boardState, promotedPiecePosition]
+	);
 
 	const movePiece = (fromIndex: number, toIndex: number) => {
 		if (fromIndex != toIndex) {
@@ -74,6 +114,7 @@ export default function ChessBoard() {
 			updatedBoard[i1][j1] = "-";
 
 			if (selectedPiece) {
+				//ENPASSANT
 				const enpassantMoveList = EnPassantMoveList(
 					selectedPiece[1],
 					selectedPiece[0],
@@ -91,6 +132,22 @@ export default function ChessBoard() {
 				if (enpassantMoveList.includes(toIndex)) {
 					const opponentPawnDirection = selectedPiece[1][0] === "w" ? -1 : 1;
 					updatedBoard[i2 + opponentPawnDirection][j2] = "-";
+				}
+
+				//PAWN PROMOTION
+
+				if (selectedPiece[1][1] === "P") {
+					if (
+						(selectedPiece[1][0] == "w" && i2 === 7) ||
+						(selectedPiece[1][0] == "b" && i2 === 0)
+					) {
+						setpawnPromotionOpen(() => {
+							setPromotedPiecePosition([fromIndex, toIndex]);
+							updatedBoard[i1][j1] = updatedBoard[i2][j2];
+							updatedBoard[i2][j2] = "-";
+							return true;
+						});
+					}
 				}
 
 				//FOR CASTLING
@@ -194,10 +251,16 @@ export default function ChessBoard() {
 
 	return (
 		<div className="flex flex-row gap-10">
-			<div className="flex flex-col-reverse w-screen h-screen items-center justify-center bg-slate-700">
-				{board}
+			<div className="flex flex-col-reverse items-center justify-center w-screen h-screen bg-slate-700">
+				<div className="flex flex-col-reverse">{board}</div>
+				<div className="absolute z-20 -translate-x-10">
+					<PawnPromotion
+						open={pawnPromotionOpen}
+						handleSelect={handlePromotion}
+					/>
+				</div>
 			</div>
-			<div className="absolute text-white text-5xl flex flex-col gap-10">
+			<div className="absolute flex flex-col gap-10 text-5xl text-white">
 				{InCheck(turn, boardState) && "CHECK"}
 				{CheckMate(turn, boardState, prevMove, whiteCastling, blackCastling) &&
 					"CHECKMATE"}
