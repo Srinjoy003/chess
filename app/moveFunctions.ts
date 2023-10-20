@@ -5,21 +5,24 @@ export function EnPassantMoveList(
 	prevMove: [number, number] | null
 ): number[] {
 	const enpassantMoveList = [];
-	const currentPieceColour = currentPiece[0];
-	const opponentColour = currentPieceColour === "w" ? "b" : "w";
-	const prevMoveDirection = opponentColour === "w" ? -1 : 1;
-	const row = opponentColour === "w" ? 3 : 4;
 
-	for (let col = 0; col < 8; col++) {
-		const opponentPosition = row * 10 + col;
-		if (
-			boardState[row][col] === opponentColour + "P" &&
-			prevMove &&
-			prevMove[1] === opponentPosition &&
-			prevMove[0] === prevMove[1] + prevMoveDirection * 20 &&
-			(position === opponentPosition + 1 || position === opponentPosition - 1)
-		) {
-			enpassantMoveList.push(opponentPosition + prevMoveDirection * 10);
+	if (currentPiece[1] === "P") {
+		const currentPieceColour = currentPiece[0];
+		const opponentColour = currentPieceColour === "w" ? "b" : "w";
+		const prevMoveDirection = opponentColour === "w" ? -1 : 1;
+		const row = opponentColour === "w" ? 3 : 4;
+
+		for (let col = 0; col < 8; col++) {
+			const opponentPosition = row * 10 + col;
+			if (
+				boardState[row][col] === opponentColour + "P" &&
+				prevMove &&
+				prevMove[1] === opponentPosition &&
+				prevMove[0] === prevMove[1] + prevMoveDirection * 20 &&
+				(position === opponentPosition + 1 || position === opponentPosition - 1)
+			) {
+				enpassantMoveList.push(opponentPosition + prevMoveDirection * 10);
+			}
 		}
 	}
 
@@ -409,10 +412,78 @@ function OpponentMoveList(
 	return totalMoveList;
 }
 
+export function CastlingMoveList(
+	currentKing: string,
+	boardState: string[][],
+	whiteCastling: [boolean, boolean, boolean],
+	blackCastling: [boolean, boolean, boolean]
+): number[] {
+	const castlingMoveList = [];
+
+	if (currentKing[1] === "K") {
+		//check ;ater
+		const kingColour = currentKing[0];
+		const currentTurn = kingColour;
+
+		const opponentMoveList = OpponentMoveList(currentTurn, boardState);
+		const leftWhiteCastleSquares = [1, 2, 3];
+		const rightWhiteCastleSquares = [5, 6];
+		const leftBlackCastleSquares = [71, 72, 73];
+		const rightBlackCastleSquares = [75, 76];
+
+		const isSquaresSafe = (castleMovelist: number[]) => {
+			return castleMovelist.every((square) => {
+				const row = Math.floor(square / 10);
+				const col = square % 10;
+
+				return (
+					!opponentMoveList.includes(square) && boardState[row][col] === "-"
+				);
+			});
+		};
+
+		if (
+			kingColour === "w" &&
+			whiteCastling[1] === false &&
+			!InCheck(kingColour, boardState)
+		) {
+			if (isSquaresSafe(leftWhiteCastleSquares) && whiteCastling[0] === false) {
+				castlingMoveList.push(2);
+			}
+
+			if (
+				isSquaresSafe(rightWhiteCastleSquares) &&
+				whiteCastling[2] === false
+			) {
+				castlingMoveList.push(6);
+			}
+		} else if (
+			kingColour === "b" &&
+			blackCastling[1] === false &&
+			!InCheck(kingColour, boardState)
+		) {
+			if (isSquaresSafe(leftBlackCastleSquares) && blackCastling[0] === false) {
+				castlingMoveList.push(72);
+			}
+
+			if (
+				isSquaresSafe(rightBlackCastleSquares) &&
+				blackCastling[2] === false
+			) {
+				castlingMoveList.push(76);
+			}
+		}
+	}
+
+	return castlingMoveList;
+}
+
 function KingMoveList(
 	currentPiece: string,
 	position: number,
-	boardState: string[][]
+	boardState: string[][],
+	whiteCastling: [boolean, boolean, boolean],
+	blackCastling: [boolean, boolean, boolean]
 ): number[] {
 	const moveList = [];
 	const row = Math.floor(position / 10); //0 to 7
@@ -448,6 +519,14 @@ function KingMoveList(
 		(move) => !opponentCaptureMoveList.includes(move)
 	);
 
+	const castlingMoveList = CastlingMoveList(
+		currentPiece,
+		boardState,
+		whiteCastling,
+		blackCastling
+	);
+
+	finalMoveList.push(...castlingMoveList);
 	return finalMoveList;
 }
 
@@ -495,7 +574,9 @@ export function MoveList(
 	piece: string,
 	position: number,
 	boardState: string[][],
-	prevMove: [number, number] | null
+	prevMove: [number, number] | null,
+	whiteCastling: [boolean, boolean, boolean],
+	blackCastling: [boolean, boolean, boolean]
 ): number[] {
 	let moveList: number[] = [];
 
@@ -503,7 +584,13 @@ export function MoveList(
 		if (piece[1] === "P") {
 			moveList = PawnMoveList(piece, position, boardState, prevMove);
 		} else if (piece[1] === "K") {
-			moveList = KingMoveList(piece, position, boardState);
+			moveList = KingMoveList(
+				piece,
+				position,
+				boardState,
+				whiteCastling,
+				blackCastling
+			);
 		} else if (piece[1] === "R") {
 			moveList = RookMoveList(piece, position, boardState);
 		} else if (piece[1] === "B") {
@@ -526,7 +613,9 @@ export function MoveList(
 export function CheckMate(
 	currentTurn: string,
 	boardState: string[][],
-	prevMove: [number, number] | null
+	prevMove: [number, number] | null,
+	whiteCastling: [boolean, boolean, boolean],
+	blackCastling: [boolean, boolean, boolean]
 ): boolean {
 	const currentKing = currentTurn + "K";
 	const kingPosition = findKing(currentTurn, boardState);
@@ -534,7 +623,9 @@ export function CheckMate(
 		currentKing,
 		kingPosition,
 		boardState,
-		prevMove
+		prevMove,
+		whiteCastling,
+		blackCastling
 	);
 
 	if (InCheck(currentTurn, boardState) && kingMoveList.length === 0) {

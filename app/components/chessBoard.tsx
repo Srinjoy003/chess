@@ -4,9 +4,12 @@ import Square from "./Square";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
-import { InCheck } from "../moveFunctions";
-import { CheckMate } from "../moveFunctions";
-import { EnPassantMoveList } from "../moveFunctions";
+import {
+	InCheck,
+	CheckMate,
+	EnPassantMoveList,
+	CastlingMoveList,
+} from "../moveFunctions";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -46,13 +49,19 @@ export default function ChessBoard() {
 	);
 
 	const [prevMove, setPrevMove] = useState<[number, number] | null>(null);
+	const [whiteCastling, setWhiteCastling] = useState<
+		[boolean, boolean, boolean]
+	>([false, false, false]);
+	const [blackCastling, setBlackCastling] = useState<
+		[boolean, boolean, boolean]
+	>([false, false, false]);
 
 	const turn = useSelector((state: RootState) => state.turn);
-	
+
 	const movePiece = (fromIndex: number, toIndex: number) => {
 		if (fromIndex != toIndex) {
 			const updatedBoard = boardState.map((item) => {
-				return item;
+				return item.slice();
 			});
 
 			const i1 = Math.floor(fromIndex / 10);
@@ -72,10 +81,85 @@ export default function ChessBoard() {
 					prevMove
 				);
 
+				const castlingMoveList = CastlingMoveList(
+					selectedPiece[1],
+					boardState,
+					whiteCastling,
+					blackCastling
+				);
 
 				if (enpassantMoveList.includes(toIndex)) {
 					const opponentPawnDirection = selectedPiece[1][0] === "w" ? -1 : 1;
-					updatedBoard[i2 + opponentPawnDirection][j2] = "-"
+					updatedBoard[i2 + opponentPawnDirection][j2] = "-";
+				}
+
+				//FOR CASTLING
+
+				if (castlingMoveList.includes(toIndex)) {
+					if (toIndex === 2) {
+						updatedBoard[0][0] = "-";
+						updatedBoard[0][3] = "wR";
+					} else if (toIndex === 6) {
+						updatedBoard[0][7] = "-";
+						updatedBoard[0][5] = "wR";
+					}
+
+					if (toIndex === 72) {
+						updatedBoard[7][0] = "-";
+						updatedBoard[7][3] = "bR";
+					} else if (toIndex === 76) {
+						updatedBoard[7][7] = "-";
+						updatedBoard[7][5] = "bR";
+					}
+				}
+
+				if (selectedPiece[1][0] === "w") {
+					//white
+					if (selectedPiece[0] === 0 && selectedPiece[1][1] === "R") {
+						//left Rook
+						setWhiteCastling((currWhiteCastling) => [
+							true,
+							currWhiteCastling[1],
+							currWhiteCastling[2],
+						]);
+					} else if (selectedPiece[0] === 7 && selectedPiece[1][1] === "R") {
+						//  right rook
+						setWhiteCastling((currWhiteCastling) => [
+							currWhiteCastling[0],
+							currWhiteCastling[1],
+							true,
+						]);
+					} else if (selectedPiece[0] === 4 && selectedPiece[1][1] === "K") {
+						// king
+						setWhiteCastling((currWhiteCastling) => [
+							currWhiteCastling[0],
+							true,
+							currWhiteCastling[2],
+						]);
+					}
+				}
+
+				if (selectedPiece[1][0] === "b") {
+					//black
+					if (selectedPiece[0] === 70 && selectedPiece[1][1] === "R") {
+						setBlackCastling((currBlackCastling) => [
+							true,
+							currBlackCastling[1],
+							currBlackCastling[2],
+						]);
+					} else if (selectedPiece[0] === 77 && selectedPiece[1][1] === "R") {
+						setBlackCastling((currBlackCastling) => [
+							currBlackCastling[0],
+							currBlackCastling[1],
+							true,
+						]);
+					} else if (selectedPiece[0] === 74 && selectedPiece[1][1] === "K") {
+						setBlackCastling((currBlackCastling) => [
+							currBlackCastling[0],
+							true,
+							currBlackCastling[2],
+						]);
+					}
 				}
 			}
 
@@ -96,6 +180,8 @@ export default function ChessBoard() {
 					setSelectedPiece={setSelectedPiece}
 					prevMove={prevMove}
 					setPrevMove={setPrevMove}
+					whiteCastling={whiteCastling}
+					blackCastling={blackCastling}
 				/>
 			);
 		});
@@ -113,7 +199,8 @@ export default function ChessBoard() {
 			</div>
 			<div className="absolute text-white text-5xl flex flex-col gap-10">
 				{InCheck(turn, boardState) && "CHECK"}
-				{CheckMate(turn, boardState, prevMove) && "CHECKMATE"}
+				{CheckMate(turn, boardState, prevMove, whiteCastling, blackCastling) &&
+					"CHECKMATE"}
 			</div>
 		</div>
 	);

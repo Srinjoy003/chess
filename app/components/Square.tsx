@@ -7,6 +7,7 @@ import { toggleTurn } from "../reduxStore/turnSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
 import { MoveList } from "../moveFunctions";
+import { EnPassantMoveList } from "../moveFunctions";
 
 type SquareProp = {
 	boardState: Array<Array<string>>;
@@ -17,6 +18,8 @@ type SquareProp = {
 	setSelectedPiece: (newSelectedPiece: [number, string] | null) => void;
 	prevMove: [number, number] | null;
 	setPrevMove: (newPrevMove: [number, number] | null) => void;
+	whiteCastling: [boolean, boolean, boolean],
+	blackCastling: [boolean, boolean, boolean]
 };
 
 const Square = ({
@@ -28,18 +31,33 @@ const Square = ({
 	setSelectedPiece,
 	prevMove,
 	setPrevMove,
+	whiteCastling,
+	blackCastling
 }: SquareProp) => {
 	const dispatch = useDispatch();
 	const turn = useSelector((state: RootState) => state.turn);
 	const row = Math.floor(position / 10);
 	const col = position % 10;
 
-	const moveList = useMemo(() => {
+	const enpassantMoveList = useMemo(() => {
 		if (selectedPiece) {
-			return MoveList(selectedPiece[1], selectedPiece[0], boardState, prevMove);
+			return EnPassantMoveList(
+				selectedPiece[1],
+				selectedPiece[0],
+				boardState,
+				prevMove
+			);
 		}
 		return [];
 	}, [selectedPiece, boardState, prevMove]);
+
+
+	const moveList = useMemo(() => {
+		if (selectedPiece) {
+			return MoveList(selectedPiece[1], selectedPiece[0], boardState, prevMove, whiteCastling, blackCastling);
+		}
+		return [];
+	}, [selectedPiece, boardState, prevMove, whiteCastling, blackCastling]);
 
 	const [{ isOver, canDrop }, drop] = useDrop({
 		accept: "CHESS_PIECE",
@@ -100,8 +118,9 @@ const Square = ({
 		<div
 			className={`flex flex-row w-20 h-20 text-5xl items-center justify-center ${
 				(selectedPiece &&
-				selectedPiece[0] === position &&
-				boardState[row][col][0] === turn) || prevMove?.includes(position)
+					selectedPiece[0] === position &&
+					boardState[row][col][0] === turn) ||
+				prevMove?.includes(position)
 					? colour === "bg-chess-light"
 						? "bg-chess-selected-light"
 						: "bg-chess-selected-dark"
@@ -114,18 +133,21 @@ const Square = ({
 				<ChessPiece piece={boardState[row][col]} position={position} />
 			)}
 
-			{moveList.includes(position) && boardState[row][col] === "-" && (
-				<div
-					className={`w-7 h-7 rounded-full ${
-						colour === "bg-chess-light"
-							? "bg-chess-move-light"
-							: "bg-chess-move-dark"
-					}`}
-				></div>
-			)}
+			{moveList.includes(position) &&
+				boardState[row][col] === "-" &&
+				!enpassantMoveList.includes(position) && (
+					<div
+						className={`w-7 h-7 rounded-full ${
+							colour === "bg-chess-light"
+								? "bg-chess-move-light"
+								: "bg-chess-move-dark"
+						}`}
+					></div>
+				)}
 
 			{moveList.includes(position) &&
-				boardState[row][col] !== "-" &&
+				(boardState[row][col] !== "-" ||
+					enpassantMoveList.includes(position)) &&
 				pieceColour !== selectedPieceColour && (
 					<div
 						className={`w-20 h-20 border-8 rounded-full absolute ${
