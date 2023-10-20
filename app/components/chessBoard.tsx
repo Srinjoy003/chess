@@ -38,6 +38,10 @@ export function CreateBoardMap() {
 		board.push(row);
 	}
 
+	board[4][4] = "wR";
+	board[1][7] = "bP";
+	board[6][7] = "-";
+	board[0][7] = "-";
 
 	return board;
 }
@@ -239,6 +243,7 @@ export default function ChessBoard() {
 					setPrevMove={setPrevMove}
 					whiteCastling={whiteCastling}
 					blackCastling={blackCastling}
+					pawnPromotionOpen={pawnPromotionOpen}
 				/>
 			);
 		});

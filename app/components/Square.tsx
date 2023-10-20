@@ -10,6 +10,7 @@ import { MoveList } from "../moveFunctions";
 import { EnPassantMoveList } from "../moveFunctions";
 
 type SquareProp = {
+	pawnPromotionOpen: boolean;
 	boardState: Array<Array<string>>;
 	colour: string;
 	position: number;
@@ -23,6 +24,7 @@ type SquareProp = {
 };
 
 const Square = ({
+	pawnPromotionOpen,
 	colour,
 	position,
 	movePiece,
@@ -70,7 +72,7 @@ const Square = ({
 		drop: (item: any) => {
 			// Update the state to place the chess piece in the square
 			// setChessPiece(item.piece);
-			if (moveList.includes(position)) {
+			if (moveList.includes(position) && !pawnPromotionOpen) {
 				movePiece(item.position, position);
 				setPrevMove([item.position, position]);
 				setSelectedPiece(null);
@@ -85,17 +87,19 @@ const Square = ({
 	});
 
 	const handlePieceSelection = useCallback(() => {
-		if (
-			selectedPiece &&
-			selectedPiece[0] !== position &&
-			moveList.includes(position)
-		) {
-			movePiece(selectedPiece[0], position);
-			setPrevMove([selectedPiece[0], position]);
-			setSelectedPiece(null);
-			dispatch(toggleTurn());
-		} else if (boardState[row][col][0] === turn) {
-			setSelectedPiece([position, boardState[row][col]]);
+		if (!pawnPromotionOpen) {
+			if (
+				selectedPiece &&
+				selectedPiece[0] !== position &&
+				moveList.includes(position)
+			) {
+				movePiece(selectedPiece[0], position);
+				setPrevMove([selectedPiece[0], position]);
+				setSelectedPiece(null);
+				dispatch(toggleTurn());
+			} else if (boardState[row][col][0] === turn) {
+				setSelectedPiece([position, boardState[row][col]]);
+			}
 		}
 	}, [
 		boardState,
@@ -109,6 +113,7 @@ const Square = ({
 		moveList,
 		turn,
 		setPrevMove,
+		pawnPromotionOpen,
 	]);
 
 	const pieceColour = boardState[row][col][0];
@@ -136,7 +141,11 @@ const Square = ({
 			onMouseDown={handlePieceSelection}
 		>
 			{boardState[row][col] != "-" && (
-				<ChessPiece piece={boardState[row][col]} position={position} />
+				<ChessPiece
+					piece={boardState[row][col]}
+					position={position}
+					pawnPromotionOpen={pawnPromotionOpen}
+				/>
 			)}
 
 			{moveList.includes(position) &&
