@@ -10,6 +10,8 @@ import {
 	CastlingMoveList,
 } from "../moveFunctions";
 import PawnPromotion from "./PawnPromotion";
+import Countdown from "react-countdown";
+import Timer from "./Timer";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -37,11 +39,6 @@ export function CreateBoardMap() {
 
 		board.push(row);
 	}
-
-	board[4][4] = "wR";
-	board[1][7] = "bP";
-	board[6][7] = "-";
-	board[0][7] = "-";
 
 	return board;
 }
@@ -255,8 +252,8 @@ export default function ChessBoard() {
 	});
 
 	return (
-		<div className="flex flex-row gap-10">
-			<div className="flex flex-col-reverse items-center justify-center w-screen h-screen bg-slate-700">
+		<div className="flex flex-row gap-10  bg-slate-700">
+			<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
 				<div className="flex flex-col-reverse">{board}</div>
 				<div className="absolute z-20 -translate-x-10">
 					<PawnPromotion
@@ -266,9 +263,21 @@ export default function ChessBoard() {
 				</div>
 			</div>
 			<div className="absolute flex flex-col gap-10 text-5xl text-white">
-				{InCheck(turn, boardState) && "CHECK"}
+				{InCheck(turn, boardState) &&
+					!CheckMate(
+						turn,
+						boardState,
+						prevMove,
+						whiteCastling,
+						blackCastling
+					) &&
+					"CHECK"}
 				{CheckMate(turn, boardState, prevMove, whiteCastling, blackCastling) &&
 					"CHECKMATE"}
+			</div>
+			<div className="absolute">
+				{/* <Countdown date={Date.now() + 10000}/> */}
+				<Timer />
 			</div>
 		</div>
 	);
