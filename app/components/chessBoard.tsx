@@ -111,8 +111,17 @@ export default function ChessBoard() {
 			const i2 = Math.floor(toIndex / 10);
 			const j2 = toIndex % 10;
 
-			updatedBoard[i2][j2] = updatedBoard[i1][j1];
-			updatedBoard[i1][j1] = "-";
+			if (
+				!(
+					selectedPiece &&
+					selectedPiece[1][1] === "P" &&
+					((selectedPiece[1][0] == "w" && i2 === 7) ||
+						(selectedPiece[1][0] == "b" && i2 === 0)) //no pawn promotion
+				)
+			) {
+				updatedBoard[i2][j2] = updatedBoard[i1][j1];
+				updatedBoard[i1][j1] = "-";
+			}
 
 			if (selectedPiece) {
 				//ENPASSANT
@@ -144,8 +153,6 @@ export default function ChessBoard() {
 					) {
 						setpawnPromotionOpen(() => {
 							setPromotedPiecePosition([fromIndex, toIndex]);
-							updatedBoard[i1][j1] = updatedBoard[i2][j2];
-							updatedBoard[i2][j2] = "-";
 							return true;
 						});
 					}
@@ -275,9 +282,17 @@ export default function ChessBoard() {
 				{CheckMate(turn, boardState, prevMove, whiteCastling, blackCastling) &&
 					"CHECKMATE"}
 			</div>
-			<div className="absolute">
-				{/* <Countdown date={Date.now() + 10000}/> */}
-				<Timer />
+			<div className="absolute flex flex-col gap-60 right-10 top-1/4 item-start justify-center">
+				<Timer
+					timerFor={"b"}
+					turn={turn}
+					pawnPromotionOpen={pawnPromotionOpen}
+				/>
+				<Timer
+					timerFor={"w"}
+					turn={turn}
+					pawnPromotionOpen={pawnPromotionOpen}
+				/>
 			</div>
 		</div>
 	);
