@@ -3,7 +3,6 @@ import { useDrop } from "react-dnd";
 import ChessPiece from "./ChessPiece";
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { toggleTurn } from "../reduxStore/turnSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
 import { MoveList } from "../moveFunctions";
@@ -76,7 +75,6 @@ const Square = ({
 				movePiece(item.position, position);
 				setPrevMove([item.position, position]);
 				setSelectedPiece(null);
-				if (position !== item.position) dispatch(toggleTurn());
 				item.position = position;
 			}
 		},
@@ -96,7 +94,6 @@ const Square = ({
 				movePiece(selectedPiece[0], position);
 				setPrevMove([selectedPiece[0], position]);
 				setSelectedPiece(null);
-				dispatch(toggleTurn());
 			} else if (boardState[row][col][0] === turn) {
 				setSelectedPiece([position, boardState[row][col]]);
 			}
@@ -105,7 +102,6 @@ const Square = ({
 		boardState,
 		row,
 		col,
-		dispatch,
 		movePiece,
 		selectedPiece,
 		setSelectedPiece,

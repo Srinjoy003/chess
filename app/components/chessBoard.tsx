@@ -10,8 +10,9 @@ import {
 	CastlingMoveList,
 } from "../moveFunctions";
 import PawnPromotion from "./PawnPromotion";
-import Countdown from "react-countdown";
 import Timer from "./Timer";
+import { useDispatch } from "react-redux";
+import { toggleTurn } from "../reduxStore/turnSlice";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -40,6 +41,9 @@ export function CreateBoardMap() {
 		board.push(row);
 	}
 
+	board[1][7] = "bP"
+	board[0][7] = "-"
+
 	return board;
 }
 
@@ -62,7 +66,12 @@ export default function ChessBoard() {
 		[number, number] | null
 	>(null);
 
+	const [isTimeUp, setIsTimeUp] = useState(false);
+	const [playTime, setplayTime] = useState(5);
+
 	const turn = useSelector((state: RootState) => state.turn);
+	const dispatch = useDispatch();
+
 
 	const isCheckMate = CheckMate(
 		turn,
@@ -74,12 +83,11 @@ export default function ChessBoard() {
 
 	const handlePromotion = useCallback(
 		(piece: string) => {
-			//opposite as turn is switched until choice is made
-			const promotionTurn = turn === "w" ? "b" : "w";
-
-			console.log(piece);
-
+		
 			setpawnPromotionOpen(false);
+			dispatch(toggleTurn());
+			console.log("Toggle inside select")
+
 
 			if (promotedPiecePosition) {
 				const updatedBoard = boardState.map((item) => {
@@ -95,7 +103,7 @@ export default function ChessBoard() {
 				updatedBoard[i2][j2] = piece;
 				console.log(i2, j2, promotedPiecePosition, turn);
 
-				if (promotionTurn === "w") {
+				if (turn === "w") {
 					updatedBoard[i1][j1] = "-";
 				} else {
 					updatedBoard[i1][j1] = "-";
@@ -104,7 +112,7 @@ export default function ChessBoard() {
 				setBoardState(updatedBoard);
 			}
 		},
-		[turn, boardState, promotedPiecePosition]
+		[turn, boardState, promotedPiecePosition, dispatch]
 	);
 
 	const movePiece = (fromIndex: number, toIndex: number) => {
@@ -131,6 +139,9 @@ export default function ChessBoard() {
 			) {
 				updatedBoard[i2][j2] = updatedBoard[i1][j1];
 				updatedBoard[i1][j1] = "-";
+				dispatch(toggleTurn());
+				console.log("Toggle inside move")
+
 			}
 
 			if (selectedPiece) {
@@ -294,23 +305,32 @@ export default function ChessBoard() {
 			</div>
 			<div className="absolute flex flex-col gap-60 right-10 top-1/4 item-start justify-center">
 				<Timer
+					playTime={playTime}
 					timerFor={"b"}
 					turn={turn}
 					pawnPromotionOpen={pawnPromotionOpen}
+					setIsTimeUp={setIsTimeUp}
+					isCheckMate={isCheckMate}
 				/>
 				<Timer
+					playTime={playTime}
 					timerFor={"w"}
 					turn={turn}
 					pawnPromotionOpen={pawnPromotionOpen}
+					setIsTimeUp={setIsTimeUp}
+					isCheckMate={isCheckMate}
 				/>
 			</div>
 
 			<div
-				className={`absolute top-1/3 left-1/2 w-40 h-40 bg-white flex items-center justify-center z-50 ${
-					isCheckMate ? "" : "hidden"
+				className={`absolute top-1/3 left-1/2 w-40 h-40 bg-white flex-col items-center justify-center z-50 ${
+					isCheckMate || isTimeUp ? "" : "hidden"
 				}`}
 			>
-				{turn === "b" ? "White Wins" : "Black Wins"}
+				<p>{turn === "b" ? "White Wins" : "Black Wins"}</p>
+				<p>
+					{isCheckMate ? "By Checkmate" : ""} {isTimeUp ? "By Timeout" : ""}
+				</p>
 			</div>
 		</div>
 	);
