@@ -64,6 +64,14 @@ export default function ChessBoard() {
 
 	const turn = useSelector((state: RootState) => state.turn);
 
+	const isCheckMate = CheckMate(
+		turn,
+		boardState,
+		prevMove,
+		whiteCastling,
+		blackCastling
+	);
+
 	const handlePromotion = useCallback(
 		(piece: string) => {
 			//opposite as turn is switched until choice is made
@@ -113,10 +121,12 @@ export default function ChessBoard() {
 
 			if (
 				!(
-					selectedPiece &&
-					selectedPiece[1][1] === "P" &&
-					((selectedPiece[1][0] == "w" && i2 === 7) ||
-						(selectedPiece[1][0] == "b" && i2 === 0)) //no pawn promotion
+					(
+						selectedPiece &&
+						selectedPiece[1][1] === "P" &&
+						((selectedPiece[1][0] == "w" && i2 === 7) ||
+							(selectedPiece[1][0] == "b" && i2 === 0))
+					) //no pawn promotion
 				)
 			) {
 				updatedBoard[i2][j2] = updatedBoard[i1][j1];
@@ -293,6 +303,14 @@ export default function ChessBoard() {
 					turn={turn}
 					pawnPromotionOpen={pawnPromotionOpen}
 				/>
+			</div>
+
+			<div
+				className={`absolute top-1/3 left-1/2 w-40 h-40 bg-white flex items-center justify-center z-50 ${
+					isCheckMate ? "" : "hidden"
+				}`}
+			>
+				{turn === "b" ? "White Wins" : "Black Wins"}
 			</div>
 		</div>
 	);
