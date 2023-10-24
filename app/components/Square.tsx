@@ -5,8 +5,8 @@ import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
-import { MoveList } from "../moveFunctions";
-import { EnPassantMoveList } from "../moveFunctions";
+import { MoveList } from "../helperFunctions";
+import { EnPassantMoveList } from "../helperFunctions";
 
 type SquareProp = {
 	pawnPromotionOpen: boolean;

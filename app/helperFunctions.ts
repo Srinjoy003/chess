@@ -447,13 +447,18 @@ export function CastlingMoveList(
 			whiteCastling[1] === false &&
 			!InCheck(kingColour, boardState)
 		) {
-			if (isSquaresSafe(leftWhiteCastleSquares) && whiteCastling[0] === false) {
+			if (
+				isSquaresSafe(leftWhiteCastleSquares) &&
+				whiteCastling[0] === false &&
+				boardState[0][0] === "wR"
+			) {
 				castlingMoveList.push(2);
 			}
 
 			if (
 				isSquaresSafe(rightWhiteCastleSquares) &&
-				whiteCastling[2] === false
+				whiteCastling[2] === false &&
+				boardState[0][7] === "wR"
 			) {
 				castlingMoveList.push(6);
 			}
@@ -462,13 +467,18 @@ export function CastlingMoveList(
 			blackCastling[1] === false &&
 			!InCheck(kingColour, boardState)
 		) {
-			if (isSquaresSafe(leftBlackCastleSquares) && blackCastling[0] === false) {
+			if (
+				isSquaresSafe(leftBlackCastleSquares) &&
+				blackCastling[0] === false &&
+				boardState[7][0] === "bR"
+			) {
 				castlingMoveList.push(72);
 			}
 
 			if (
 				isSquaresSafe(rightBlackCastleSquares) &&
-				blackCastling[2] === false
+				blackCastling[2] === false &&
+				boardState[7][7] === "bR"
 			) {
 				castlingMoveList.push(76);
 			}
@@ -635,6 +645,108 @@ export function CheckMate(
 	return false;
 }
 
-function rotateMatrix180(matrix: string[][]): string[][] {
-	return matrix.map((row) => [...row].reverse()).reverse();
+function TotalMoveList(
+	boardState: string[][],
+	currentTurn: string,
+	prevMove: [number, number] | null,
+	whiteCastling: [boolean, boolean, boolean],
+	blackCastling: [boolean, boolean, boolean]
+): number[] {
+	const totalMoveList = [];
+
+	for (let row = 0; row < 8; row++) {
+		for (let col = 0; col < 8; col++) {
+			if (boardState[row][col][0] === currentTurn) {
+				const piece = boardState[row][col];
+				const position = row * 10 + col;
+				const moveList = MoveList(
+					piece,
+					position,
+					boardState,
+					prevMove,
+					whiteCastling,
+					blackCastling
+				);
+				totalMoveList.push(...moveList);
+			}
+		}
+	}
+	return totalMoveList;
+}
+
+export function StaleMate(
+	boardState: string[][],
+	currentTurn: string,
+	prevMove: [number, number] | null,
+	whiteCastling: [boolean, boolean, boolean],
+	blackCastling: [boolean, boolean, boolean]
+): boolean {
+	const totalMoveList = TotalMoveList(
+		boardState,
+		currentTurn,
+		prevMove,
+		whiteCastling,
+		blackCastling
+	);
+	if (totalMoveList.length === 0 && !InCheck(currentTurn, boardState)) {
+		return true;
+	}
+	return false;
+}
+
+export function InsufficientMaterial(boardState: string[][]): boolean {
+	const pawnCount = [0, 0];
+	const bishopCount = [0, 0];
+	const rookCount = [0, 0];
+	const knightCount = [0, 0];
+	const queenCount = [0, 0];
+
+	for (let row = 0; row < 8; row++) {
+		for (let col = 0; col < 8; col++) {
+			if (boardState[row][col] !== "-") {
+				const colour = boardState[row][col][0];
+				const piece = boardState[row][col][1];
+				const index = colour === "b" ? 0 : 1;
+
+				if (piece === "P") pawnCount[index] += 1;
+				else if (piece === "B") bishopCount[index] += 1;
+				else if (piece === "R") rookCount[index] += 1;
+				else if (piece === "H") knightCount[index] += 1;
+				else if (piece === "Q") queenCount[index] += 1;
+			}
+		}
+	}
+
+	if (
+		//no queen, pawn or rook for either side
+		pawnCount[0] === 0 &&
+		pawnCount[1] === 0 &&
+		queenCount[0] === 0 &&
+		queenCount[1] === 0 &&
+		rookCount[0] === 0 &&
+		rookCount[1] === 0
+	) {
+		if (
+			(bishopCount[0] === 0 && //king and 1 knight(or less) for either side(eg: 1K,1H vs 1K)
+				bishopCount[1] === 0 &&
+				knightCount[0] <= 1 &&
+				knightCount[1] <= 1) ||
+			(bishopCount[0] <= 1 && //king and 1 bishop(or less) for either side
+				bishopCount[1] <= 1 &&
+				knightCount[0] === 0 &&
+				knightCount[1] === 0) ||
+			(bishopCount[0] === 0 && //only king for either side
+				bishopCount[1] === 0 &&
+				knightCount[0] === 0 &&
+				knightCount[1] === 0) ||
+			(bishopCount[0] === 0 && //king and 2 knight(or less) on one side vs a lone king
+				bishopCount[1] === 0 &&
+				((knightCount[0] <= 2 && knightCount[1] === 0) ||
+					(knightCount[0] === 0 && knightCount[1] <= 2)))
+		) {
+			return true;
+		}
+	}
+
+	return false;
 }

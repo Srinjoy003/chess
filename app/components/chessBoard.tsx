@@ -8,7 +8,9 @@ import {
 	CheckMate,
 	EnPassantMoveList,
 	CastlingMoveList,
-} from "../moveFunctions";
+	StaleMate,
+	InsufficientMaterial,
+} from "../helperFunctions";
 import PawnPromotion from "./PawnPromotion";
 import Timer from "./Timer";
 import { useDispatch } from "react-redux";
@@ -41,8 +43,11 @@ export function CreateBoardMap() {
 		board.push(row);
 	}
 
-	board[1][7] = "bP"
-	board[0][7] = "-"
+	// board[7][0] = "bK";
+	// board[1][0] = "wK";
+	// board[6][7] = "wB";
+	// board[7][6] = "bB";
+
 
 	return board;
 }
@@ -72,7 +77,6 @@ export default function ChessBoard() {
 	const turn = useSelector((state: RootState) => state.turn);
 	const dispatch = useDispatch();
 
-
 	const isCheckMate = CheckMate(
 		turn,
 		boardState,
@@ -81,13 +85,25 @@ export default function ChessBoard() {
 		blackCastling
 	);
 
+	const isStaleMate = StaleMate(
+		boardState,
+		turn,
+		prevMove,
+		whiteCastling,
+		blackCastling
+	);
+
+	const hasInsufficientMaterial = InsufficientMaterial(boardState);
+
+	const victoryOrLoss = isCheckMate || isTimeUp;
+	const draw = isStaleMate || hasInsufficientMaterial;
+	const gameEnded = victoryOrLoss || draw;
+
 	const handlePromotion = useCallback(
 		(piece: string) => {
-		
 			setpawnPromotionOpen(false);
 			dispatch(toggleTurn());
-			console.log("Toggle inside select")
-
+			console.log("Toggle inside select");
 
 			if (promotedPiecePosition) {
 				const updatedBoard = boardState.map((item) => {
@@ -140,8 +156,7 @@ export default function ChessBoard() {
 				updatedBoard[i2][j2] = updatedBoard[i1][j1];
 				updatedBoard[i1][j1] = "-";
 				dispatch(toggleTurn());
-				console.log("Toggle inside move")
-
+				console.log("Toggle inside move");
 			}
 
 			if (selectedPiece) {
@@ -280,7 +295,7 @@ export default function ChessBoard() {
 	});
 
 	return (
-		<div className="flex flex-row gap-10  bg-slate-700">
+		<div className="flex flex-row gap-10  bg-chess-bg">
 			<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
 				<div className="flex flex-col-reverse">{board}</div>
 				<div className="absolute z-20 -translate-x-10">
@@ -290,19 +305,7 @@ export default function ChessBoard() {
 					/>
 				</div>
 			</div>
-			<div className="absolute flex flex-col gap-10 text-5xl text-white">
-				{InCheck(turn, boardState) &&
-					!CheckMate(
-						turn,
-						boardState,
-						prevMove,
-						whiteCastling,
-						blackCastling
-					) &&
-					"CHECK"}
-				{CheckMate(turn, boardState, prevMove, whiteCastling, blackCastling) &&
-					"CHECKMATE"}
-			</div>
+
 			<div className="absolute flex flex-col gap-60 right-10 top-1/4 item-start justify-center">
 				<Timer
 					playTime={playTime}
@@ -310,7 +313,7 @@ export default function ChessBoard() {
 					turn={turn}
 					pawnPromotionOpen={pawnPromotionOpen}
 					setIsTimeUp={setIsTimeUp}
-					isCheckMate={isCheckMate}
+					gameEnded={gameEnded}
 				/>
 				<Timer
 					playTime={playTime}
@@ -318,18 +321,30 @@ export default function ChessBoard() {
 					turn={turn}
 					pawnPromotionOpen={pawnPromotionOpen}
 					setIsTimeUp={setIsTimeUp}
-					isCheckMate={isCheckMate}
+					gameEnded={gameEnded}
 				/>
 			</div>
 
 			<div
 				className={`absolute top-1/3 left-1/2 w-40 h-40 bg-white flex-col items-center justify-center z-50 ${
-					isCheckMate || isTimeUp ? "" : "hidden"
+					victoryOrLoss ? "" : "hidden"
 				}`}
 			>
 				<p>{turn === "b" ? "White Wins" : "Black Wins"}</p>
 				<p>
 					{isCheckMate ? "By Checkmate" : ""} {isTimeUp ? "By Timeout" : ""}
+				</p>
+			</div>
+
+			<div
+				className={`absolute top-1/3 left-1/2 w-40 h-40 bg-white flex-col items-center justify-center z-50 ${
+					draw ? "" : "hidden"
+				}`}
+			>
+				<p>DRAW</p>
+				<p>
+					{isStaleMate && "By Stalemate"}{" "}
+					{hasInsufficientMaterial && "By Insufficient Material"}
 				</p>
 			</div>
 		</div>

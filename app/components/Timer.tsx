@@ -8,7 +8,7 @@ type TimerProps = {
 	turn: string;
 	pawnPromotionOpen: boolean;
 	setIsTimeUp: (isTimeUp: boolean) => void;
-	isCheckMate: boolean;
+	gameEnded: boolean;
 };
 
 export default function Timer({
@@ -17,7 +17,7 @@ export default function Timer({
 	turn,
 	pawnPromotionOpen,
 	setIsTimeUp,
-	isCheckMate,
+	gameEnded,
 }: TimerProps) {
 	const timeGiven = playTime * 60000;
 	const [time, setTime] = useState(Date.now());
@@ -26,37 +26,19 @@ export default function Timer({
 
 	const api = countdownRef.current?.api;
 
-	// if(api){
-
-	// 	if (pawnPromotionOpen && turn === timerFor){
-
-	// 		if(!api.isPaused())
-	// 			console.log("pause working", pawnPromotionOpen, turn, timerFor);
-
-	// 		else{
-	// 			console.log("pause not working", pawnPromotionOpen, turn, timerFor);
-
-	// 		}
-	// 	}
-	// 	if (pawnPromotionOpen && turn !== timerFor && !api.isCompleted())
-	// 		console.log("play", pawnPromotionOpen, turn, timerFor);
-	// }
-	// else{
-	// 	console.log("no api")
-	// }
 
 	useEffect(() => {
 		if (api) {
 			if (turn !== timerFor && !api.isPaused()) {
 				api.pause();
 			}
-			if (turn === timerFor && !api.isCompleted() && !isCheckMate) {
+			if (turn === timerFor && !api.isCompleted() && !gameEnded) {
 				api.start();
 			}
 
-			if (isCheckMate) api.pause();
+			if (gameEnded) api.pause();
 		}
-	}, [api, timerFor, turn, isCheckMate, pawnPromotionOpen]);
+	}, [api, timerFor, turn, gameEnded, pawnPromotionOpen]);
 
 	useEffect(() => {
 		if (turn === timerFor && !initialTimeSet) {
@@ -70,9 +52,11 @@ export default function Timer({
 
 	const renderer = ({ minutes, seconds }: CountdownRenderProps) => {
 		return (
-			<p className="h-16 w-32 bg-black text-white flex items-center justify-center rounded text-3xl">{`${minutes}:${
-				seconds < 10 ? "0" : ""
-			}${seconds}`}</p>
+			<p
+				className={`h-24 w-48 flex items-center justify-center rounded-xl text-5xl text-bold ${
+					timerFor === turn ? "bg-white text-black" : "bg-black text-gray-400"
+				}`}
+			>{`${minutes}:${seconds < 10 ? "0" : ""}${seconds}`}</p>
 		);
 	};
 
@@ -82,7 +66,7 @@ export default function Timer({
 			date={countdownTime}
 			renderer={renderer}
 			controlled={false}
-			autoStart={timerFor === "w"}
+			autoStart={false}
 			onComplete={() => setIsTimeUp(true)}
 		/>
 	);

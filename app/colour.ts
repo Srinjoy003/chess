@@ -1,4 +1,5 @@
 export const colour = {
+	"chess-bg": "#161512",
 	"chess-dark": "#779954",
 	"chess-light": "#e9edcc",
     "chess-selected-light": "#f4f680",
