@@ -1,7 +1,7 @@
-import { BlackRook, WhiteRook } from "../pieceSvg/Rook";
-import { BlackQueen, WhiteQueen } from "../pieceSvg/Queen";
-import { BlackBishop, WhiteBishop } from "../pieceSvg/Bishop";
-import { BlackKnight, WhiteKnight } from "../pieceSvg/Knight";
+import { BlackRook, WhiteRook } from "../assets/pieceSvg/Rook";
+import { BlackQueen, WhiteQueen } from "../assets/pieceSvg/Queen";
+import { BlackBishop, WhiteBishop } from "../assets/pieceSvg/Bishop";
+import { BlackKnight, WhiteKnight } from "../assets/pieceSvg/Knight";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
 

@@ -750,3 +750,28 @@ export function InsufficientMaterial(boardState: string[][]): boolean {
 
 	return false;
 }
+
+function arraysEqual(arr1: string[][], arr2: string[][]) {
+	if (JSON.stringify(arr1) === JSON.stringify(arr2)) {
+		return true;
+	}
+
+	return false;
+}
+
+export function ThreeFoldRepetition(
+	positionList: Array<[string, string[][]]>,
+	currentPosition: [string, string[][]]
+): boolean {
+	let count = 0;
+	for (const [turn, boardstate] of positionList) {
+		if (
+			turn === currentPosition[0] &&
+			arraysEqual(boardstate, currentPosition[1])
+		) {
+			count++;
+		}
+	}
+
+	return count === 3;
+}

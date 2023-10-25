@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import Square from "./Square";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
 import {
@@ -10,6 +10,7 @@ import {
 	CastlingMoveList,
 	StaleMate,
 	InsufficientMaterial,
+	ThreeFoldRepetition,
 } from "../helperFunctions";
 import PawnPromotion from "./PawnPromotion";
 import Timer from "./Timer";
@@ -43,16 +44,11 @@ export function CreateBoardMap() {
 		board.push(row);
 	}
 
-	// board[7][0] = "bK";
-	// board[1][0] = "wK";
-	// board[6][7] = "wB";
-	// board[7][6] = "bB";
-
-
 	return board;
 }
 
 export default function ChessBoard() {
+	type positionType = [string, string[][]];
 	const boardMap = CreateBoardMap();
 	const [boardState, setBoardState] = useState(Array.from(boardMap));
 	const [selectedPiece, setSelectedPiece] = useState<[number, string] | null>(
@@ -77,6 +73,15 @@ export default function ChessBoard() {
 	const turn = useSelector((state: RootState) => state.turn);
 	const dispatch = useDispatch();
 
+	const [position, setPosition] = useState<positionType>([turn, boardState]);
+	const [positionList, setPositionList] = useState<positionType[]>([
+		[turn, boardState],
+	]);
+
+	const noOfMoves = useRef(0);
+
+	const moveSound = useRef<HTMLAudioElement | null>(null);
+
 	const isCheckMate = CheckMate(
 		turn,
 		boardState,
@@ -95,15 +100,30 @@ export default function ChessBoard() {
 
 	const hasInsufficientMaterial = InsufficientMaterial(boardState);
 
+	const isThreeFoldRepetion = ThreeFoldRepetition(positionList, position);
+
 	const victoryOrLoss = isCheckMate || isTimeUp;
-	const draw = isStaleMate || hasInsufficientMaterial;
+	const draw = isStaleMate || hasInsufficientMaterial || isThreeFoldRepetion;
 	const gameEnded = victoryOrLoss || draw;
+
+	useEffect(() => {
+		setPosition([turn, boardState]);
+	}, [turn, boardState]);
+
+	useEffect(() => {
+		if (positionList.length === noOfMoves.current) {
+			positionList.push(position);
+			console.log(positionList);
+		}
+	}, [position, positionList, noOfMoves]);
+
+	useEffect(() => {
+		if (moveSound.current) moveSound.current.play();
+	});
 
 	const handlePromotion = useCallback(
 		(piece: string) => {
 			setpawnPromotionOpen(false);
-			dispatch(toggleTurn());
-			console.log("Toggle inside select");
 
 			if (promotedPiecePosition) {
 				const updatedBoard = boardState.map((item) => {
@@ -117,7 +137,6 @@ export default function ChessBoard() {
 				const j2 = promotedPiecePosition[1] % 10;
 
 				updatedBoard[i2][j2] = piece;
-				console.log(i2, j2, promotedPiecePosition, turn);
 
 				if (turn === "w") {
 					updatedBoard[i1][j1] = "-";
@@ -125,7 +144,9 @@ export default function ChessBoard() {
 					updatedBoard[i1][j1] = "-";
 				}
 
+				dispatch(toggleTurn());
 				setBoardState(updatedBoard);
+				noOfMoves.current++;
 			}
 		},
 		[turn, boardState, promotedPiecePosition, dispatch]
@@ -155,8 +176,6 @@ export default function ChessBoard() {
 			) {
 				updatedBoard[i2][j2] = updatedBoard[i1][j1];
 				updatedBoard[i1][j1] = "-";
-				dispatch(toggleTurn());
-				console.log("Toggle inside move");
 			}
 
 			if (selectedPiece) {
@@ -264,7 +283,20 @@ export default function ChessBoard() {
 				}
 			}
 
-			setBoardState(updatedBoard);
+			if (
+				!(
+					(
+						selectedPiece &&
+						selectedPiece[1][1] === "P" &&
+						((selectedPiece[1][0] == "w" && i2 === 7) ||
+							(selectedPiece[1][0] == "b" && i2 === 0))
+					) //no pawn promotion
+				)
+			) {
+				noOfMoves.current++;
+				dispatch(toggleTurn());
+				setBoardState(updatedBoard);
+			}
 		}
 	};
 
@@ -284,6 +316,7 @@ export default function ChessBoard() {
 					whiteCastling={whiteCastling}
 					blackCastling={blackCastling}
 					pawnPromotionOpen={pawnPromotionOpen}
+					gameEnded={gameEnded}
 				/>
 			);
 		});
@@ -295,58 +328,68 @@ export default function ChessBoard() {
 	});
 
 	return (
-		<div className="flex flex-row gap-10  bg-chess-bg">
-			<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
-				<div className="flex flex-col-reverse">{board}</div>
-				<div className="absolute z-20 -translate-x-10">
-					<PawnPromotion
-						open={pawnPromotionOpen}
-						handleSelect={handlePromotion}
+		<>
+			<div className="flex flex-row gap-10  bg-chess-bg">
+				<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
+					<div className="flex flex-col-reverse">{board}</div>
+					<div className="absolute z-20 -translate-x-10">
+						<PawnPromotion
+							open={pawnPromotionOpen}
+							handleSelect={handlePromotion}
+						/>
+					</div>
+				</div>
+
+				<div className="absolute flex flex-col md:gap-60 md:right-10 md:top-1/4 item-start justify-center">
+					<Timer
+						playTime={playTime}
+						timerFor={"b"}
+						turn={turn}
+						pawnPromotionOpen={pawnPromotionOpen}
+						setIsTimeUp={setIsTimeUp}
+						gameEnded={gameEnded}
+					/>
+					<Timer
+						playTime={playTime}
+						timerFor={"w"}
+						turn={turn}
+						pawnPromotionOpen={pawnPromotionOpen}
+						setIsTimeUp={setIsTimeUp}
+						gameEnded={gameEnded}
 					/>
 				</div>
-			</div>
 
-			<div className="absolute flex flex-col gap-60 right-10 top-1/4 item-start justify-center">
-				<Timer
-					playTime={playTime}
-					timerFor={"b"}
-					turn={turn}
-					pawnPromotionOpen={pawnPromotionOpen}
-					setIsTimeUp={setIsTimeUp}
-					gameEnded={gameEnded}
-				/>
-				<Timer
-					playTime={playTime}
-					timerFor={"w"}
-					turn={turn}
-					pawnPromotionOpen={pawnPromotionOpen}
-					setIsTimeUp={setIsTimeUp}
-					gameEnded={gameEnded}
-				/>
+				<div
+					className={`absolute top-1/3 left-1/2 w-40 h-40 bg-white flex-col items-center justify-center z-50 ${
+						gameEnded ? "" : "hidden"
+					}`}
+				>
+					<p>
+						{victoryOrLoss
+							? turn === "b"
+								? "White Wins"
+								: "Black Wins"
+							: "DRAW"}
+					</p>
+					<p>
+						{isCheckMate ? "By Checkmate" : ""}
+						{isTimeUp ? "By Timeout" : ""}
+						{isStaleMate && "By Stalemate"}{" "}
+						{hasInsufficientMaterial && "By Insufficient Material"}
+						{isThreeFoldRepetion && "by Three Fold Repetition"}
+					</p>
+				</div>
 			</div>
-
-			<div
-				className={`absolute top-1/3 left-1/2 w-40 h-40 bg-white flex-col items-center justify-center z-50 ${
-					victoryOrLoss ? "" : "hidden"
-				}`}
+			<audio ref={moveSound} src="/sound/move.mp3" />
+			<button
+				className="absolute top-1/2 left-10 z-50 bg-white w-20 h-20"
+				onClick={() => {
+					moveSound.current?.play();
+					console.log("click");
+				}}
 			>
-				<p>{turn === "b" ? "White Wins" : "Black Wins"}</p>
-				<p>
-					{isCheckMate ? "By Checkmate" : ""} {isTimeUp ? "By Timeout" : ""}
-				</p>
-			</div>
-
-			<div
-				className={`absolute top-1/3 left-1/2 w-40 h-40 bg-white flex-col items-center justify-center z-50 ${
-					draw ? "" : "hidden"
-				}`}
-			>
-				<p>DRAW</p>
-				<p>
-					{isStaleMate && "By Stalemate"}{" "}
-					{hasInsufficientMaterial && "By Insufficient Material"}
-				</p>
-			</div>
-		</div>
+				play sound
+			</button>
+		</>
 	);
 }

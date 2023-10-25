@@ -2,7 +2,7 @@ import { ChessPieceProp } from "./ChessPieceProps";
 
 export function BlackKing({size}: ChessPieceProp) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 45 45">
+    <svg className={size} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45">
       <g
         fill="none"
         fillRule="evenodd"
@@ -43,7 +43,7 @@ export function BlackKing({size}: ChessPieceProp) {
 
 export function WhiteKing({size}: ChessPieceProp) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 45 45">
+    <svg className={size} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45">
     <g
       fill="none"
       fillRule="evenodd"

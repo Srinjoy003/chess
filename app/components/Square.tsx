@@ -20,6 +20,7 @@ type SquareProp = {
 	setPrevMove: (newPrevMove: [number, number] | null) => void;
 	whiteCastling: [boolean, boolean, boolean];
 	blackCastling: [boolean, boolean, boolean];
+	gameEnded: boolean;
 };
 
 const Square = ({
@@ -34,6 +35,7 @@ const Square = ({
 	setPrevMove,
 	whiteCastling,
 	blackCastling,
+	gameEnded,
 }: SquareProp) => {
 	const dispatch = useDispatch();
 	const turn = useSelector((state: RootState) => state.turn);
@@ -71,7 +73,7 @@ const Square = ({
 		drop: (item: any) => {
 			// Update the state to place the chess piece in the square
 			// setChessPiece(item.piece);
-			if (moveList.includes(position) && !pawnPromotionOpen) {
+			if (moveList.includes(position) && !pawnPromotionOpen && !gameEnded) {
 				movePiece(item.position, position);
 				setPrevMove([item.position, position]);
 				setSelectedPiece(null);
@@ -85,7 +87,7 @@ const Square = ({
 	});
 
 	const handlePieceSelection = useCallback(() => {
-		if (!pawnPromotionOpen) {
+		if (!pawnPromotionOpen && !gameEnded) {
 			if (
 				selectedPiece &&
 				selectedPiece[0] !== position &&
@@ -110,6 +112,7 @@ const Square = ({
 		turn,
 		setPrevMove,
 		pawnPromotionOpen,
+		gameEnded,
 	]);
 
 	const pieceColour = boardState[row][col][0];
@@ -123,7 +126,7 @@ const Square = ({
 
 	return (
 		<div
-			className={`flex flex-row w-20 h-20 text-5xl items-center justify-center ${
+			className={`flex flex-row w-10 h-10 text-3xl md:w-20 md:h-20 md:text-5xl items-center justify-center ${
 				(selectedPiece &&
 					selectedPiece[0] === position &&
 					boardState[row][col][0] === turn) ||
@@ -141,6 +144,7 @@ const Square = ({
 					piece={boardState[row][col]}
 					position={position}
 					pawnPromotionOpen={pawnPromotionOpen}
+					gameEnded={gameEnded}
 				/>
 			)}
 
@@ -148,7 +152,7 @@ const Square = ({
 				boardState[row][col] === "-" &&
 				!enpassantMoveList.includes(position) && (
 					<div
-						className={`w-7 h-7 rounded-full ${
+						className={`w-4 h-4 md:w-7 md:h-7 rounded-full ${
 							colour === "bg-chess-light"
 								? "bg-chess-move-light"
 								: "bg-chess-move-dark"

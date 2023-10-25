@@ -2,7 +2,7 @@ import { ChessPieceProp } from "./ChessPieceProps";
 
 export function BlackRook({size}: ChessPieceProp) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 45 45">
+    <svg className={size} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45">
       <g
         fillRule="evenodd"
         stroke="#000"
@@ -38,7 +38,7 @@ export function BlackRook({size}: ChessPieceProp) {
 
 export function WhiteRook({size}: ChessPieceProp) {
     return (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 45 45">
+      <svg className={size} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45">
       <g
         fill="#fff"
         fillRule="evenodd"

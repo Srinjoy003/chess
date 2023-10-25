@@ -3,23 +3,25 @@
 import { useDrag } from "react-dnd";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
-import { BlackBishop, WhiteBishop } from "../pieceSvg/Bishop";
-import { BlackKnight, WhiteKnight } from "../pieceSvg/Knight";
-import { BlackPawn, WhitePawn } from "../pieceSvg/Pawn";
-import { BlackRook, WhiteRook } from "../pieceSvg/Rook";
-import { BlackKing, WhiteKing } from "../pieceSvg/King";
-import { BlackQueen, WhiteQueen } from "../pieceSvg/Queen";
+import { BlackBishop, WhiteBishop } from "../assets/pieceSvg/Bishop";
+import { BlackKnight, WhiteKnight } from "../assets/pieceSvg/Knight";
+import { BlackPawn, WhitePawn } from "../assets/pieceSvg/Pawn";
+import { BlackRook, WhiteRook } from "../assets/pieceSvg/Rook";
+import { BlackKing, WhiteKing } from "../assets/pieceSvg/King";
+import { BlackQueen, WhiteQueen } from "../assets/pieceSvg/Queen";
 
 type ChessPieceProps = {
 	piece: string;
 	position: number;
 	pawnPromotionOpen: boolean;
+	gameEnded: boolean;
 };
 
 const ChessPiece = ({
 	piece,
 	position,
 	pawnPromotionOpen,
+	gameEnded,
 }: ChessPieceProps) => {
 	const turn = useSelector((state: RootState) => state.turn);
 
@@ -32,7 +34,7 @@ const ChessPiece = ({
 		}),
 	});
 
-	const size = 80;
+	const size = "w-10 h-10 md:w-20 md:h-20";
 
 	return (
 		<div
