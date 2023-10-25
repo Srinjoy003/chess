@@ -78,9 +78,20 @@ export default function ChessBoard() {
 		[turn, boardState],
 	]);
 
+	const [sound, setSound] = useState<"move" | "capture" | "check" | "promote" | "end">(
+		"move"
+	);
+
 	const noOfMoves = useRef(0);
 
 	const moveSound = useRef<HTMLAudioElement | null>(null);
+	const checkSound = useRef<HTMLAudioElement | null>(null);
+	const captureSound = useRef<HTMLAudioElement | null>(null);
+	const promoteSound = useRef<HTMLAudioElement | null>(null);
+	const endSound = useRef<HTMLAudioElement | null>(null);
+
+
+	const inCheck = InCheck(turn, boardState);
 
 	const isCheckMate = CheckMate(
 		turn,
@@ -118,12 +129,20 @@ export default function ChessBoard() {
 	}, [position, positionList, noOfMoves]);
 
 	useEffect(() => {
-		if (moveSound.current) moveSound.current.play();
-	});
+		if (inCheck) setSound("check");
+		if (gameEnded) setSound("end")
+		if (sound === "move") moveSound.current?.play();
+		else if (sound === "capture") captureSound.current?.play();
+		else if (sound === "check") checkSound.current?.play();
+		else if (sound === "promote") promoteSound.current?.play();
+		else if (sound === "end") endSound.current?.play();
+
+	}, [boardState, inCheck, sound, gameEnded]);
 
 	const handlePromotion = useCallback(
 		(piece: string) => {
 			setpawnPromotionOpen(false);
+			setSound("promote");
 
 			if (promotedPiecePosition) {
 				const updatedBoard = boardState.map((item) => {
@@ -174,6 +193,9 @@ export default function ChessBoard() {
 					) //no pawn promotion
 				)
 			) {
+				if (updatedBoard[i2][j2] === "-") setSound("move");
+				else setSound("capture");
+
 				updatedBoard[i2][j2] = updatedBoard[i1][j1];
 				updatedBoard[i1][j1] = "-";
 			}
@@ -195,6 +217,7 @@ export default function ChessBoard() {
 				);
 
 				if (enpassantMoveList.includes(toIndex)) {
+					setSound("capture");
 					const opponentPawnDirection = selectedPiece[1][0] === "w" ? -1 : 1;
 					updatedBoard[i2 + opponentPawnDirection][j2] = "-";
 				}
@@ -381,15 +404,11 @@ export default function ChessBoard() {
 				</div>
 			</div>
 			<audio ref={moveSound} src="/sound/move.mp3" />
-			<button
-				className="absolute top-1/2 left-10 z-50 bg-white w-20 h-20"
-				onClick={() => {
-					moveSound.current?.play();
-					console.log("click");
-				}}
-			>
-				play sound
-			</button>
+			<audio ref={checkSound} src="/sound/check.mp3" />
+			<audio ref={captureSound} src="/sound/capture.mp3" />
+			<audio ref={promoteSound} src="/sound/promote.mp3" />
+			<audio ref={endSound} src="/sound/end.mp3" />
+
 		</>
 	);
 }
