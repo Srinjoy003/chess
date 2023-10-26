@@ -41,7 +41,7 @@ function PawnMoveList( //refactor later
 	const pieceColour = currentPiece[0];
 	const direction = pieceColour === "w" ? 1 : -1;
 
-	if (row < 7) {
+	if (row < 7 && row > 0) {
 		const moveRow = row + direction;
 		const moveCol = col;
 		const movePosition = moveRow * 10 + moveCol;

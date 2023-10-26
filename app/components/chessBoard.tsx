@@ -16,6 +16,7 @@ import PawnPromotion from "./PawnPromotion";
 import Timer from "./Timer";
 import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";
+import { AiRandomMove } from "../chessAi/aiMoves";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -43,6 +44,11 @@ export function CreateBoardMap() {
 
 		board.push(row);
 	}
+	// board[3][6] = "bP";
+	// board[1][5] = "wP";
+	// board[6][2] = "wQ";
+	// board[7][0] = "bK";
+	// board[1][2] = "wK";
 
 	return board;
 }
@@ -78,9 +84,9 @@ export default function ChessBoard() {
 		[turn, boardState],
 	]);
 
-	const [sound, setSound] = useState<"move" | "capture" | "check" | "promote" | "end">(
-		"move"
-	);
+	const [sound, setSound] = useState<
+		"move" | "capture" | "check" | "promote" | "end"
+	>("move");
 
 	const noOfMoves = useRef(0);
 
@@ -89,7 +95,6 @@ export default function ChessBoard() {
 	const captureSound = useRef<HTMLAudioElement | null>(null);
 	const promoteSound = useRef<HTMLAudioElement | null>(null);
 	const endSound = useRef<HTMLAudioElement | null>(null);
-
 
 	const inCheck = InCheck(turn, boardState);
 
@@ -117,6 +122,9 @@ export default function ChessBoard() {
 	const draw = isStaleMate || hasInsufficientMaterial || isThreeFoldRepetion;
 	const gameEnded = victoryOrLoss || draw;
 
+	let aiRandomMoveWhite = useRef<number[]>([]);
+	let aiRandomMoveBlack = useRef<number[]>([]);
+
 	useEffect(() => {
 		setPosition([turn, boardState]);
 	}, [turn, boardState]);
@@ -130,17 +138,16 @@ export default function ChessBoard() {
 
 	useEffect(() => {
 		if (inCheck) setSound("check");
-		if (gameEnded) setSound("end")
+		if (gameEnded) setSound("end");
 		if (sound === "move") moveSound.current?.play();
 		else if (sound === "capture") captureSound.current?.play();
 		else if (sound === "check") checkSound.current?.play();
 		else if (sound === "promote") promoteSound.current?.play();
 		else if (sound === "end") endSound.current?.play();
-
 	}, [boardState, inCheck, sound, gameEnded]);
 
 	const handlePromotion = useCallback(
-		(piece: string) => {
+		(piece: string, ai: boolean) => {
 			setpawnPromotionOpen(false);
 			setSound("promote");
 
@@ -171,167 +178,289 @@ export default function ChessBoard() {
 		[turn, boardState, promotedPiecePosition, dispatch]
 	);
 
-	const movePiece = (fromIndex: number, toIndex: number) => {
-		if (fromIndex != toIndex) {
-			const updatedBoard = boardState.map((item) => {
-				return item.slice();
-			});
+	const movePiece = useCallback(
+		(fromIndex: number, toIndex: number, ai: boolean) => {
+			if (fromIndex != toIndex) {
+				const updatedBoard = boardState.map((item) => {
+					return item.slice();
+				});
 
-			const i1 = Math.floor(fromIndex / 10);
-			const j1 = fromIndex % 10;
+				// console.log(selectedPiece);
 
-			const i2 = Math.floor(toIndex / 10);
-			const j2 = toIndex % 10;
+				const i1 = Math.floor(fromIndex / 10);
+				const j1 = fromIndex % 10;
 
-			if (
-				!(
-					(
-						selectedPiece &&
-						selectedPiece[1][1] === "P" &&
-						((selectedPiece[1][0] == "w" && i2 === 7) ||
-							(selectedPiece[1][0] == "b" && i2 === 0))
-					) //no pawn promotion
-				)
-			) {
-				if (updatedBoard[i2][j2] === "-") setSound("move");
-				else setSound("capture");
+				const i2 = Math.floor(toIndex / 10);
+				const j2 = toIndex % 10;
 
-				updatedBoard[i2][j2] = updatedBoard[i1][j1];
-				updatedBoard[i1][j1] = "-";
-			}
+				if (
+					!(
+						(
+							selectedPiece &&
+							selectedPiece[1][1] === "P" &&
+							((selectedPiece[1][0] == "w" && i2 === 7) ||
+								(selectedPiece[1][0] == "b" && i2 === 0))
+						) //no pawn promotion
+					)
+				) {
+					if (updatedBoard[i2][j2] === "-") setSound("move");
+					else setSound("capture");
 
-			if (selectedPiece) {
-				//ENPASSANT
-				const enpassantMoveList = EnPassantMoveList(
-					selectedPiece[1],
-					selectedPiece[0],
-					boardState,
-					prevMove
-				);
-
-				const castlingMoveList = CastlingMoveList(
-					selectedPiece[1],
-					boardState,
-					whiteCastling,
-					blackCastling
-				);
-
-				if (enpassantMoveList.includes(toIndex)) {
-					setSound("capture");
-					const opponentPawnDirection = selectedPiece[1][0] === "w" ? -1 : 1;
-					updatedBoard[i2 + opponentPawnDirection][j2] = "-";
+					updatedBoard[i2][j2] = updatedBoard[i1][j1];
+					updatedBoard[i1][j1] = "-";
 				}
 
-				//PAWN PROMOTION
+				//PAWN PROMOTION FOR AI
 
-				if (selectedPiece[1][1] === "P") {
+				if (ai) {
+					//for ai
+					const aiPiece = boardState[i1][j1];
+					setSelectedPiece([fromIndex, aiPiece]);
+
 					if (
-						(selectedPiece[1][0] == "w" && i2 === 7) ||
-						(selectedPiece[1][0] == "b" && i2 === 0)
+						aiPiece[1] === "P" &&
+						((aiPiece[0] === "w" && i2 === 7) ||
+							(aiPiece[0] === "b" && i2 === 0))
 					) {
-						setpawnPromotionOpen(() => {
-							setPromotedPiecePosition([fromIndex, toIndex]);
-							return true;
-						});
+						console.log("ai");
+						setPromotedPiecePosition([fromIndex, toIndex]);
+						updatedBoard[i2][j2] = turn + "Q";
+						updatedBoard[i1][j1] = "-";
+						setSound("promote");
+						dispatch(toggleTurn());
+						setBoardState(updatedBoard);
+						noOfMoves.current++;
+						return;
 					}
 				}
 
-				//FOR CASTLING
+				if (selectedPiece || ai) {
+					const aiPiece = boardState[i1][j1];
+					let currentSelectedPiece: [number, string] = [-1, "hello"];
 
-				if (castlingMoveList.includes(toIndex)) {
-					if (toIndex === 2) {
-						updatedBoard[0][0] = "-";
-						updatedBoard[0][3] = "wR";
-					} else if (toIndex === 6) {
-						updatedBoard[0][7] = "-";
-						updatedBoard[0][5] = "wR";
+					if (selectedPiece) currentSelectedPiece = selectedPiece;
+					else currentSelectedPiece = [fromIndex, aiPiece];
+
+					//ENPASSANT
+					const enpassantMoveList = EnPassantMoveList(
+						currentSelectedPiece[1],
+						currentSelectedPiece[0],
+						boardState,
+						prevMove
+					);
+
+					const castlingMoveList = CastlingMoveList(
+						currentSelectedPiece[1],
+						boardState,
+						whiteCastling,
+						blackCastling
+					);
+
+					if (enpassantMoveList.includes(toIndex)) {
+						setSound("capture");
+						const opponentPawnDirection =
+							currentSelectedPiece[1][0] === "w" ? -1 : 1;
+						updatedBoard[i2 + opponentPawnDirection][j2] = "-";
 					}
 
-					if (toIndex === 72) {
-						updatedBoard[7][0] = "-";
-						updatedBoard[7][3] = "bR";
-					} else if (toIndex === 76) {
-						updatedBoard[7][7] = "-";
-						updatedBoard[7][5] = "bR";
+					// PAWN PROMOTION
+
+					//for human
+					if (currentSelectedPiece[1][1] === "P") {
+						if (
+							(currentSelectedPiece[1][0] == "w" && i2 === 7) ||
+							(currentSelectedPiece[1][0] == "b" && i2 === 0)
+						) {
+							setpawnPromotionOpen(() => {
+								setPromotedPiecePosition([fromIndex, toIndex]);
+								return true;
+							});
+						}
+					}
+
+					//FOR CASTLING
+
+					if (castlingMoveList.includes(toIndex)) {
+						if (toIndex === 2) {
+							updatedBoard[0][0] = "-";
+							updatedBoard[0][3] = "wR";
+						} else if (toIndex === 6) {
+							updatedBoard[0][7] = "-";
+							updatedBoard[0][5] = "wR";
+						}
+
+						if (toIndex === 72) {
+							updatedBoard[7][0] = "-";
+							updatedBoard[7][3] = "bR";
+						} else if (toIndex === 76) {
+							updatedBoard[7][7] = "-";
+							updatedBoard[7][5] = "bR";
+						}
+					}
+
+					if (currentSelectedPiece[1][0] === "w") {
+						//white
+						if (
+							currentSelectedPiece[0] === 0 &&
+							currentSelectedPiece[1][1] === "R"
+						) {
+							//left Rook
+							setWhiteCastling((currWhiteCastling) => [
+								true,
+								currWhiteCastling[1],
+								currWhiteCastling[2],
+							]);
+						} else if (
+							currentSelectedPiece[0] === 7 &&
+							currentSelectedPiece[1][1] === "R"
+						) {
+							//  right rook
+							setWhiteCastling((currWhiteCastling) => [
+								currWhiteCastling[0],
+								currWhiteCastling[1],
+								true,
+							]);
+						} else if (
+							currentSelectedPiece[0] === 4 &&
+							currentSelectedPiece[1][1] === "K"
+						) {
+							// king
+							setWhiteCastling((currWhiteCastling) => [
+								currWhiteCastling[0],
+								true,
+								currWhiteCastling[2],
+							]);
+						}
+					}
+
+					if (currentSelectedPiece[1][0] === "b") {
+						//black
+						if (
+							currentSelectedPiece[0] === 70 &&
+							currentSelectedPiece[1][1] === "R"
+						) {
+							setBlackCastling((currBlackCastling) => [
+								true,
+								currBlackCastling[1],
+								currBlackCastling[2],
+							]);
+						} else if (
+							currentSelectedPiece[0] === 77 &&
+							currentSelectedPiece[1][1] === "R"
+						) {
+							setBlackCastling((currBlackCastling) => [
+								currBlackCastling[0],
+								currBlackCastling[1],
+								true,
+							]);
+						} else if (
+							currentSelectedPiece[0] === 74 &&
+							currentSelectedPiece[1][1] === "K"
+						) {
+							setBlackCastling((currBlackCastling) => [
+								currBlackCastling[0],
+								true,
+								currBlackCastling[2],
+							]);
+						}
 					}
 				}
 
-				if (selectedPiece[1][0] === "w") {
-					//white
-					if (selectedPiece[0] === 0 && selectedPiece[1][1] === "R") {
-						//left Rook
-						setWhiteCastling((currWhiteCastling) => [
-							true,
-							currWhiteCastling[1],
-							currWhiteCastling[2],
-						]);
-					} else if (selectedPiece[0] === 7 && selectedPiece[1][1] === "R") {
-						//  right rook
-						setWhiteCastling((currWhiteCastling) => [
-							currWhiteCastling[0],
-							currWhiteCastling[1],
-							true,
-						]);
-					} else if (selectedPiece[0] === 4 && selectedPiece[1][1] === "K") {
-						// king
-						setWhiteCastling((currWhiteCastling) => [
-							currWhiteCastling[0],
-							true,
-							currWhiteCastling[2],
-						]);
-					}
-				}
-
-				if (selectedPiece[1][0] === "b") {
-					//black
-					if (selectedPiece[0] === 70 && selectedPiece[1][1] === "R") {
-						setBlackCastling((currBlackCastling) => [
-							true,
-							currBlackCastling[1],
-							currBlackCastling[2],
-						]);
-					} else if (selectedPiece[0] === 77 && selectedPiece[1][1] === "R") {
-						setBlackCastling((currBlackCastling) => [
-							currBlackCastling[0],
-							currBlackCastling[1],
-							true,
-						]);
-					} else if (selectedPiece[0] === 74 && selectedPiece[1][1] === "K") {
-						setBlackCastling((currBlackCastling) => [
-							currBlackCastling[0],
-							true,
-							currBlackCastling[2],
-						]);
-					}
+				if (
+					!(
+						(
+							selectedPiece &&
+							selectedPiece[1][1] === "P" &&
+							((selectedPiece[1][0] == "w" && i2 === 7) ||
+								(selectedPiece[1][0] == "b" && i2 === 0))
+						) //no pawn promotion
+					)
+				) {
+					noOfMoves.current++;
+					dispatch(toggleTurn());
+					setBoardState(updatedBoard);
 				}
 			}
+		},
+		[
+			blackCastling,
+			whiteCastling,
+			boardState,
+			dispatch,
+			prevMove,
+			selectedPiece,
+			turn,
+		]
+	);
 
-			if (
-				!(
-					(
-						selectedPiece &&
-						selectedPiece[1][1] === "P" &&
-						((selectedPiece[1][0] == "w" && i2 === 7) ||
-							(selectedPiece[1][0] == "b" && i2 === 0))
-					) //no pawn promotion
-				)
-			) {
-				noOfMoves.current++;
-				dispatch(toggleTurn());
-				setBoardState(updatedBoard);
+	useEffect(() => {
+		if (turn === "b") {
+			aiRandomMoveBlack.current = AiRandomMove(
+				boardState,
+				turn,
+				prevMove,
+				whiteCastling,
+				blackCastling
+			);
+		} else {
+			aiRandomMoveWhite.current = AiRandomMove(
+				boardState,
+				turn,
+				prevMove,
+				whiteCastling,
+				blackCastling
+			);
+		}
+	}, [boardState, blackCastling, whiteCastling, prevMove, turn]);
+
+	useEffect(() => {
+		if (turn === "b") {
+			if (aiRandomMoveBlack.current.length !== 0) {
+				// const row = Math.floor(aiRandomMove.current[0] / 10);
+				// const col = aiRandomMove.current[0] % 10;
+				// const aiPiece = boardState[row][col];
+
+				movePiece(
+					aiRandomMoveBlack.current[0],
+					aiRandomMoveBlack.current[1],
+					true
+				);
+				setPrevMove([
+					aiRandomMoveBlack.current[0],
+					aiRandomMoveBlack.current[1],
+				]); //infinite loop caused by this
+				setSelectedPiece(null);
 			}
 		}
-	};
+		// } else {
+		// 	if (aiRandomMoveWhite.current.length !== 0) {
+		// 		// const row = Math.floor(aiRandomMove.current[0] / 10);
+		// 		// const col = aiRandomMove.current[0] % 10;
+		// 		// const aiPiece = boardState[row][col];
+
+		// 		movePiece(
+		// 			aiRandomMoveWhite.current[0],
+		// 			aiRandomMoveWhite.current[1],
+		// 			true
+		// 		);
+		// 		setPrevMove([
+		// 			aiRandomMoveWhite.current[0],
+		// 			aiRandomMoveWhite.current[1],
+		// 		]); //infinite loop caused by this
+		// 		setSelectedPiece(null);
+		// 	}
+		// }
+	}, [turn, boardState, blackCastling, whiteCastling, movePiece]);
 
 	const board = boardState.map((row, i) => {
-		let newRow = row.map((col, j) => {
+		let newRow = row.map((_, j) => {
 			return (
 				<Square
 					boardState={boardState}
 					key={i * 10 + j}
 					position={i * 10 + j}
 					colour={(i + j) % 2 ? "bg-chess-dark" : "bg-chess-light"}
-					movePiece={(fromIndex, toIndex) => movePiece(fromIndex, toIndex)}
+					movePiece={movePiece}
 					selectedPiece={selectedPiece}
 					setSelectedPiece={setSelectedPiece}
 					prevMove={prevMove}
@@ -408,7 +537,6 @@ export default function ChessBoard() {
 			<audio ref={captureSound} src="/sound/capture.mp3" />
 			<audio ref={promoteSound} src="/sound/promote.mp3" />
 			<audio ref={endSound} src="/sound/end.mp3" />
-
 		</>
 	);
 }

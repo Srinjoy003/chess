@@ -7,11 +7,11 @@ import { RootState } from "../reduxStore/store";
 
 type PawnPromotionProps = {
 	open: boolean;
-	handleSelect: (piece: string) => void;
+	handleSelect: (piece: string, ai:boolean) => void;
 };
 
 function PawnPromotion({ open, handleSelect }: PawnPromotionProps) {
-	const size = 80;
+	const size = "w-10 h-10 md:w-20 md:h-20";
 	const turn = useSelector((state: RootState) => state.turn);
 
 	return (
@@ -20,20 +20,20 @@ function PawnPromotion({ open, handleSelect }: PawnPromotionProps) {
 				open ? "" : "hidden"
 			}`}
 		>
-			<div onClick={() => handleSelect(turn + "Q")}>
+			<div onClick={() => handleSelect(turn + "Q", false)}>
 				{turn === "w" ? <WhiteQueen size={size} /> : <BlackQueen size={size} />}
 			</div>
-			<div onClick={() => handleSelect(turn + "R")}>
+			<div onClick={() => handleSelect(turn + "R", false)}>
 				{turn === "w" ? <WhiteRook size={size} /> : <BlackRook size={size} />}
 			</div>
-			<div onClick={() => handleSelect(turn + "B")}>
+			<div onClick={() => handleSelect(turn + "B", false)}>
 				{turn === "w" ? (
 					<WhiteBishop size={size} />
 				) : (
 					<BlackBishop size={size} />
 				)}
 			</div>
-			<div onClick={() => handleSelect(turn + "K")}>
+			<div onClick={() => handleSelect(turn + "K", false)}>
 				{turn === "w" ? (
 					<WhiteKnight size={size} />
 				) : (

@@ -13,7 +13,7 @@ type SquareProp = {
 	boardState: Array<Array<string>>;
 	colour: string;
 	position: number;
-	movePiece: (fromIndex: number, toIndex: number) => void;
+	movePiece: (fromIndex: number, toIndex: number, ai: boolean) => void;
 	selectedPiece: [number, string] | null;
 	setSelectedPiece: (newSelectedPiece: [number, string] | null) => void;
 	prevMove: [number, number] | null;
@@ -74,7 +74,7 @@ const Square = ({
 			// Update the state to place the chess piece in the square
 			// setChessPiece(item.piece);
 			if (moveList.includes(position) && !pawnPromotionOpen && !gameEnded) {
-				movePiece(item.position, position);
+				movePiece(item.position, position, false);
 				setPrevMove([item.position, position]);
 				setSelectedPiece(null);
 				item.position = position;
@@ -93,7 +93,7 @@ const Square = ({
 				selectedPiece[0] !== position &&
 				moveList.includes(position)
 			) {
-				movePiece(selectedPiece[0], position);
+				movePiece(selectedPiece[0], position, false);
 				setPrevMove([selectedPiece[0], position]);
 				setSelectedPiece(null);
 			} else if (boardState[row][col][0] === turn) {
