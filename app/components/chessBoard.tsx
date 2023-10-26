@@ -132,18 +132,25 @@ export default function ChessBoard() {
 	useEffect(() => {
 		if (positionList.length === noOfMoves.current) {
 			positionList.push(position);
-			console.log(positionList);
 		}
 	}, [position, positionList, noOfMoves]);
+
+	const playSound = (audio: HTMLAudioElement | null) => {
+		if (audio) {
+			audio?.play().catch((error) => {
+				// console.error("Audio playback error:", error);	
+			});
+		}
+	};
 
 	useEffect(() => {
 		if (inCheck) setSound("check");
 		if (gameEnded) setSound("end");
-		if (sound === "move") moveSound.current?.play();
-		else if (sound === "capture") captureSound.current?.play();
-		else if (sound === "check") checkSound.current?.play();
-		else if (sound === "promote") promoteSound.current?.play();
-		else if (sound === "end") endSound.current?.play();
+		if (sound === "move") playSound(moveSound.current);
+		else if (sound === "capture") playSound(captureSound.current);
+		else if (sound === "check") playSound(checkSound.current);
+		else if (sound === "promote") playSound(promoteSound.current);
+		else if (sound === "end") playSound(endSound.current);
 	}, [boardState, inCheck, sound, gameEnded]);
 
 	const handlePromotion = useCallback(
@@ -185,8 +192,6 @@ export default function ChessBoard() {
 					return item.slice();
 				});
 
-				// console.log(selectedPiece);
-
 				const i1 = Math.floor(fromIndex / 10);
 				const j1 = fromIndex % 10;
 
@@ -222,7 +227,6 @@ export default function ChessBoard() {
 						((aiPiece[0] === "w" && i2 === 7) ||
 							(aiPiece[0] === "b" && i2 === 0))
 					) {
-						console.log("ai");
 						setPromotedPiecePosition([fromIndex, toIndex]);
 						updatedBoard[i2][j2] = turn + "Q";
 						updatedBoard[i1][j1] = "-";
@@ -377,8 +381,8 @@ export default function ChessBoard() {
 					)
 				) {
 					noOfMoves.current++;
-					dispatch(toggleTurn());
 					setBoardState(updatedBoard);
+					dispatch(toggleTurn());
 				}
 			}
 		},
@@ -393,7 +397,7 @@ export default function ChessBoard() {
 		]
 	);
 
-	useEffect(() => {
+	const aiMove = useCallback(() => {
 		if (turn === "b") {
 			aiRandomMoveBlack.current = AiRandomMove(
 				boardState,
@@ -402,7 +406,8 @@ export default function ChessBoard() {
 				whiteCastling,
 				blackCastling
 			);
-		} else {
+		}
+		if (turn === "w") {
 			aiRandomMoveWhite.current = AiRandomMove(
 				boardState,
 				turn,
@@ -411,9 +416,7 @@ export default function ChessBoard() {
 				blackCastling
 			);
 		}
-	}, [boardState, blackCastling, whiteCastling, prevMove, turn]);
 
-	useEffect(() => {
 		if (turn === "b") {
 			if (aiRandomMoveBlack.current.length !== 0) {
 				// const row = Math.floor(aiRandomMove.current[0] / 10);
@@ -432,25 +435,38 @@ export default function ChessBoard() {
 				setSelectedPiece(null);
 			}
 		}
-		// } else {
-		// 	if (aiRandomMoveWhite.current.length !== 0) {
-		// 		// const row = Math.floor(aiRandomMove.current[0] / 10);
-		// 		// const col = aiRandomMove.current[0] % 10;
-		// 		// const aiPiece = boardState[row][col];
+		if (turn === "w") {
+			if (aiRandomMoveWhite.current.length !== 0) {
+				// const row = Math.floor(aiRandomMove.current[0] / 10);
+				// const col = aiRandomMove.current[0] % 10;
+				// const aiPiece = boardState[row][col];
 
-		// 		movePiece(
-		// 			aiRandomMoveWhite.current[0],
-		// 			aiRandomMoveWhite.current[1],
-		// 			true
-		// 		);
-		// 		setPrevMove([
-		// 			aiRandomMoveWhite.current[0],
-		// 			aiRandomMoveWhite.current[1],
-		// 		]); //infinite loop caused by this
-		// 		setSelectedPiece(null);
-		// 	}
-		// }
-	}, [turn, boardState, blackCastling, whiteCastling, movePiece]);
+				movePiece(
+					aiRandomMoveWhite.current[0],
+					aiRandomMoveWhite.current[1],
+					true
+				);
+				setPrevMove([
+					aiRandomMoveWhite.current[0],
+					aiRandomMoveWhite.current[1],
+				]); //infinite loop caused by this
+				setSelectedPiece(null);
+			}
+		}
+	}, [boardState, blackCastling, whiteCastling, prevMove, turn, movePiece]);
+
+	useEffect(() => {
+		const delay = 2000; // Set the desired delay in milliseconds
+		console.log(turn, boardState);
+		if (!gameEnded) {
+			const timer = setTimeout(() => {
+				aiMove();
+			}, delay);
+
+			return () => clearTimeout(timer);
+		}
+		// eslint-disable-next-line
+	}, [boardState, turn]);
 
 	const board = boardState.map((row, i) => {
 		let newRow = row.map((_, j) => {
