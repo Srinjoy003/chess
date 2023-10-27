@@ -16,7 +16,7 @@ import PawnPromotion from "./PawnPromotion";
 import Timer from "./Timer";
 import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";
-import { AiRandomMove } from "../chessAi/aiMoves";
+import { AiRandomMove, TotalMoveList } from "../chessAi/aiMoves";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -124,6 +124,9 @@ export default function ChessBoard() {
 
 	let aiRandomMoveWhite = useRef<number[]>([]);
 	let aiRandomMoveBlack = useRef<number[]>([]);
+
+	const totalMoveList = TotalMoveList(boardState, turn, prevMove, whiteCastling, blackCastling)
+	console.log(totalMoveList.length)
 
 	useEffect(() => {
 		setPosition([turn, boardState]);
@@ -419,9 +422,7 @@ export default function ChessBoard() {
 
 		if (turn === "b") {
 			if (aiRandomMoveBlack.current.length !== 0) {
-				// const row = Math.floor(aiRandomMove.current[0] / 10);
-				// const col = aiRandomMove.current[0] % 10;
-				// const aiPiece = boardState[row][col];
+			
 
 				movePiece(
 					aiRandomMoveBlack.current[0],
@@ -437,9 +438,7 @@ export default function ChessBoard() {
 		}
 		if (turn === "w") {
 			if (aiRandomMoveWhite.current.length !== 0) {
-				// const row = Math.floor(aiRandomMove.current[0] / 10);
-				// const col = aiRandomMove.current[0] % 10;
-				// const aiPiece = boardState[row][col];
+			
 
 				movePiece(
 					aiRandomMoveWhite.current[0],
@@ -455,18 +454,18 @@ export default function ChessBoard() {
 		}
 	}, [boardState, blackCastling, whiteCastling, prevMove, turn, movePiece]);
 
-	useEffect(() => {
-		const delay = 2000; // Set the desired delay in milliseconds
-		console.log(turn, boardState);
-		if (!gameEnded) {
-			const timer = setTimeout(() => {
-				aiMove();
-			}, delay);
+	// useEffect(() => {
+	// 	const delay = 2000; // Set the desired delay in milliseconds
+	// 	console.log(turn, boardState);
+	// 	if (!gameEnded) {
+	// 		const timer = setTimeout(() => {
+	// 			aiMove();
+	// 		}, delay);
 
-			return () => clearTimeout(timer);
-		}
-		// eslint-disable-next-line
-	}, [boardState, turn]);
+	// 		return () => clearTimeout(timer);
+	// 	}
+	// 	// eslint-disable-next-line
+	// }, [boardState, turn]);
 
 	const board = boardState.map((row, i) => {
 		let newRow = row.map((_, j) => {

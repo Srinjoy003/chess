@@ -1,13 +1,13 @@
 import { MoveList } from "../helperFunctions";
 
-function AiTotalMoveList(
+export function TotalMoveList(
 	boardState: string[][],
 	currentTurn: string,
 	prevMove: [number, number] | null,
 	whiteCastling: [boolean, boolean, boolean],
 	blackCastling: [boolean, boolean, boolean]
 ): number[][] {
-	const aiTotalMoveList = [];
+	const totalMoveList = [];
 
 	for (let row = 0; row < 8; row++) {
 		for (let col = 0; col < 8; col++) {
@@ -24,12 +24,12 @@ function AiTotalMoveList(
 				);
 
 				for (let a of moveList) {
-					aiTotalMoveList.push([position, a]);
+					totalMoveList.push([position, a]);
 				}
 			}
 		}
 	}
-	return aiTotalMoveList;
+	return totalMoveList;
 }
 
 export function AiRandomMove(
@@ -39,7 +39,7 @@ export function AiRandomMove(
 	whiteCastling: [boolean, boolean, boolean],
 	blackCastling: [boolean, boolean, boolean]
 ): number[] {
-	const aiTotalMoveList = AiTotalMoveList(
+	const aiTotalMoveList = TotalMoveList(
 		boardState,
 		currentTurn,
 		prevMove,
