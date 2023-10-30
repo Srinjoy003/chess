@@ -1,6 +1,6 @@
 import { MoveList } from "../helperFunctions";
 
-export function TotalMoveList(
+export function ImprovedTotalMoveList(
 	boardState: string[][],
 	currentTurn: string,
 	prevMove: [number, number] | null,
@@ -39,7 +39,7 @@ export function AiRandomMove(
 	whiteCastling: [boolean, boolean, boolean],
 	blackCastling: [boolean, boolean, boolean]
 ): number[] {
-	const aiTotalMoveList = TotalMoveList(
+	const aiTotalMoveList = ImprovedTotalMoveList(
 		boardState,
 		currentTurn,
 		prevMove,
@@ -48,7 +48,7 @@ export function AiRandomMove(
 	);
 
 	if (aiTotalMoveList.length === 0) return [];
-    
+
 	const randomIndex = Math.floor(Math.random() * aiTotalMoveList.length);
 	const aiRandomMove = aiTotalMoveList[randomIndex];
 

@@ -1,3 +1,6 @@
+import { MoveMaker, deepCopyBoard } from "./chessAi/MoveGenerator";
+import { ImprovedTotalMoveList } from "./chessAi/aiMoves";
+
 export function EnPassantMoveList(
 	currentPiece: string,
 	position: number,
@@ -620,7 +623,7 @@ export function MoveList(
 	return moveList;
 }
 
-export function CheckMate(
+export function CheckMate( //used unfixed version of movemaker
 	currentTurn: string,
 	boardState: string[][],
 	prevMove: [number, number] | null,
@@ -629,17 +632,45 @@ export function CheckMate(
 ): boolean {
 	const currentKing = currentTurn + "K";
 	const kingPosition = findKing(currentTurn, boardState);
-	const kingMoveList = MoveList(
-		currentKing,
-		kingPosition,
-		boardState,
-		prevMove,
-		whiteCastling,
-		blackCastling
-	);
 
-	if (InCheck(currentTurn, boardState) && kingMoveList.length === 0) {
-		return true;
+	if (InCheck(currentTurn, boardState)) {
+		const kingMoveList = MoveList(
+			currentKing,
+			kingPosition,
+			boardState,
+			prevMove,
+			whiteCastling,
+			blackCastling
+		);
+		if (kingMoveList.length === 0) {
+			const totalMoveList = ImprovedTotalMoveList(
+				boardState,
+				currentTurn,
+				prevMove,
+				whiteCastling,
+				blackCastling
+			);
+
+			let isMate = true;
+
+			for (let [fromIndex, toIndex] of totalMoveList) {
+				const boardCopy = deepCopyBoard(boardState);
+
+				MoveMaker(
+					boardCopy,
+					fromIndex,
+					toIndex,
+					"hello",
+					prevMove,
+					whiteCastling,
+					blackCastling
+				);
+
+				if(!InCheck(currentTurn, boardCopy)) isMate = false;
+
+			}
+			return isMate;
+		}
 	}
 
 	return false;

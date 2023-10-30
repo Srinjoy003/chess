@@ -11,12 +11,14 @@ import {
 	StaleMate,
 	InsufficientMaterial,
 	ThreeFoldRepetition,
+	MoveList,
 } from "../helperFunctions";
 import PawnPromotion from "./PawnPromotion";
 import Timer from "./Timer";
 import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";
-import { AiRandomMove, TotalMoveList } from "../chessAi/aiMoves";
+import { AiRandomMove, ImprovedTotalMoveList } from "../chessAi/aiMoves";
+import { MoveGenerator } from "../chessAi/MoveGenerator";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -24,33 +26,70 @@ export function CreateBoardMap() {
 	for (let i = 0; i <= 7; i++) {
 		let row = [];
 		for (let j = 0; j <= 7; j++) {
-			let piece = "";
+			let piece = "-";
 			let colour = "";
 
-			if (i == 1 || i == 6) piece = "P";
-			else if (i == 0 || i == 7) {
-				if (j == 0 || j == 7) piece = "R";
-				else if (j == 1 || j == 6) piece = "H";
-				else if (j == 2 || j == 5) piece = "B";
-				else if (j == 3) piece = "Q";
-				else if (j == 4) piece = "K";
-			} else piece = "-";
+			// if (i == 1 || i == 6) piece = "P";
+			// else if (i == 0 || i == 7) {
+			// 	if (j == 0 || j == 7) piece = "R";
+			// 	else if (j == 1 || j == 6) piece = "H";
+			// 	else if (j == 2 || j == 5) piece = "B";
+			// 	else if (j == 3) piece = "Q";
+			// 	else if (j == 4) piece = "K";
+			// } else piece = "-";
 
-			if (i < 2) colour = "w";
-			else if (i > 5) colour = "b";
+			// if (i < 2) colour = "w";
+			// else if (i > 5) colour = "b";
 
 			row.push(colour + piece);
 		}
 
 		board.push(row);
 	}
+
+	// board[2][0] = "wP";
+	// board[1][0] = "-";
+	// board[2][3] = "wP";
+	// board[1][3] = "-";
+	// board[2][7] = "wH";
+	// board[1][6] = "-";
+	// board[3][4] = "wH";
+	// board[6][0] = "-";
+	// board[6][1] = "-";
+	// board[5][0] = "bP";
+	// board[4][1] = "bP";
+	// board[6][7] = "-";
+	// board[5][7] = "bP";
+	// board[6][6] = "-";
+	// board[6][5] = "-";
 	// board[3][6] = "bP";
-	// board[1][5] = "wP";
-	// board[6][2] = "wQ";
-	// board[7][0] = "bK";
-	// board[1][2] = "wK";
+	// board[4][6] = "bP";
+
+	board[7][1] = "bK";
+	board[5][1] = "wK";
+	board[5][0] = "wQ";
+	board[6][6] = "bQ";
 
 	return board;
+}
+
+function useCombinedEffect(effect: () => void, deps: [string, string[][]]) {
+	const combinedDeps: [string, string] = useMemo(
+		() => [deps[0], JSON.stringify(deps[1])],
+		[deps]
+	);
+	const prevDepsRef = useRef<[string, string]>(["", ""]);
+
+	useEffect(() => {
+		const allDepsChanged = combinedDeps.every(
+			(dep, i) => dep !== prevDepsRef.current[i]
+		);
+
+		if (allDepsChanged) {
+			effect();
+			prevDepsRef.current = combinedDeps;
+		}
+	}, [combinedDeps, effect]);
 }
 
 export default function ChessBoard() {
@@ -125,8 +164,15 @@ export default function ChessBoard() {
 	let aiRandomMoveWhite = useRef<number[]>([]);
 	let aiRandomMoveBlack = useRef<number[]>([]);
 
-	const totalMoveList = TotalMoveList(boardState, turn, prevMove, whiteCastling, blackCastling)
-	console.log(totalMoveList.length)
+	const moves = MoveGenerator(
+		3,
+		boardState,
+		turn,
+		prevMove,
+		whiteCastling,
+		blackCastling
+	);
+	console.log(moves);
 
 	useEffect(() => {
 		setPosition([turn, boardState]);
@@ -141,10 +187,24 @@ export default function ChessBoard() {
 	const playSound = (audio: HTMLAudioElement | null) => {
 		if (audio) {
 			audio?.play().catch((error) => {
-				// console.error("Audio playback error:", error);	
+				// console.error("Audio playback error:", error);
 			});
 		}
 	};
+
+	useEffect(() => {
+		if (selectedPiece)
+			// console.log(MoveList(selectedPiece[1], selectedPiece[0], boardState, prevMove, whiteCastling, blackCastling))
+			console.log(
+				ImprovedTotalMoveList(
+					boardState,
+					turn,
+					prevMove,
+					whiteCastling,
+					blackCastling
+				).length
+			);
+	});
 
 	useEffect(() => {
 		if (inCheck) setSound("check");
@@ -384,8 +444,11 @@ export default function ChessBoard() {
 					)
 				) {
 					noOfMoves.current++;
-					setBoardState(updatedBoard);
 					dispatch(toggleTurn());
+
+					setBoardState(() => {
+						return updatedBoard;
+					});
 				}
 			}
 		},
@@ -422,8 +485,6 @@ export default function ChessBoard() {
 
 		if (turn === "b") {
 			if (aiRandomMoveBlack.current.length !== 0) {
-			
-
 				movePiece(
 					aiRandomMoveBlack.current[0],
 					aiRandomMoveBlack.current[1],
@@ -438,8 +499,6 @@ export default function ChessBoard() {
 		}
 		if (turn === "w") {
 			if (aiRandomMoveWhite.current.length !== 0) {
-			
-
 				movePiece(
 					aiRandomMoveWhite.current[0],
 					aiRandomMoveWhite.current[1],
@@ -455,9 +514,10 @@ export default function ChessBoard() {
 	}, [boardState, blackCastling, whiteCastling, prevMove, turn, movePiece]);
 
 	// useEffect(() => {
-	// 	const delay = 2000; // Set the desired delay in milliseconds
+	// 	const delay = 1000; // Set the desired delay in milliseconds
 	// 	console.log(turn, boardState);
 	// 	if (!gameEnded) {
+	// 		console.log(turn);
 	// 		const timer = setTimeout(() => {
 	// 			aiMove();
 	// 		}, delay);
@@ -465,7 +525,19 @@ export default function ChessBoard() {
 	// 		return () => clearTimeout(timer);
 	// 	}
 	// 	// eslint-disable-next-line
-	// }, [boardState, turn]);
+	// }, [boardState]);
+
+	// useCombinedEffect(() => {
+	// 	const delay = 2000; // Set the desired delay in milliseconds
+	// 	// console.log(turn, boardState);
+	// 	if (!gameEnded) {
+	// 		const timer = setTimeout(() => {
+	// 			aiMove();
+	// 		}, delay);
+
+	// 		return () => clearTimeout(timer);
+	// 	}
+	// }, [turn, boardState]);
 
 	const board = boardState.map((row, i) => {
 		let newRow = row.map((_, j) => {
