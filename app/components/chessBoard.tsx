@@ -17,7 +17,7 @@ import PawnPromotion from "./PawnPromotion";
 import Timer from "./Timer";
 import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";
-import { AiRandomMove, ImprovedTotalMoveList } from "../chessAi/aiMoves";
+import { AiRandomMove } from "../chessAi/aiMoves";
 import { MoveGenerator } from "../chessAi/MoveGenerator";
 
 export function CreateBoardMap() {
@@ -26,20 +26,20 @@ export function CreateBoardMap() {
 	for (let i = 0; i <= 7; i++) {
 		let row = [];
 		for (let j = 0; j <= 7; j++) {
-			let piece = "-";
+			let piece = "";
 			let colour = "";
 
-			// if (i == 1 || i == 6) piece = "P";
-			// else if (i == 0 || i == 7) {
-			// 	if (j == 0 || j == 7) piece = "R";
-			// 	else if (j == 1 || j == 6) piece = "H";
-			// 	else if (j == 2 || j == 5) piece = "B";
-			// 	else if (j == 3) piece = "Q";
-			// 	else if (j == 4) piece = "K";
-			// } else piece = "-";
+			if (i == 1 || i == 6) piece = "P";
+			else if (i == 0 || i == 7) {
+				if (j == 0 || j == 7) piece = "R";
+				else if (j == 1 || j == 6) piece = "H";
+				else if (j == 2 || j == 5) piece = "B";
+				else if (j == 3) piece = "Q";
+				else if (j == 4) piece = "K";
+			} else piece = "-";
 
-			// if (i < 2) colour = "w";
-			// else if (i > 5) colour = "b";
+			if (i < 2) colour = "w";
+			else if (i > 5) colour = "b";
 
 			row.push(colour + piece);
 		}
@@ -47,28 +47,21 @@ export function CreateBoardMap() {
 		board.push(row);
 	}
 
-	// board[2][0] = "wP";
-	// board[1][0] = "-";
-	// board[2][3] = "wP";
-	// board[1][3] = "-";
-	// board[2][7] = "wH";
-	// board[1][6] = "-";
-	// board[3][4] = "wH";
-	// board[6][0] = "-";
-	// board[6][1] = "-";
-	// board[5][0] = "bP";
-	// board[4][1] = "bP";
-	// board[6][7] = "-";
-	// board[5][7] = "bP";
-	// board[6][6] = "-";
-	// board[6][5] = "-";
-	// board[3][6] = "bP";
-	// board[4][6] = "bP";
+	board[1][0] = "-"
+	board[3][0] = "wP" //a2a4
 
-	board[7][1] = "bK";
-	board[5][1] = "wK";
-	board[5][0] = "wQ";
-	board[6][6] = "bQ";
+	board[6][0] = "-"
+	board[5][0] = "bP" //a7a6
+
+	board[3][0] = "-"
+	board[4][0] = "wP" //a4a5
+
+	board[6][1] = "-"
+	board[4][1] = "bP" //b7b5
+
+	// board[4][0] = "-"
+	// board[5][1] = "wP" //a5b6
+	// board[4][1] = "-"
 
 	return board;
 }
@@ -165,10 +158,11 @@ export default function ChessBoard() {
 	let aiRandomMoveBlack = useRef<number[]>([]);
 
 	const moves = MoveGenerator(
-		3,
+		2,
+		2,
 		boardState,
-		turn,
-		prevMove,
+		"w",
+		/*[40, 51],*/ [61, 41],
 		whiteCastling,
 		blackCastling
 	);
@@ -191,20 +185,6 @@ export default function ChessBoard() {
 			});
 		}
 	};
-
-	useEffect(() => {
-		if (selectedPiece)
-			// console.log(MoveList(selectedPiece[1], selectedPiece[0], boardState, prevMove, whiteCastling, blackCastling))
-			console.log(
-				ImprovedTotalMoveList(
-					boardState,
-					turn,
-					prevMove,
-					whiteCastling,
-					blackCastling
-				).length
-			);
-	});
 
 	useEffect(() => {
 		if (inCheck) setSound("check");

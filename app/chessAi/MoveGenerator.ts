@@ -1,5 +1,6 @@
 import { ImprovedTotalMoveList } from "./aiMoves";
 import { EnPassantMoveList, CastlingMoveList } from "../helperFunctions";
+import { extractChessPosition } from "./aiHelperFunctions";
 
 export function deepCopyBoard(boardState: string[][]): string[][] {
 	// Create a new array and copy the contents of the original array to it
@@ -20,13 +21,16 @@ function deepCopyPrevMove(
 
 export function MoveGenerator(
 	depth: number,
+	currentDepth: number,
 	boardState: string[][],
 	currentTurn: string,
 	prevMove: [number, number] | null,
 	whiteCastling: [boolean, boolean, boolean],
 	blackCastling: [boolean, boolean, boolean]
 ): number {
-	if (depth === 0) return 0;
+	if (currentDepth === 0) return 1;
+
+	if (prevMove === null) prevMove = [-1, -1];
 
 	const totalMoveList = ImprovedTotalMoveList(
 		boardState,
@@ -46,6 +50,22 @@ export function MoveGenerator(
 		const newPrevMove = deepCopyPrevMove(prevMove);
 		const nextTurn = currentTurn === "w" ? "b" : "w";
 
+		if (newPrevMove) {
+			const testMove =
+				extractChessPosition(move[0]) + extractChessPosition(move[1]);
+			const pMove =
+				extractChessPosition(newPrevMove[0]) +
+				extractChessPosition(newPrevMove[1]);
+
+			// console.log(testMove)
+
+			if (testMove === "a5b6") {
+				console.log("test : ", testMove, pMove);
+			}
+		}
+
+		// console.log("before", newPrevMove, prevMove);
+
 		MoveMaker(
 			newBoardState,
 			fromIndex,
@@ -55,16 +75,35 @@ export function MoveGenerator(
 			newWhiteCastling,
 			newBlackCastling
 		);
-		moveNumber += MoveGenerator(
-			depth - 1,
+
+		if (newPrevMove) {
+			newPrevMove[0] = fromIndex;
+			newPrevMove[1] = toIndex;
+		}
+
+		// console.log("after", newPrevMove);
+
+		const num = MoveGenerator(
+			depth,
+			currentDepth - 1,
 			newBoardState,
 			nextTurn,
 			newPrevMove,
 			newWhiteCastling,
 			newBlackCastling
 		);
+
+		if (currentDepth === depth) {
+			const fromIndexPos = extractChessPosition(fromIndex);
+			const toIndexPos = extractChessPosition(toIndex);
+			const moveName = fromIndexPos + toIndexPos + ":";
+
+			console.log(moveName, num);
+		}
+
+		moveNumber += num;
 	}
-	return totalMoveList.length + moveNumber;
+	return moveNumber;
 }
 
 export function MoveMaker(
@@ -181,5 +220,6 @@ export function MoveMaker(
 			blackCastling = [blackCastling[0], true, blackCastling[2]];
 		}
 	}
-	prevMove = [fromIndex, toIndex];
+
+	
 }

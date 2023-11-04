@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
 import { MoveList } from "../helperFunctions";
 import { EnPassantMoveList } from "../helperFunctions";
+import { extractChessPosition } from "../chessAi/aiHelperFunctions";
 
 type SquareProp = {
 	pawnPromotionOpen: boolean;
@@ -41,6 +42,8 @@ const Square = ({
 	const turn = useSelector((state: RootState) => state.turn);
 	const row = Math.floor(position / 10);
 	const col = position % 10;
+
+	const positionName = extractChessPosition(position);
 
 	const enpassantMoveList = useMemo(() => {
 		if (selectedPiece) {
@@ -126,7 +129,7 @@ const Square = ({
 
 	return (
 		<div
-			className={`flex flex-row w-10 h-10 text-3xl md:w-20 md:h-20 md:text-5xl items-center justify-center ${
+			className={`relative flex flex-row w-10 h-10 text-3xl md:w-20 md:h-20 md:text-5xl items-center justify-center ${
 				(selectedPiece &&
 					selectedPiece[0] === position &&
 					boardState[row][col][0] === turn) ||
@@ -172,6 +175,26 @@ const Square = ({
 						}`}
 					></div>
 				)}
+
+			{positionName[0] === "a" && (
+				<div
+					className={`absolute left-0 top-0 text-xl font-semibold ${
+						colour === "bg-chess-light" ? "text-chess-dark" : "text-chess-light"
+					}`}
+				>
+					{positionName[1]}
+				</div>
+			)}
+
+			{positionName[1] === "1" && (
+				<div
+					className={`absolute right-0 bottom-0 text-xl font-semibold ${
+						colour === "bg-chess-light" ? "text-chess-dark" : "text-chess-light"
+					}`}
+				>
+					{positionName[0]}
+				</div>
+			)}
 		</div>
 	);
 };
