@@ -379,7 +379,7 @@ ME
 a1a2: 18
 a1a3: 18
 a1a4: 19
-a5b6: 20 // 1 more
+a5b6: 19 
 b1a3: 18
 b1c3: 18
 b2b3: 18
@@ -479,4 +479,69 @@ a8a7: 1
 
 Nodes searched: 19
 
-//current problem: previous depth a5b6: 20, now total: 19
+//current problem: previous depth a5b6: 20, now total: 19 //fixed
+
+
+
+
+
+
+
+
+
+//a2a4 a7a6 a4a5 b7b5 a5b6 depth 3 ----------------------------------------------------------------------------------------------------
+
+ME
+a1a2: 394
+a1a3: 502
+a1a4: 532
+a5b6: 470
+b1a3: 394
+b1c3: 448
+b2b3: 412
+b2b4: 375
+c2c3: 413
+c2c4: 469
+d2d3: 519
+d2d4: 538
+e2e3: 557
+e2e4: 558
+f2f3: 376
+f2f4: 395
+g1f3: 430
+g1h3: 394
+g2g3: 412
+g2g4: 413
+h2h3: 376
+h2h4: 412
+
+total: 9789
+
+
+STOCKFISH
+a1a2: 377
+a1a3: 485
+a1a4: 515
+a5b6: 470
+b1a3: 377
+b1c3: 431
+b2b3: 395
+b2b4: 358
+c2c3: 396
+c2c4: 452
+d2d3: 502
+d2d4: 521
+e2e3: 540
+e2e4: 541
+f2f3: 359
+f2f4: 378
+g1f3: 413
+g1h3: 377
+g2g3: 395
+g2g4: 396
+h2h3: 359
+h2h4: 395
+
+Nodes searched: 9432
+
+//CORRECTED UPTIL NOW

@@ -50,21 +50,7 @@ export function MoveGenerator(
 		const newPrevMove = deepCopyPrevMove(prevMove);
 		const nextTurn = currentTurn === "w" ? "b" : "w";
 
-		if (newPrevMove) {
-			const testMove =
-				extractChessPosition(move[0]) + extractChessPosition(move[1]);
-			const pMove =
-				extractChessPosition(newPrevMove[0]) +
-				extractChessPosition(newPrevMove[1]);
 
-			// console.log(testMove)
-
-			if (testMove === "a5b6") {
-				console.log("test : ", testMove, pMove);
-			}
-		}
-
-		// console.log("before", newPrevMove, prevMove);
 
 		MoveMaker(
 			newBoardState,
@@ -81,7 +67,6 @@ export function MoveGenerator(
 			newPrevMove[1] = toIndex;
 		}
 
-		// console.log("after", newPrevMove);
 
 		const num = MoveGenerator(
 			depth,
@@ -98,7 +83,7 @@ export function MoveGenerator(
 			const toIndexPos = extractChessPosition(toIndex);
 			const moveName = fromIndexPos + toIndexPos + ":";
 
-			console.log(moveName, num);
+			// console.log(moveName, num);
 		}
 
 		moveNumber += num;
@@ -221,5 +206,4 @@ export function MoveMaker(
 		}
 	}
 
-	
 }

@@ -47,21 +47,21 @@ export function CreateBoardMap() {
 		board.push(row);
 	}
 
-	board[1][0] = "-"
-	board[3][0] = "wP" //a2a4
+	// board[1][0] = "-"
+	// board[3][0] = "wP" //a2a4
 
-	board[6][0] = "-"
-	board[5][0] = "bP" //a7a6
+	// board[6][0] = "-"
+	// board[5][0] = "bP" //a7a6
 
-	board[3][0] = "-"
-	board[4][0] = "wP" //a4a5
+	// board[3][0] = "-"
+	// board[4][0] = "wP" //a4a5
 
-	board[6][1] = "-"
-	board[4][1] = "bP" //b7b5
+	// board[6][1] = "-"
+	// board[4][1] = "bP" //b7b5
 
-	// board[4][0] = "-"
-	// board[5][1] = "wP" //a5b6
-	// board[4][1] = "-"
+	// // board[4][0] = "-"
+	// // board[5][1] = "wP" //a5b6
+	// // board[4][1] = "-"
 
 	return board;
 }
@@ -157,16 +157,16 @@ export default function ChessBoard() {
 	let aiRandomMoveWhite = useRef<number[]>([]);
 	let aiRandomMoveBlack = useRef<number[]>([]);
 
-	const moves = MoveGenerator(
-		2,
-		2,
-		boardState,
-		"w",
-		/*[40, 51],*/ [61, 41],
-		whiteCastling,
-		blackCastling
-	);
-	console.log(moves);
+	// const moves = MoveGenerator(
+	// 	5,
+	// 	5,
+	// 	boardState,
+	// 	"w",
+	// 	null,
+	// 	whiteCastling,
+	// 	blackCastling
+	// );
+	// console.log(moves);
 
 	useEffect(() => {
 		setPosition([turn, boardState]);
