@@ -19,6 +19,8 @@ import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";
 import { AiRandomMove } from "../chessAi/aiMoves";
 import { MoveGenerator } from "../chessAi/MoveGenerator";
+import { fenToChessboard } from "../chessAi/aiHelperFunctions";
+import { current } from "@reduxjs/toolkit";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -157,16 +159,42 @@ export default function ChessBoard() {
 	let aiRandomMoveWhite = useRef<number[]>([]);
 	let aiRandomMoveBlack = useRef<number[]>([]);
 
-	// const moves = MoveGenerator(
-	// 	5,
-	// 	5,
-	// 	boardState,
-	// 	"w",
-	// 	null,
-	// 	whiteCastling,
-	// 	blackCastling
-	// );
-	// console.log(moves);
+	useEffect(() => {
+
+
+		const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+		// const fen = "rnQq1k1r/pp2bppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R b KQ - 1 8";
+
+		const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
+		const blackCastling: [boolean, boolean, boolean] = [true, true, true];
+		const prevMove: [number, number] = [-1, -1];
+
+		const [currentTurn, boardState] = fenToChessboard(
+			fen,
+			whiteCastling,
+			blackCastling,
+			prevMove
+		);
+
+		if(currentTurn === "b") dispatch(toggleTurn())
+		setBoardState(boardState);
+		setPrevMove(prevMove);
+		setWhiteCastling(whiteCastling);
+		setBlackCastling(blackCastling);
+
+
+		const moves = MoveGenerator(
+			3,
+			3,
+			boardState,
+			currentTurn,
+			prevMove,
+			whiteCastling,
+			blackCastling
+		);
+		console.log(moves);
+	}, [dispatch])
+	
 
 	useEffect(() => {
 		setPosition([turn, boardState]);

@@ -16,17 +16,17 @@ export function fenToChessboard(
 	whiteCastling: [boolean, boolean, boolean],
 	blackCastling: [boolean, boolean, boolean],
 	prevMove: [number, number]
-) {
+):[string, string[][]] {
 	const pieceMap: { [key: string]: string } = {
 		P: "wP",
 		Q: "wQ",
-		H: "wH",
+		N: "wH",
 		B: "wB",
 		K: "wK",
 		R: "wR",
 		p: "bP",
 		q: "bQ",
-		h: "bH",
+		n: "bH",
 		b: "bB",
 		k: "bK",
 		r: "bR",
@@ -112,7 +112,7 @@ function printChessboard(board: string[][]) {
 }
 
 // Example usage
-const fen = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR b KQkq a3 0 1";
+const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
 const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
 const blackCastling: [boolean, boolean, boolean] = [true, true, true];
 const prevMove: [number, number] = [-1, -1];

@@ -1,6 +1,7 @@
 import { ImprovedTotalMoveList } from "./aiMoves";
 import { EnPassantMoveList, CastlingMoveList } from "../helperFunctions";
 import { extractChessPosition } from "./aiHelperFunctions";
+import PawnPromotion from "../components/PawnPromotion";
 
 export function deepCopyBoard(boardState: string[][]): string[][] {
 	// Create a new array and copy the contents of the original array to it
@@ -44,49 +45,108 @@ export function MoveGenerator(
 
 	for (let move of totalMoveList) {
 		const [fromIndex, toIndex] = move;
-		const newBoardState = deepCopyBoard(boardState);
-		const newWhiteCastling = deepCopyCastling(whiteCastling);
-		const newBlackCastling = deepCopyCastling(blackCastling);
-		const newPrevMove = deepCopyPrevMove(prevMove);
+
 		const nextTurn = currentTurn === "w" ? "b" : "w";
 
+		const i1 = Math.floor(fromIndex / 10);
+		const j1 = fromIndex % 10;
+
+		const i2 = Math.floor(toIndex / 10);
+		const j2 = toIndex % 10;
+
+		const piece = boardState[i1][j1];
+
+		const promotionList = ["Q", "B", "H", "R"];
+
+		if (
+			//pawn promotion
+			piece[1] === "P" &&
+			((piece[0] === "w" && i2 === 7) || (piece[0] === "b" && i2 === 0))
+		) {
+			for (let promotionMove of promotionList) {
+				const newBoardState = deepCopyBoard(boardState);
+				const newWhiteCastling = deepCopyCastling(whiteCastling);
+				const newBlackCastling = deepCopyCastling(blackCastling);
+				const newPrevMove = deepCopyPrevMove(prevMove);
+
+				MoveMaker(
+					newBoardState,
+					fromIndex,
+					toIndex,
+					promotionMove,
+					prevMove,
+					newWhiteCastling,
+					newBlackCastling
+				);
 
 
-		MoveMaker(
-			newBoardState,
-			fromIndex,
-			toIndex,
-			"hello",
-			prevMove,
-			newWhiteCastling,
-			newBlackCastling
-		);
+				if (newPrevMove) {
+					newPrevMove[0] = fromIndex;
+					newPrevMove[1] = toIndex;
+				}
 
-		if (newPrevMove) {
-			newPrevMove[0] = fromIndex;
-			newPrevMove[1] = toIndex;
+				const num = MoveGenerator(
+					depth,
+					currentDepth - 1,
+					newBoardState,
+					nextTurn,
+					newPrevMove,
+					newWhiteCastling,
+					newBlackCastling
+				);
+
+				if (currentDepth === depth) {
+					const fromIndexPos = extractChessPosition(fromIndex);
+					const toIndexPos = extractChessPosition(toIndex);
+					const moveName =
+						fromIndexPos + toIndexPos + promotionMove.toLowerCase() + ":";
+
+					console.log(moveName, num);
+				}
+
+				moveNumber += num;
+			}
+		} else {
+			const newBoardState = deepCopyBoard(boardState);
+			const newWhiteCastling = deepCopyCastling(whiteCastling);
+			const newBlackCastling = deepCopyCastling(blackCastling);
+			const newPrevMove = deepCopyPrevMove(prevMove);
+
+			MoveMaker(
+				newBoardState,
+				fromIndex,
+				toIndex,
+				"hello",
+				prevMove,
+				newWhiteCastling,
+				newBlackCastling
+			);
+
+			if (newPrevMove) {
+				newPrevMove[0] = fromIndex;
+				newPrevMove[1] = toIndex;
+			}
+
+			const num = MoveGenerator(
+				depth,
+				currentDepth - 1,
+				newBoardState,
+				nextTurn,
+				newPrevMove,
+				newWhiteCastling,
+				newBlackCastling
+			);
+
+			if (currentDepth === depth) {
+				const fromIndexPos = extractChessPosition(fromIndex);
+				const toIndexPos = extractChessPosition(toIndex);
+				const moveName = fromIndexPos + toIndexPos + ":";
+
+				console.log(moveName, num);
+			}
+
+			moveNumber += num;
 		}
-
-
-		const num = MoveGenerator(
-			depth,
-			currentDepth - 1,
-			newBoardState,
-			nextTurn,
-			newPrevMove,
-			newWhiteCastling,
-			newBlackCastling
-		);
-
-		if (currentDepth === depth) {
-			const fromIndexPos = extractChessPosition(fromIndex);
-			const toIndexPos = extractChessPosition(toIndex);
-			const moveName = fromIndexPos + toIndexPos + ":";
-
-			// console.log(moveName, num);
-		}
-
-		moveNumber += num;
 	}
 	return moveNumber;
 }
@@ -111,8 +171,8 @@ export function MoveMaker(
 	if (
 		!(
 			(
-				piece[1][1] === "P" &&
-				((piece[1][0] == "w" && i2 === 7) || (piece[1][0] == "b" && i2 === 0))
+				piece[1] === "P" &&
+				((piece[0] == "w" && i2 === 7) || (piece[0] == "b" && i2 === 0))
 			) //no pawn promotion
 		)
 	) {
@@ -123,7 +183,7 @@ export function MoveMaker(
 		piece[1] === "P" &&
 		((piece[0] === "w" && i2 === 7) || (piece[0] === "b" && i2 === 0))
 	) {
-		boardState[i2][j2] = piece[0] + "Q";
+		boardState[i2][j2] = piece[0] + promotedPiece;
 		boardState[i1][j1] = "-";
 	}
 
@@ -205,5 +265,4 @@ export function MoveMaker(
 			blackCastling = [blackCastling[0], true, blackCastling[2]];
 		}
 	}
-
 }
