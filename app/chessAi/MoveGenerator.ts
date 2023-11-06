@@ -8,13 +8,13 @@ export function deepCopyBoard(boardState: string[][]): string[][] {
 	return boardState.map((row) => [...row]);
 }
 
-function deepCopyCastling(
+export function deepCopyCastling(
 	castling: [boolean, boolean, boolean]
 ): [boolean, boolean, boolean] {
 	return [...castling];
 }
 
-function deepCopyPrevMove(
+export function deepCopyPrevMove(
 	prevMove: [number, number] | null
 ): [number, number] | null {
 	return prevMove ? [...prevMove] : null;
@@ -101,7 +101,7 @@ export function MoveGenerator(
 					const moveName =
 						fromIndexPos + toIndexPos + promotionMove.toLowerCase() + ":";
 
-					console.log(moveName, num);
+					// console.log(moveName, num);
 				}
 
 				moveNumber += num;
@@ -142,7 +142,7 @@ export function MoveGenerator(
 				const toIndexPos = extractChessPosition(toIndex);
 				const moveName = fromIndexPos + toIndexPos + ":";
 
-				console.log(moveName, num);
+				// console.log(moveName, num);
 			}
 
 			moveNumber += num;

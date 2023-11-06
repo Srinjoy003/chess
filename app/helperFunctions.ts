@@ -1,4 +1,4 @@
-import { MoveMaker, deepCopyBoard } from "./chessAi/MoveGenerator";
+import { MoveMaker, deepCopyBoard, deepCopyCastling, deepCopyPrevMove } from "./chessAi/MoveGenerator";
 import { ImprovedTotalMoveList } from "./chessAi/aiMoves";
 
 export function EnPassantMoveList(
@@ -434,6 +434,15 @@ export function CastlingMoveList(
 		const leftBlackCastleSquares = [72, 73];
 		const rightBlackCastleSquares = [75, 76];
 
+		const leftBlackCatlingNonCheckingSquare = 71; //here we only check if this square is empty
+		const leftWhiteCatlingNonCheckingSquare = 1;
+
+		const isSquareEmpty = (squarePosition: number) => {
+			const row = Math.floor(squarePosition / 10);
+			const col = squarePosition % 10;
+			return boardState[row][col] === "-";
+		};
+
 		const isSquaresSafe = (castleMovelist: number[]) => {
 			return castleMovelist.every((square) => {
 				const row = Math.floor(square / 10);
@@ -452,6 +461,7 @@ export function CastlingMoveList(
 		) {
 			if (
 				isSquaresSafe(leftWhiteCastleSquares) &&
+				isSquareEmpty(leftWhiteCatlingNonCheckingSquare) &&
 				whiteCastling[0] === false &&
 				boardState[0][0] === "wR"
 			) {
@@ -472,6 +482,7 @@ export function CastlingMoveList(
 		) {
 			if (
 				isSquaresSafe(leftBlackCastleSquares) &&
+				isSquareEmpty(leftBlackCatlingNonCheckingSquare) &&
 				blackCastling[0] === false &&
 				boardState[7][0] === "bR"
 			) {
@@ -567,20 +578,21 @@ export function InCheck(currentTurn: string, boardState: string[][]): boolean {
 export function IsMoveAllowed(
 	currentTurn: string,
 	boardState: string[][],
+	prevMove: [number, number] | null,
 	fromIndex: number,
-	toIndex: number
+	toIndex: number,
+	whiteCastling: [boolean, boolean, boolean],
+	blackCastling: [boolean, boolean, boolean]
 ): boolean {
-	const updatedBoard = boardState.map((row) => row.slice());
+	const newBoard = boardState.map((row) => row.slice());
+	const newPrevMove = deepCopyPrevMove(prevMove);
+	const newWhiteCastling = deepCopyCastling(whiteCastling);
+	const newBlackCastling = deepCopyCastling(blackCastling);
 
-	const i1 = Math.floor(fromIndex / 10);
-	const j1 = fromIndex % 10;
-	const i2 = Math.floor(toIndex / 10);
-	const j2 = toIndex % 10;
 
-	updatedBoard[i2][j2] = updatedBoard[i1][j1];
-	updatedBoard[i1][j1] = "-";
+	MoveMaker(newBoard, fromIndex, toIndex, "hello", newPrevMove, newWhiteCastling, newBlackCastling)
 
-	return !InCheck(currentTurn, updatedBoard);
+	return !InCheck(currentTurn, newBoard);
 }
 
 export function MoveList(
@@ -617,7 +629,7 @@ export function MoveList(
 	const currentTurn = piece[0];
 
 	moveList = moveList.filter((movePosition) => {
-		return IsMoveAllowed(currentTurn, boardState, position, movePosition);
+		return IsMoveAllowed(currentTurn, boardState, prevMove, position, movePosition, whiteCastling, blackCastling);
 	});
 
 	return moveList;
@@ -666,8 +678,7 @@ export function CheckMate( //used unfixed version of movemaker
 					blackCastling
 				);
 
-				if(!InCheck(currentTurn, boardCopy)) isMate = false;
-
+				if (!InCheck(currentTurn, boardCopy)) isMate = false;
 			}
 			return isMate;
 		}

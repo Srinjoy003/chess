@@ -160,17 +160,9 @@ export default function ChessBoard() {
 	let aiRandomMoveBlack = useRef<number[]>([]);
 
 	useEffect(() => {
-		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
 
-		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPPKNnPP/RNBQ3R b - - 2 8";
-		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NKPP/RNBQ3R b - - 0 8";
-		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQ1RK1 b - - 2 8";
-		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPPKNnPP/RNBQ3R b - - 2 8";
+		const fen =  "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 
-
-		const fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
-
-		// const fen = "r3k2r/p1pNqpb1/bn2pnp1/3P4/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 0 1"
 
 		const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
 		const blackCastling: [boolean, boolean, boolean] = [true, true, true];
@@ -193,16 +185,30 @@ export default function ChessBoard() {
 		setWhiteCastling(whiteCastling);
 		setBlackCastling(blackCastling);
 
-		const moves = MoveGenerator(
-			3,
-			3,
-			boardState,
-			currentTurn,
-			prevMove,
-			whiteCastling,
-			blackCastling
-		);
-		console.log(moves);
+		// const moves = MoveGenerator(
+		// 	2,
+		// 	2,
+		// 	boardState,
+		// 	currentTurn,
+		// 	prevMove,
+		// 	whiteCastling,
+		// 	blackCastling
+		// );
+		// console.log(moves);
+
+		// for(let depth = 1; depth <= 4; depth++){
+		// 	const moves = MoveGenerator(
+		// 		depth,
+		// 		depth,
+		// 		boardState,
+		// 		currentTurn,
+		// 		prevMove,
+		// 		whiteCastling,
+		// 		blackCastling
+		// 	);
+		// 	console.log("depth ", depth, " : ", moves);
+		// }
+		
 	}, [dispatch]);
 
 	useEffect(() => {
