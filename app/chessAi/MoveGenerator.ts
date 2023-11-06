@@ -167,6 +167,7 @@ export function MoveMaker(
 	const j2 = toIndex % 10;
 
 	const piece = boardState[i1][j1];
+	const boardCopy = deepCopyBoard(boardState); //so that castling moves list  works on unedited board
 
 	if (
 		!(
@@ -190,7 +191,7 @@ export function MoveMaker(
 	let currentSelectedPiece: [number, string] = [fromIndex, piece];
 
 	//ENPASSANT
-	const enpassantMoveList = EnPassantMoveList(
+	const enpassantMoveList = EnPassantMoveList( //could create error by using boardstate instead of boardcopy
 		currentSelectedPiece[1],
 		currentSelectedPiece[0],
 		boardState,
@@ -199,10 +200,13 @@ export function MoveMaker(
 
 	const castlingMoveList = CastlingMoveList(
 		currentSelectedPiece[1],
-		boardState,
+		boardCopy,
 		whiteCastling,
 		blackCastling
 	);
+
+
+	if(castlingMoveList)
 
 	if (enpassantMoveList.includes(toIndex)) {
 		const opponentPawnDirection = currentSelectedPiece[1][0] === "w" ? -1 : 1;
@@ -227,42 +231,50 @@ export function MoveMaker(
 			boardState[7][7] = "-";
 			boardState[7][5] = "bR";
 		}
+
 	}
 
 	if (currentSelectedPiece[1][0] === "w") {
 		//white
 		if (currentSelectedPiece[0] === 0 && currentSelectedPiece[1][1] === "R") {
 			//left Rook
-			whiteCastling = [true, whiteCastling[1], whiteCastling[2]];
+			whiteCastling[0] = true;
 		} else if (
 			currentSelectedPiece[0] === 7 &&
 			currentSelectedPiece[1][1] === "R"
 		) {
 			//  right rook
-			whiteCastling = [whiteCastling[0], whiteCastling[1], true];
+			whiteCastling[2] = true;
+
 		} else if (
 			currentSelectedPiece[0] === 4 &&
 			currentSelectedPiece[1][1] === "K"
 		) {
 			// king
-			whiteCastling = [whiteCastling[0], true, whiteCastling[2]];
+			whiteCastling[1] = true;
+
 		}
 	}
 
 	if (currentSelectedPiece[1][0] === "b") {
 		//black
 		if (currentSelectedPiece[0] === 70 && currentSelectedPiece[1][1] === "R") {
-			blackCastling = [true, blackCastling[1], blackCastling[2]];
+			blackCastling[0] = true;
+
 		} else if (
 			currentSelectedPiece[0] === 77 &&
 			currentSelectedPiece[1][1] === "R"
 		) {
-			blackCastling = [blackCastling[0], blackCastling[1], true];
+			blackCastling[2] = true;
+
 		} else if (
 			currentSelectedPiece[0] === 74 &&
 			currentSelectedPiece[1][1] === "K"
 		) {
-			blackCastling = [blackCastling[0], true, blackCastling[2]];
+			blackCastling[1] = true;
+
 		}
 	}
+
+
 }

@@ -429,9 +429,9 @@ export function CastlingMoveList(
 		const currentTurn = kingColour;
 
 		const opponentMoveList = OpponentMoveList(currentTurn, boardState);
-		const leftWhiteCastleSquares = [1, 2, 3];
+		const leftWhiteCastleSquares = [2, 3];
 		const rightWhiteCastleSquares = [5, 6];
-		const leftBlackCastleSquares = [71, 72, 73];
+		const leftBlackCastleSquares = [72, 73];
 		const rightBlackCastleSquares = [75, 76];
 
 		const isSquaresSafe = (castleMovelist: number[]) => {
