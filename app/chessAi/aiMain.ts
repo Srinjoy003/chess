@@ -1,11 +1,13 @@
-const pieceValue = {
+const pieceValue: { [key: string]: number } = {
     'P' : 1,
     'Q' : 20,
     'R' : 8,
     'B' : 6,
-    'H' : 6
+    'H' : 6,
+    'K' : 100
 }
-function Evaluate(boardState: string[][]): number{
+
+export function Evaluate(boardState: string[][]): number{
     let boardEvaluation = 0;
     
     for(let row = 0; row < 8; row++){

@@ -21,6 +21,7 @@ import { AiRandomMove } from "../chessAi/aiMoves";
 import { MoveGenerator } from "../chessAi/MoveGenerator";
 import { fenToChessboard } from "../chessAi/aiHelperFunctions";
 import { current } from "@reduxjs/toolkit";
+import { Evaluate } from "../chessAi/aiMain";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -68,7 +69,7 @@ export function CreateBoardMap() {
 	return board;
 }
 
-function useCombinedEffect(effect: () => void, deps: [string, string[][]]) {
+function useCombinedEffect(effect: () => void, deps: [string, string[][]]) { //maybe not useful
 	const combinedDeps: [string, string] = useMemo(
 		() => [deps[0], JSON.stringify(deps[1])],
 		[deps]
@@ -159,57 +160,57 @@ export default function ChessBoard() {
 	let aiRandomMoveWhite = useRef<number[]>([]);
 	let aiRandomMoveBlack = useRef<number[]>([]);
 
-	useEffect(() => {
+	// useEffect(() => {
 
-		const fen =  "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
+	// 	const fen =  "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 
 
-		const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
-		const blackCastling: [boolean, boolean, boolean] = [true, true, true];
-		const prevMove: [number, number] = [-1, -1];
+	// 	const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
+	// 	const blackCastling: [boolean, boolean, boolean] = [true, true, true];
+	// 	const prevMove: [number, number] = [-1, -1];
 
-		const [currentTurn, boardState] = fenToChessboard(
-			fen,
-			whiteCastling,
-			blackCastling,
-			prevMove
-		);
+	// 	const [currentTurn, boardState] = fenToChessboard(
+	// 		fen,
+	// 		whiteCastling,
+	// 		blackCastling,
+	// 		prevMove
+	// 	);
 
-		// if(currentTurn === "b"){
-		// 	dispatch(toggleTurn())
-		// 	console.log("Hello 	")
+	// 	// if(currentTurn === "b"){
+	// 	// 	dispatch(toggleTurn())
+	// 	// 	console.log("Hello 	")
 
-		// }
-		setBoardState(boardState);
-		setPrevMove(prevMove);
-		setWhiteCastling(whiteCastling);
-		setBlackCastling(blackCastling);
+	// 	// }
+	// 	setBoardState(boardState);
+	// 	setPrevMove(prevMove);
+	// 	setWhiteCastling(whiteCastling);
+	// 	setBlackCastling(blackCastling);
 
-		// const moves = MoveGenerator(
-		// 	2,
-		// 	2,
-		// 	boardState,
-		// 	currentTurn,
-		// 	prevMove,
-		// 	whiteCastling,
-		// 	blackCastling
-		// );
-		// console.log(moves);
+	// 	// const moves = MoveGenerator(
+	// 	// 	2,
+	// 	// 	2,
+	// 	// 	boardState,
+	// 	// 	currentTurn,
+	// 	// 	prevMove,
+	// 	// 	whiteCastling,
+	// 	// 	blackCastling
+	// 	// );
+	// 	// console.log(moves);
 
-		// for(let depth = 1; depth <= 4; depth++){
-		// 	const moves = MoveGenerator(
-		// 		depth,
-		// 		depth,
-		// 		boardState,
-		// 		currentTurn,
-		// 		prevMove,
-		// 		whiteCastling,
-		// 		blackCastling
-		// 	);
-		// 	console.log("depth ", depth, " : ", moves);
-		// }
+	// 	// for(let depth = 1; depth <= 4; depth++){
+	// 	// 	const moves = MoveGenerator(
+	// 	// 		depth,
+	// 	// 		depth,
+	// 	// 		boardState,
+	// 	// 		currentTurn,
+	// 	// 		prevMove,
+	// 	// 		whiteCastling,
+	// 	// 		blackCastling
+	// 	// 	);
+	// 	// 	console.log("depth ", depth, " : ", moves);
+	// 	// }
 		
-	}, [dispatch]);
+	// }, [dispatch]);
 
 	useEffect(() => {
 		setPosition([turn, boardState]);

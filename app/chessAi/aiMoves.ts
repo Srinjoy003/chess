@@ -1,5 +1,6 @@
 import { MoveList } from "../helperFunctions";
 
+
 export function ImprovedTotalMoveList(
 	boardState: string[][],
 	currentTurn: string,
