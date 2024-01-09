@@ -28,6 +28,19 @@ export function Evaluate(boardState: string[][]): number{
     
 }
 
+// export function EvaluationUpdate(boardState: string[][], prevEvaluation: number, move: [number, number], currentTurn: string): number{
+//     let newEvaluation = prevEvaluation;
+//     const row = 
+//     const sign = piece[0] === "w" ? 1 : -1;
+
+
+
+
+//     return boardEvaluation;
+    
+// }
+
+
 export function MiniMax(boardState: string[][]){
     
 }

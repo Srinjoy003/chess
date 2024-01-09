@@ -22,6 +22,14 @@ import { MoveGenerator } from "../chessAi/MoveGenerator";
 import { fenToChessboard } from "../chessAi/aiHelperFunctions";
 import { current } from "@reduxjs/toolkit";
 import { Evaluate } from "../chessAi/aiMain";
+import { Socket } from "socket.io-client";
+
+type moveProps = {
+	moveFromIndex: number | null;
+	moveToIndex: number | null;
+	socket: Socket;
+	clientTurnColour: string | null
+};
 
 export function CreateBoardMap() {
 	const board = [];
@@ -69,26 +77,14 @@ export function CreateBoardMap() {
 	return board;
 }
 
-function useCombinedEffect(effect: () => void, deps: [string, string[][]]) { //maybe not useful
-	const combinedDeps: [string, string] = useMemo(
-		() => [deps[0], JSON.stringify(deps[1])],
-		[deps]
-	);
-	const prevDepsRef = useRef<[string, string]>(["", ""]);
 
-	useEffect(() => {
-		const allDepsChanged = combinedDeps.every(
-			(dep, i) => dep !== prevDepsRef.current[i]
-		);
 
-		if (allDepsChanged) {
-			effect();
-			prevDepsRef.current = combinedDeps;
-		}
-	}, [combinedDeps, effect]);
-}
-
-export default function ChessBoard() {
+export default function ChessBoard({
+	moveFromIndex,
+	moveToIndex,
+	socket,
+	clientTurnColour
+}: moveProps) {
 	type positionType = [string, string[][]];
 	const boardMap = CreateBoardMap();
 	const [boardState, setBoardState] = useState(Array.from(boardMap));
@@ -164,7 +160,6 @@ export default function ChessBoard() {
 
 	// 	const fen =  "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 
-
 	// 	const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
 	// 	const blackCastling: [boolean, boolean, boolean] = [true, true, true];
 	// 	const prevMove: [number, number] = [-1, -1];
@@ -209,7 +204,7 @@ export default function ChessBoard() {
 	// 	// 	);
 	// 	// 	console.log("depth ", depth, " : ", moves);
 	// 	// }
-		
+
 	// }, [dispatch]);
 
 	useEffect(() => {
@@ -273,7 +268,7 @@ export default function ChessBoard() {
 	);
 
 	const movePiece = useCallback(
-		(fromIndex: number, toIndex: number, ai: boolean) => {
+		(fromIndex: number, toIndex: number, ai: boolean, recieved: boolean) => {
 			if (fromIndex != toIndex) {
 				const updatedBoard = boardState.map((item) => {
 					return item.slice();
@@ -470,6 +465,15 @@ export default function ChessBoard() {
 					noOfMoves.current++;
 					dispatch(toggleTurn());
 
+					if (!recieved) {
+						socket.emit("move", { fromIndex, toIndex });
+						console.log("SENT DATA", fromIndex, toIndex);
+					}
+
+					else{
+						setPrevMove([fromIndex, toIndex])
+					}
+
 					setBoardState(() => {
 						return updatedBoard;
 					});
@@ -484,6 +488,7 @@ export default function ChessBoard() {
 			prevMove,
 			selectedPiece,
 			turn,
+			socket,
 		]
 	);
 
@@ -512,7 +517,8 @@ export default function ChessBoard() {
 				movePiece(
 					aiRandomMoveBlack.current[0],
 					aiRandomMoveBlack.current[1],
-					true
+					true,
+					false
 				);
 				setPrevMove([
 					aiRandomMoveBlack.current[0],
@@ -526,7 +532,8 @@ export default function ChessBoard() {
 				movePiece(
 					aiRandomMoveWhite.current[0],
 					aiRandomMoveWhite.current[1],
-					true
+					true,
+					false
 				);
 				setPrevMove([
 					aiRandomMoveWhite.current[0],
@@ -551,17 +558,13 @@ export default function ChessBoard() {
 	// 	// eslint-disable-next-line
 	// }, [boardState]);
 
-	// useCombinedEffect(() => {
-	// 	const delay = 2000; // Set the desired delay in milliseconds
-	// 	// console.log(turn, boardState);
-	// 	if (!gameEnded) {
-	// 		const timer = setTimeout(() => {
-	// 			aiMove();
-	// 		}, delay);
-
-	// 		return () => clearTimeout(timer);
-	// 	}
-	// }, [turn, boardState]);
+	useEffect(() => { 
+		if (moveFromIndex !== null && moveToIndex !== null) {
+			movePiece(moveFromIndex, moveToIndex, false, true);
+			// console.log("RECIEVED DATA", fromIndex, toIndex);
+		}
+		// eslint-disable-next-line
+	}, [moveFromIndex, moveToIndex]); //multiplayer
 
 	const board = boardState.map((row, i) => {
 		let newRow = row.map((_, j) => {
@@ -580,6 +583,7 @@ export default function ChessBoard() {
 					blackCastling={blackCastling}
 					pawnPromotionOpen={pawnPromotionOpen}
 					gameEnded={gameEnded}
+					clientTurnColour={clientTurnColour}
 				/>
 			);
 		});

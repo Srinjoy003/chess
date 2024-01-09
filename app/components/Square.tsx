@@ -14,7 +14,7 @@ type SquareProp = {
 	boardState: Array<Array<string>>;
 	colour: string;
 	position: number;
-	movePiece: (fromIndex: number, toIndex: number, ai: boolean) => void;
+	movePiece: (fromIndex: number, toIndex: number, ai: boolean, recieved: boolean) => void;
 	selectedPiece: [number, string] | null;
 	setSelectedPiece: (newSelectedPiece: [number, string] | null) => void;
 	prevMove: [number, number] | null;
@@ -22,6 +22,7 @@ type SquareProp = {
 	whiteCastling: [boolean, boolean, boolean];
 	blackCastling: [boolean, boolean, boolean];
 	gameEnded: boolean;
+	clientTurnColour: string | null
 };
 
 const Square = ({
@@ -37,6 +38,7 @@ const Square = ({
 	whiteCastling,
 	blackCastling,
 	gameEnded,
+	clientTurnColour
 }: SquareProp) => {
 	const dispatch = useDispatch();
 	const turn = useSelector((state: RootState) => state.turn);
@@ -77,7 +79,7 @@ const Square = ({
 			// Update the state to place the chess piece in the square
 			// setChessPiece(item.piece);
 			if (moveList.includes(position) && !pawnPromotionOpen && !gameEnded) {
-				movePiece(item.position, position, false);
+				movePiece(item.position, position, false, false);
 				setPrevMove([item.position, position]);
 				setSelectedPiece(null);
 				item.position = position;
@@ -96,7 +98,7 @@ const Square = ({
 				selectedPiece[0] !== position &&
 				moveList.includes(position)
 			) {
-				movePiece(selectedPiece[0], position, false);
+				movePiece(selectedPiece[0], position, false, false);
 				setPrevMove([selectedPiece[0], position]);
 				setSelectedPiece(null);
 			} else if (boardState[row][col][0] === turn) {
@@ -116,6 +118,7 @@ const Square = ({
 		setPrevMove,
 		pawnPromotionOpen,
 		gameEnded,
+		clientTurnColour
 	]);
 
 	const pieceColour = boardState[row][col][0];
