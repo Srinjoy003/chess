@@ -21,7 +21,6 @@ import { AiRandomMove } from "../chessAi/aiMoves";
 import { MoveGenerator } from "../chessAi/MoveGenerator";
 import { fenToChessboard } from "../chessAi/aiHelperFunctions";
 import { current } from "@reduxjs/toolkit";
-import { Evaluate } from "../chessAi/aiMain";
 import { Socket } from "socket.io-client";
 
 type moveProps = {

@@ -180,6 +180,56 @@ function evaluate() {
 	return (mgScore * mgPhase + egScore * egPhase) / 24;
 }
 
+function flatten2DArray<T>(arr2D: T[][]): T[] {
+	return arr2D.reduce((flatArray, row) => flatArray.concat(row), []);
+}
+
+// Example usage:
+const twoDArray: number[][] = [
+	[1, 2, 3],
+	[4, 5, 6],
+	[7, 8, 9],
+];
+
+const oneDArray: number[] = flatten2DArray(twoDArray);
+console.log("Flattened Array:", oneDArray);
+
+function replacePieceStrings(arr2D: string[][]): number[][] {
+	const pieceMap: Record<string, number> = {
+		wP: WHITE_PAWN,
+		bP: BLACK_PAWN,
+		wN: WHITE_KNIGHT,
+		bN: BLACK_KNIGHT,
+		wB: WHITE_BISHOP,
+		bB: BLACK_BISHOP,
+		wR: WHITE_ROOK,
+		bR: BLACK_ROOK,
+		wQ: WHITE_QUEEN,
+		bQ: BLACK_QUEEN,
+		wK: WHITE_KING,
+		bK: BLACK_KING,
+		"": EMPTY,
+	};
+
+	return arr2D.map(
+		(row) =>
+			row.map((cell) =>
+				pieceMap[cell] !== undefined ? pieceMap[cell] : cell
+			) as number[]
+	);
+}
+
+const chessboard: string[][] = [
+	["wP", "wN", "wB", "wR", "wQ", "wK"],
+	["bP", "bN", "bB", "bR", "bQ", "bK"],
+	["", "", "", "", "", ""],
+	["", "", "", "", "", ""],
+];
+
+const updatedChessboard: number[][] = replacePieceStrings(chessboard);
+
+console.log("Updated Chessboard:", updatedChessboard);
+
 // Example usage:
 side2move = WHITE;
 board[27] = WHITE_KING;
@@ -187,3 +237,6 @@ board[28] = BLACK_PAWN;
 initTables();
 const evaluation = evaluate();
 console.log("Evaluation:", evaluation);
+
+/////board is not initialized with empty but with 0
+//check if flatten works

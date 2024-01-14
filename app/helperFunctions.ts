@@ -1,4 +1,9 @@
-import { MoveMaker, deepCopyBoard, deepCopyCastling, deepCopyPrevMove } from "./chessAi/MoveGenerator";
+import {
+	MoveMaker,
+	deepCopyBoard,
+	deepCopyCastling,
+	deepCopyPrevMove,
+} from "./chessAi/MoveGenerator";
 import { ImprovedTotalMoveList } from "./chessAi/aiMoves";
 
 export function EnPassantMoveList(
@@ -589,8 +594,15 @@ export function IsMoveAllowed(
 	const newWhiteCastling = deepCopyCastling(whiteCastling);
 	const newBlackCastling = deepCopyCastling(blackCastling);
 
-
-	MoveMaker(newBoard, fromIndex, toIndex, "hello", newPrevMove, newWhiteCastling, newBlackCastling)
+	MoveMaker(
+		newBoard,
+		fromIndex,
+		toIndex,
+		"hello",
+		newPrevMove,
+		newWhiteCastling,
+		newBlackCastling
+	);
 
 	return !InCheck(currentTurn, newBoard);
 }
@@ -629,7 +641,15 @@ export function MoveList(
 	const currentTurn = piece[0];
 
 	moveList = moveList.filter((movePosition) => {
-		return IsMoveAllowed(currentTurn, boardState, prevMove, position, movePosition, whiteCastling, blackCastling);
+		return IsMoveAllowed(
+			currentTurn,
+			boardState,
+			prevMove,
+			position,
+			movePosition,
+			whiteCastling,
+			blackCastling
+		);
 	});
 
 	return moveList;
@@ -816,4 +836,36 @@ export function ThreeFoldRepetition(
 	}
 
 	return count === 3;
+}
+
+export function isGameOver(
+	boardState: string[][],
+	currentTurn: string,
+	prevMove: [number, number] | null,
+	whiteCastling: [boolean, boolean, boolean],
+	blackCastling: [boolean, boolean, boolean],
+	positionList: Array<[string, string[][]]>,
+	currentPosition: [string, string[][]]
+): boolean {
+	if (
+		CheckMate(
+			currentTurn,
+			boardState,
+			prevMove,
+			whiteCastling,
+			blackCastling
+		) ||
+		StaleMate(
+			boardState,
+			currentTurn,
+			prevMove,
+			whiteCastling,
+			blackCastling
+		) ||
+		InsufficientMaterial(boardState) ||
+		ThreeFoldRepetition(positionList, currentPosition)
+	) {
+		return true;
+	}
+	return false;
 }
