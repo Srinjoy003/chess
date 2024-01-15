@@ -19,15 +19,19 @@ import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";
 import { AiRandomMove } from "../chessAi/aiMoves";
 import { MoveGenerator } from "../chessAi/MoveGenerator";
-import { fenToChessboard } from "../chessAi/aiHelperFunctions";
+import {
+	fenToChessboard,
+	extractChessPosition,
+} from "../chessAi/aiHelperFunctions";
 import { current } from "@reduxjs/toolkit";
 import { Socket } from "socket.io-client";
+import { Minimax } from "../chessAi/aiMain";
 
 type moveProps = {
 	moveFromIndex: number | null;
 	moveToIndex: number | null;
 	socket: Socket;
-	clientTurnColour: string | null
+	clientTurnColour: string | null;
 };
 
 export function CreateBoardMap() {
@@ -76,13 +80,11 @@ export function CreateBoardMap() {
 	return board;
 }
 
-
-
 export default function ChessBoard({
 	moveFromIndex,
 	moveToIndex,
 	socket,
-	clientTurnColour
+	clientTurnColour,
 }: moveProps) {
 	type positionType = [string, string[][]];
 	const boardMap = CreateBoardMap();
@@ -155,56 +157,50 @@ export default function ChessBoard({
 	let aiRandomMoveWhite = useRef<number[]>([]);
 	let aiRandomMoveBlack = useRef<number[]>([]);
 
-	// useEffect(() => {
+	useEffect(() => {
+		const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1";
 
-	// 	const fen =  "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
+		const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
+		const blackCastling: [boolean, boolean, boolean] = [true, true, true];
+		const prevMove: [number, number] = [-1, -1];
 
-	// 	const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
-	// 	const blackCastling: [boolean, boolean, boolean] = [true, true, true];
-	// 	const prevMove: [number, number] = [-1, -1];
+		const [currentTurn, boardState] = fenToChessboard(
+			fen,
+			whiteCastling,
+			blackCastling,
+			prevMove
+		);
 
-	// 	const [currentTurn, boardState] = fenToChessboard(
-	// 		fen,
-	// 		whiteCastling,
-	// 		blackCastling,
-	// 		prevMove
-	// 	);
+		// if(currentTurn === "b"){
+		// 	dispatch(toggleTurn())
+		// 	console.log("Hello 	")
 
-	// 	// if(currentTurn === "b"){
-	// 	// 	dispatch(toggleTurn())
-	// 	// 	console.log("Hello 	")
+		// }
+		setBoardState(boardState);
+		setPrevMove(prevMove);
+		setWhiteCastling(whiteCastling);
+		setBlackCastling(blackCastling);
+		console.log(currentTurn)
+		const {bestMove, bestScore }= Minimax(
+			2,
+			boardState,
+			currentTurn,
+			prevMove,
+			whiteCastling,
+			blackCastling,
+			true
+		);
 
-	// 	// }
-	// 	setBoardState(boardState);
-	// 	setPrevMove(prevMove);
-	// 	setWhiteCastling(whiteCastling);
-	// 	setBlackCastling(blackCastling);
+		if (bestMove !== null) {
+			const [fromIndex, toIndex] = bestMove;
+			const fromPos = extractChessPosition(fromIndex);
+			const toPos = extractChessPosition(toIndex);
+			console.log(fromPos, toPos, bestScore)
 
-	// 	// const moves = MoveGenerator(
-	// 	// 	2,
-	// 	// 	2,
-	// 	// 	boardState,
-	// 	// 	currentTurn,
-	// 	// 	prevMove,
-	// 	// 	whiteCastling,
-	// 	// 	blackCastling
-	// 	// );
-	// 	// console.log(moves);
+		}
 
-	// 	// for(let depth = 1; depth <= 4; depth++){
-	// 	// 	const moves = MoveGenerator(
-	// 	// 		depth,
-	// 	// 		depth,
-	// 	// 		boardState,
-	// 	// 		currentTurn,
-	// 	// 		prevMove,
-	// 	// 		whiteCastling,
-	// 	// 		blackCastling
-	// 	// 	);
-	// 	// 	console.log("depth ", depth, " : ", moves);
-	// 	// }
-
-	// }, [dispatch]);
+	
+	}, [dispatch]);
 
 	useEffect(() => {
 		setPosition([turn, boardState]);
@@ -464,14 +460,12 @@ export default function ChessBoard({
 					noOfMoves.current++;
 					dispatch(toggleTurn());
 
-					if (!recieved) {
-						socket.emit("move", { fromIndex, toIndex });
-						console.log("SENT DATA", fromIndex, toIndex);
-					}
-
-					else{
-						setPrevMove([fromIndex, toIndex])
-					}
+					// if (!recieved) {                                    //for sockets
+					// 	socket.emit("move", { fromIndex, toIndex });
+					// 	console.log("SENT DATA", fromIndex, toIndex);
+					// } else {
+					// 	setPrevMove([fromIndex, toIndex]);
+					// }
 
 					setBoardState(() => {
 						return updatedBoard;
@@ -487,7 +481,6 @@ export default function ChessBoard({
 			prevMove,
 			selectedPiece,
 			turn,
-			socket,
 		]
 	);
 
@@ -557,7 +550,7 @@ export default function ChessBoard({
 	// 	// eslint-disable-next-line
 	// }, [boardState]);
 
-	useEffect(() => { 
+	useEffect(() => {
 		if (moveFromIndex !== null && moveToIndex !== null) {
 			movePiece(moveFromIndex, moveToIndex, false, true);
 			// console.log("RECIEVED DATA", fromIndex, toIndex);

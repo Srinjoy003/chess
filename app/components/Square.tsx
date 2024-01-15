@@ -38,7 +38,7 @@ const Square = ({
 	whiteCastling,
 	blackCastling,
 	gameEnded,
-	clientTurnColour
+	// clientTurnColour
 }: SquareProp) => {
 	const dispatch = useDispatch();
 	const turn = useSelector((state: RootState) => state.turn);
@@ -118,7 +118,7 @@ const Square = ({
 		setPrevMove,
 		pawnPromotionOpen,
 		gameEnded,
-		clientTurnColour
+		// clientTurnColour
 	]);
 
 	const pieceColour = boardState[row][col][0];

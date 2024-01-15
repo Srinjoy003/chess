@@ -844,8 +844,6 @@ export function isGameOver(
 	prevMove: [number, number] | null,
 	whiteCastling: [boolean, boolean, boolean],
 	blackCastling: [boolean, boolean, boolean],
-	positionList: Array<[string, string[][]]>,
-	currentPosition: [string, string[][]]
 ): boolean {
 	if (
 		CheckMate(
@@ -862,8 +860,7 @@ export function isGameOver(
 			whiteCastling,
 			blackCastling
 		) ||
-		InsufficientMaterial(boardState) ||
-		ThreeFoldRepetition(positionList, currentPosition)
+		InsufficientMaterial(boardState)
 	) {
 		return true;
 	}
