@@ -26,6 +26,7 @@ import {
 import { current } from "@reduxjs/toolkit";
 import { Socket } from "socket.io-client";
 import { Minimax } from "../chessAi/aiMain";
+import { Evaluate } from "../chessAi/basicEvaluation";
 
 type moveProps = {
 	moveFromIndex: number | null;
@@ -158,7 +159,10 @@ export default function ChessBoard({
 	let aiRandomMoveBlack = useRef<number[]>([]);
 
 	useEffect(() => {
-		const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1";
+		// const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1";
+		const fen = "Q7/5p2/5P1p/5PPN/6Pk/4N1Rp/7P/6K1 w - - 0 1";
+
+
 
 		const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
 		const blackCastling: [boolean, boolean, boolean] = [true, true, true];
@@ -180,9 +184,13 @@ export default function ChessBoard({
 		setPrevMove(prevMove);
 		setWhiteCastling(whiteCastling);
 		setBlackCastling(blackCastling);
-		console.log(currentTurn)
+		console.log(currentTurn);
+
+		
+		const tick = performance.now()
+
 		const {bestMove, bestScore }= Minimax(
-			2,
+			8,
 			boardState,
 			currentTurn,
 			prevMove,
@@ -191,15 +199,35 @@ export default function ChessBoard({
 			true
 		);
 
+		const tock = performance.now()
+
+
+
+
 		if (bestMove !== null) {
-			const [fromIndex, toIndex] = bestMove;
+			const [fromIndex, toIndex, promotionMove] = bestMove;
 			const fromPos = extractChessPosition(fromIndex);
 			const toPos = extractChessPosition(toIndex);
-			console.log(fromPos, toPos, bestScore)
+			console.log(fromPos + toPos + promotionMove, bestScore)
 
 		}
 
-	
+		console.log("Time: ", tock - tick)
+
+
+		// const move = Minimax(
+		// 	2,
+		// 	boardState,
+		// 	currentTurn,
+		// 	prevMove,
+		// 	whiteCastling,
+		// 	blackCastling,
+		// 	true
+		// );
+
+		// const move = MoveGenerator(4,4, boardState, currentTurn, prevMove, whiteCastling, blackCastling)
+
+		// console.log("Total: ", move)
 	}, [dispatch]);
 
 	useEffect(() => {

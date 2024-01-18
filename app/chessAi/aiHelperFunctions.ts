@@ -105,7 +105,7 @@ export function fenToChessboard(
 	return [currentTurn, board];
 }
 
-function printChessboard(board: string[][]) {
+export function printChessboard(board: string[][]) {
 	for (const row of board) {
 		console.log(row.join(" "));
 	}

@@ -1,11 +1,13 @@
 import { CheckMate, InsufficientMaterial, StaleMate } from "../helperFunctions";
+import { extractChessPosition, printChessboard } from "./aiHelperFunctions";
 
 const piecevalue: { [key: string]: number } = {
-	P: 100,
-	H: 300,
-	B: 300,
-	R: 500,
-	Q: 900,
+	"P": 100,
+	"H": 300,
+	"B": 300,
+	"R": 500,
+	"Q": 900,
+	"K": 0
 };
 
 export function Evaluate(
@@ -17,16 +19,27 @@ export function Evaluate(
 ): number {
 	let evaluation = 0;
 
-	if (CheckMate(currentTurn, boardState, prevMove, whiteCastling, blackCastling)){
-		evaluation = currentTurn === 'w' ? -Infinity: Infinity
-	}
+	if (
+		CheckMate(currentTurn, boardState, prevMove, whiteCastling, blackCastling)
+	) {
+		evaluation = currentTurn === "w" ? -Infinity : Infinity;
 
-	else if(StaleMate(boardState, currentTurn, prevMove, whiteCastling, blackCastling) || InsufficientMaterial(boardState)){
-		evaluation = 0
-
-	}
-
-	else{
+		if (prevMove) {
+			// console.log("CheckMate", currentTurn, evaluation)
+			// printChessboard(boardState)
+		}
+	} else if (
+		StaleMate(
+			boardState,
+			currentTurn,
+			prevMove,
+			whiteCastling,
+			blackCastling
+		) ||
+		InsufficientMaterial(boardState)
+	) {
+		evaluation = 0;
+	} else {
 		for (let i = 0; i < 7; i++) {
 			for (let j = 0; j < 7; j++) {
 				if (boardState[i][j] !== "-") {
@@ -37,8 +50,14 @@ export function Evaluate(
 				}
 			}
 		}
-	}
 
+	}
+	if (prevMove) {
+		const [fromIndex, toIndex] = prevMove;
+		const fromPos = extractChessPosition(fromIndex);
+		const toPos = extractChessPosition(toIndex);
+		// console.log(fromPos+toPos, evaluation);
+	}
 
 	return evaluation;
 }
