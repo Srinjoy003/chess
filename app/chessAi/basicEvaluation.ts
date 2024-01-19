@@ -24,10 +24,6 @@ export function Evaluate(
 	) {
 		evaluation = currentTurn === "w" ? -Infinity : Infinity;
 
-		if (prevMove) {
-			// console.log("CheckMate", currentTurn, evaluation)
-			// printChessboard(boardState)
-		}
 	} else if (
 		StaleMate(
 			boardState,
@@ -40,8 +36,8 @@ export function Evaluate(
 	) {
 		evaluation = 0;
 	} else {
-		for (let i = 0; i < 7; i++) {
-			for (let j = 0; j < 7; j++) {
+		for (let i = 0; i < 8; i++) {
+			for (let j = 0; j < 8; j++) {
 				if (boardState[i][j] !== "-") {
 					let piece = boardState[i][j][1];
 					let colour = boardState[i][j][0];

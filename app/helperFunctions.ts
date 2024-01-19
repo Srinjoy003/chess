@@ -813,7 +813,7 @@ export function InsufficientMaterial(boardState: string[][]): boolean {
 	return false;
 }
 
-function arraysEqual(arr1: string[][], arr2: string[][]) {
+export function arraysEqual(arr1: string[][], arr2: string[][]) {
 	if (JSON.stringify(arr1) === JSON.stringify(arr2)) {
 		return true;
 	}

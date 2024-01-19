@@ -5,11 +5,13 @@ import {
 	deepCopyCastling,
 	deepCopyPrevMove,
 } from "./MoveGenerator";
-import { extractChessPosition } from "./aiHelperFunctions";
+import { extractChessPosition, printChessboard } from "./aiHelperFunctions";
 import PawnPromotion from "../components/PawnPromotion";
 import { CheckMate, isGameOver } from "../helperFunctions";
 import { Evaluate } from "./basicEvaluation";
 import { fenToChessboard } from "./aiHelperFunctions";
+
+
 
 export function Minimax(
 	depth: number,
@@ -20,14 +22,12 @@ export function Minimax(
 	blackCastling: [boolean, boolean, boolean],
 	maximizingPlayer: boolean,
 	alpha: number = -Infinity,
-    beta: number = Infinity
+	beta: number = Infinity
 ): { bestMove: [number, number, string] | null; bestScore: number } {
 	if (
-		depth === 0 
-		// || isGameOver(boardState, currentTurn, prevMove, whiteCastling, blackCastling)
+		depth === 0 ||
+		isGameOver(boardState, currentTurn, prevMove, whiteCastling, blackCastling)
 	) {
-		//add these laterT
-		// Evaluate the board and return the score
 		return {
 			bestMove: null,
 			bestScore: Evaluate(
@@ -108,18 +108,16 @@ export function Minimax(
 					beta
 				).bestScore;
 
-				if (maximizingPlayer) {
-					bestScore = Math.max(bestScore, evaluation);
-					alpha = Math.max(alpha, bestScore);
+				if (maximizingPlayer && evaluation > bestScore) {
+					bestScore = evaluation;
+					alpha = bestScore;
 					bestMove = [fromIndex, toIndex, promotionMove];
-	
-				} else {
-					bestScore = Math.min(bestScore, evaluation);
-					beta = Math.min(beta, bestScore);
+				} else if (!maximizingPlayer && evaluation < bestScore) {
+					bestScore = evaluation;
+					beta = bestScore;
 					bestMove = [fromIndex, toIndex, promotionMove];
-	
 				}
-	
+
 				if (beta <= alpha) {
 					// Prune the branch
 					break;
@@ -130,7 +128,6 @@ export function Minimax(
 			const newWhiteCastling = deepCopyCastling(whiteCastling);
 			const newBlackCastling = deepCopyCastling(blackCastling);
 			const newPrevMove = deepCopyPrevMove(prevMove);
-
 
 			MoveMaker(
 				newBoardState,
@@ -154,29 +151,20 @@ export function Minimax(
 				newPrevMove,
 				newWhiteCastling,
 				newBlackCastling,
-				!maximizingPlayer,  // Switch to minimizing player
+				!maximizingPlayer, // Switch to minimizing player
 				alpha,
 				beta
 			).bestScore;
 
-			
-
-			if (maximizingPlayer) {
-                bestScore = Math.max(bestScore, evaluation);
-                alpha = Math.max(alpha, bestScore);
+			if (maximizingPlayer && evaluation > bestScore) {
+				bestScore = evaluation;
+				alpha = bestScore;
 				bestMove = [fromIndex, toIndex, ""];
-
-            } else {
-                bestScore = Math.min(bestScore, evaluation);
-                beta = Math.min(beta, bestScore);
+			} else if (!maximizingPlayer && evaluation < bestScore) {
+				bestScore = evaluation;
+				beta = bestScore;
 				bestMove = [fromIndex, toIndex, ""];
-
-            }
-
-            if (beta <= alpha) {
-                // Prune the branch
-                break;
-            }
+			}
 		}
 	}
 
