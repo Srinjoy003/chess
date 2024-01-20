@@ -162,11 +162,11 @@ export default function ChessBoard({
 	useEffect(() => {
 		// const fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
-		// const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+		const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 		// const fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - "
 		// const fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - "
 		// const fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
-		const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  "
+		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  "
 
 
 
@@ -193,34 +193,34 @@ export default function ChessBoard({
 		console.log(currentTurn);
 
 		
-		// const tick = performance.now()
+		const tick = performance.now()
 
-		// const {bestMove, bestScore }= Minimax(
-		// 	1,
-		// 	boardState,
-		// 	currentTurn,
-		// 	prevMove,
-		// 	whiteCastling,
-		// 	blackCastling,
-		// 	true
-		// );
+			const {bestMove, bestScore }= Minimax(
+				0,
+				boardState,
+				currentTurn,
+				prevMove,
+				whiteCastling,
+				blackCastling,
+				true
+			);
 
 		
 
-		// const tock = performance.now()
+		const tock = performance.now()
 
 
 
 
-		// if (bestMove !== null) {
-		// 	const [fromIndex, toIndex, promotionMove] = bestMove;
-		// 	const fromPos = extractChessPosition(fromIndex);
-		// 	const toPos = extractChessPosition(toIndex);
-		// 	console.log(fromPos + toPos + promotionMove, bestScore)
+			if (bestMove !== null) {
+				const [fromIndex, toIndex, promotionMove] = bestMove;
+				const fromPos = extractChessPosition(fromIndex);
+				const toPos = extractChessPosition(toIndex);
+				console.log(fromPos + toPos + promotionMove, bestScore)
 
-		// }
+			}
 
-		// console.log("Time: ", tock - tick)
+		console.log("Time: ", tock - tick)
 
 
 		// const move = Minimax(
@@ -233,11 +233,11 @@ export default function ChessBoard({
 		// 	true
 		// );
 
-		const tick = performance.now()
-		for(let i = 1; i < 5; i++)
-		console.log(i, MoveGenerator(i,i, boardState, currentTurn, prevMove, whiteCastling, blackCastling))
-		const tock = performance.now()
-		console.log("Time: ", tock - tick)
+		// const tick = performance.now()
+		// for(let i = 1; i < 1; i++)
+		// console.log(i, MoveGenerator(i,i, boardState, currentTurn, prevMove, whiteCastling, blackCastling))
+		// const tock = performance.now()
+		// console.log("Time: ", tock - tick)
 		
 		// console.log("Total: ", move)
 	}, [dispatch]);

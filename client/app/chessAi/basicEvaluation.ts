@@ -1,7 +1,7 @@
 import { CheckMate, InsufficientMaterial, StaleMate } from "../helperFunctions";
 import { extractChessPosition, printChessboard } from "./aiHelperFunctions";
 
-const piecevalue: { [key: string]: number } = {
+export const piecevalue: { [key: string]: number } = {
 	"P": 100,
 	"H": 300,
 	"B": 300,

@@ -8,6 +8,7 @@ import { RootState } from "../reduxStore/store";
 import { MoveList } from "../helperFunctions";
 import { EnPassantMoveList } from "../helperFunctions";
 import { extractChessPosition } from "../chessAi/aiHelperFunctions";
+import { OpponentPawnAttackSquares } from "../chessAi/aiHelperFunctions";
 
 type SquareProp = {
 	pawnPromotionOpen: boolean;

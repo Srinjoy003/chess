@@ -1,3 +1,5 @@
+import { piecevalue } from "./basicEvaluation";
+
 export function extractChessPosition(position: number): string {
 	const row = Math.floor(position / 10); // Extract the "tens" place as row
 	const col = position % 10; // Extract the "ones" place as column
@@ -16,7 +18,7 @@ export function fenToChessboard(
 	whiteCastling: [boolean, boolean, boolean],
 	blackCastling: [boolean, boolean, boolean],
 	prevMove: [number, number]
-):[string, string[][]] {
+): [string, string[][]] {
 	const pieceMap: { [key: string]: string } = {
 		P: "wP",
 		Q: "wQ",
@@ -99,8 +101,8 @@ export function fenToChessboard(
 		const fromMoveRow = fenRow - direction;
 		const toMoveRow = fenRow + direction;
 
-		prevMove[0] = fromMoveRow * 10 + fenCol
-		prevMove[1] = toMoveRow * 10 + fenCol		
+		prevMove[0] = fromMoveRow * 10 + fenCol;
+		prevMove[1] = toMoveRow * 10 + fenCol;
 	}
 	return [currentTurn, board];
 }
@@ -111,13 +113,82 @@ export function printChessboard(board: string[][]) {
 	}
 }
 
+export function OpponentPawnAttackSquares(boardState: string[][], currentTurn: string): number[]{
+	
+	const opponentColour = currentTurn === "w" ? "b" : "w"
+	const forwardDirection = opponentColour === "b" ? -1: 1
+	const pawn = opponentColour + "P"
+	const pawnAttackingSquares = []
+
+	for(let row = 0; row < 8; row++){
+		for(let col = 0; col < 8; col++){
+			if(boardState[row][col] === pawn){
+				if(col + 1 < 8){
+					const position1 = (row + forwardDirection)*10 + col + 1
+					pawnAttackingSquares.push(position1)
+
+				}
+
+				if(col - 1 >= 0){
+					const position2 = (row + forwardDirection)*10 + col - 1
+					pawnAttackingSquares.push(position2)
+
+				}
+			}
+	}
+
+	}
+	return pawnAttackingSquares;
+}
+
+export function OrderMoves(boardState: string[][], moveList: number[][], currentTurn: string) {
+	for (let move of moveList) {
+		let moveScoreGuess = 0;
+		const [fromIndex, toIndex] = move;
+		const i1 = Math.floor(fromIndex / 10);
+		const j1 = fromIndex % 10;
+
+		const i2 = Math.floor(toIndex / 10);
+		const j2 = toIndex % 10;
+
+		const movePiece = boardState[i1][j1];
+		const capturePiece = boardState[i2][j2];
+		const movePieceType = movePiece[1];
+
+		if (capturePiece !== "-") {
+			const capturePieceType = capturePiece[1];
+
+			moveScoreGuess =
+				10 * piecevalue[capturePieceType] - piecevalue[movePieceType];
+		}
+
+		if (
+			//pawn promotion
+			movePieceType === "P" &&
+			((movePiece[0] === "w" && i2 === 7) || (movePiece[0] === "b" && i2 === 0))
+		) {
+			moveScoreGuess += 700;
+		}
+
+		if(OpponentPawnAttackSquares(boardState, currentTurn).includes(toIndex)){
+			moveScoreGuess -= piecevalue[movePieceType]
+		}
+
+	}
+}
+
 // Example usage
 const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
 const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
 const blackCastling: [boolean, boolean, boolean] = [true, true, true];
 const prevMove: [number, number] = [-1, -1];
 
-const [currentTurn, chessboard] = fenToChessboard(fen, whiteCastling, blackCastling, prevMove);
+const [currentTurn, chessboard] = fenToChessboard(
+	fen,
+	whiteCastling,
+	blackCastling,
+	prevMove
+);
 // console.log(chessboard)
 // console.log(prevMove)
 // printChessboard(chessboard);

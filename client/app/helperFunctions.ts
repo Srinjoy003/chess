@@ -3,8 +3,10 @@ import {
 	deepCopyBoard,
 	deepCopyCastling,
 	deepCopyPrevMove,
+	UnmakeMove
 } from "./chessAi/MoveGenerator";
 import { ImprovedTotalMoveList } from "./chessAi/aiMoves";
+
 
 export function EnPassantMoveList(
 	currentPiece: string,
@@ -589,22 +591,53 @@ export function IsMoveAllowed(
 	whiteCastling: [boolean, boolean, boolean],
 	blackCastling: [boolean, boolean, boolean]
 ): boolean {
-	const newBoard = boardState.map((row) => row.slice());
-	const newPrevMove = deepCopyPrevMove(prevMove);
 	const newWhiteCastling = deepCopyCastling(whiteCastling);
 	const newBlackCastling = deepCopyCastling(blackCastling);
 
+	const i1 = Math.floor(fromIndex / 10);
+	const j1 = fromIndex % 10;
+
+	const i2 = Math.floor(toIndex / 10);
+	const j2 = toIndex % 10;
+
+	const piece = boardState[i1][j1];
+	const capturedPiece = boardState[i2][j2];
+	const isCastling =
+		piece !== "-" && piece[1] === "K" && Math.abs(j1 - j2) > 1 ? true : false;
+
+	const isEnpassant =
+		piece !== "-" &&
+		piece[1] === "P" &&
+		j1 !== j2 &&
+		boardState[i2][j2] === "-";
+
+	const isPromotion = false;
+
+	const moveDesc: [number, number, string, boolean, boolean, boolean] = [
+		fromIndex,
+		toIndex,
+		capturedPiece,
+		isEnpassant,
+		isCastling,
+		isPromotion,
+	];
+
 	MoveMaker(
-		newBoard,
+		boardState,
 		fromIndex,
 		toIndex,
 		"hello",
-		newPrevMove,
+		isPromotion,
+		isCastling,
+		isEnpassant,
 		newWhiteCastling,
 		newBlackCastling
 	);
 
-	return !InCheck(currentTurn, newBoard);
+	const isAllowed = !InCheck(currentTurn, boardState);
+	UnmakeMove(boardState, moveDesc);
+
+	return isAllowed;
 }
 
 export function MoveList(
@@ -686,19 +719,51 @@ export function CheckMate( //used unfixed version of movemaker
 			let isMate = true;
 
 			for (let [fromIndex, toIndex] of totalMoveList) {
-				const boardCopy = deepCopyBoard(boardState);
+				// const boardCopy = deepCopyBoard(boardState);
+				const i1 = Math.floor(fromIndex / 10);
+				const j1 = fromIndex % 10;
+
+				const i2 = Math.floor(toIndex / 10);
+				const j2 = toIndex % 10;
+
+				const piece = boardState[i1][j1];
+				const capturedPiece = boardState[i2][j2];
+				const isCastling =
+					piece !== "-" && piece[1] === "K" && Math.abs(j1 - j2) > 1
+						? true
+						: false;
+
+				const isEnpassant =
+					piece !== "-" &&
+					piece[1] === "P" &&
+					j1 !== j2 &&
+					boardState[i2][j2] === "-";
+
+				const isPromotion = false;
+
+				const moveDesc: [number, number, string, boolean, boolean, boolean] = [
+					fromIndex,
+					toIndex,
+					capturedPiece,
+					isEnpassant,
+					isCastling,
+					isPromotion,
+				];
 
 				MoveMaker(
-					boardCopy,
+					boardState,
 					fromIndex,
 					toIndex,
 					"hello",
-					prevMove,
+					isPromotion,
+					isCastling,
+					isEnpassant,
 					whiteCastling,
 					blackCastling
 				);
 
-				if (!InCheck(currentTurn, boardCopy)) isMate = false;
+				if (!InCheck(currentTurn, boardState)) isMate = false;
+				UnmakeMove(boardState, moveDesc)
 			}
 			return isMate;
 		}
@@ -843,7 +908,7 @@ export function isGameOver(
 	currentTurn: string,
 	prevMove: [number, number] | null,
 	whiteCastling: [boolean, boolean, boolean],
-	blackCastling: [boolean, boolean, boolean],
+	blackCastling: [boolean, boolean, boolean]
 ): boolean {
 	if (
 		CheckMate(
