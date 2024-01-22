@@ -3,10 +3,9 @@ import {
 	deepCopyBoard,
 	deepCopyCastling,
 	deepCopyPrevMove,
-	UnmakeMove
+	UnmakeMove,
 } from "./chessAi/MoveGenerator";
 import { ImprovedTotalMoveList } from "./chessAi/aiMoves";
-
 
 export function EnPassantMoveList(
 	currentPiece: string,
@@ -719,7 +718,6 @@ export function CheckMate( //used unfixed version of movemaker
 			let isMate = true;
 
 			for (let [fromIndex, toIndex] of totalMoveList) {
-				// const boardCopy = deepCopyBoard(boardState);
 				const i1 = Math.floor(fromIndex / 10);
 				const j1 = fromIndex % 10;
 
@@ -763,7 +761,7 @@ export function CheckMate( //used unfixed version of movemaker
 				);
 
 				if (!InCheck(currentTurn, boardState)) isMate = false;
-				UnmakeMove(boardState, moveDesc)
+				UnmakeMove(boardState, moveDesc);
 			}
 			return isMate;
 		}
@@ -886,6 +884,14 @@ export function arraysEqual(arr1: string[][], arr2: string[][]) {
 	return false;
 }
 
+export function arraysEqualNumber(arr1: number[][], arr2: number[][]) {
+	if (JSON.stringify(arr1) === JSON.stringify(arr2)) {
+		return true;
+	}
+
+	return false;
+}
+
 export function ThreeFoldRepetition(
 	positionList: Array<[string, string[][]]>,
 	currentPosition: [string, string[][]]
@@ -930,4 +936,10 @@ export function isGameOver(
 		return true;
 	}
 	return false;
+}
+
+export function PieceAtPosition(boardState: string[][], position: number): string {
+	const rank = Math.floor(position / 10);
+	const file = position % 10;
+	return boardState[rank][file];
 }

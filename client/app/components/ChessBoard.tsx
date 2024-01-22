@@ -26,8 +26,17 @@ import {
 import { current } from "@reduxjs/toolkit";
 import { Socket } from "socket.io-client";
 import { Minimax } from "../chessAi/aiMain";
-import { deepCopyBoard, deepCopyCastling, deepCopyPrevMove } from "../chessAi/MoveGenerator";
+import {
+	deepCopyBoard,
+	deepCopyCastling,
+	deepCopyPrevMove,
+} from "../chessAi/MoveGenerator";
 import { Evaluate } from "../chessAi/basicEvaluation";
+import {
+	Bitboards,
+	convertToBitboards,
+	UpdateBitboardsWithMove,
+} from "../chessAi/bitboards";
 
 type moveProps = {
 	moveFromIndex: number | null;
@@ -91,6 +100,10 @@ export default function ChessBoard({
 	type positionType = [string, string[][]];
 	const boardMap = CreateBoardMap();
 	const [boardState, setBoardState] = useState(Array.from(boardMap));
+	const [bitboardState, setBitboardState] = useState<Bitboards>(() =>
+		convertToBitboards(boardState)
+	);
+
 	const [selectedPiece, setSelectedPiece] = useState<[number, string] | null>(
 		null
 	);
@@ -160,15 +173,14 @@ export default function ChessBoard({
 	let aiRandomMoveBlack = useRef<number[]>([]);
 
 	useEffect(() => {
-		// const fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+		// const fen =
+		// 	"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
 		const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 		// const fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - "
 		// const fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - "
 		// const fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
 		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  "
-
-
 
 		const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
 		const blackCastling: [boolean, boolean, boolean] = [true, true, true];
@@ -192,36 +204,28 @@ export default function ChessBoard({
 		setBlackCastling(blackCastling);
 		console.log(currentTurn);
 
-		
-		const tick = performance.now()
+		// const tick = performance.now();
 
-			const {bestMove, bestScore }= Minimax(
-				0,
-				boardState,
-				currentTurn,
-				prevMove,
-				whiteCastling,
-				blackCastling,
-				true
-			);
+		// const { bestMove, bestScore } = Minimax(
+		// 	3,
+		// 	boardState,
+		// 	currentTurn,
+		// 	prevMove,
+		// 	whiteCastling,
+		// 	blackCastling,
+		// 	true
+		// );
 
-		
+		// const tock = performance.now();
 
-		const tock = performance.now()
+		// if (bestMove !== null) {
+		// 	const [fromIndex, toIndex, promotionMove] = bestMove;
+		// 	const fromPos = extractChessPosition(fromIndex);
+		// 	const toPos = extractChessPosition(toIndex);
+		// 	console.log(fromPos + toPos + promotionMove, bestScore);
+		// }
 
-
-
-
-			if (bestMove !== null) {
-				const [fromIndex, toIndex, promotionMove] = bestMove;
-				const fromPos = extractChessPosition(fromIndex);
-				const toPos = extractChessPosition(toIndex);
-				console.log(fromPos + toPos + promotionMove, bestScore)
-
-			}
-
-		console.log("Time: ", tock - tick)
-
+		// console.log("Time: ", tock - tick);
 
 		// const move = Minimax(
 		// 	2,
@@ -234,12 +238,10 @@ export default function ChessBoard({
 		// );
 
 		// const tick = performance.now()
-		// for(let i = 1; i < 1; i++)
+		// for(let i = 1; i < 6; i++)
 		// console.log(i, MoveGenerator(i,i, boardState, currentTurn, prevMove, whiteCastling, blackCastling))
 		// const tock = performance.now()
 		// console.log("Time: ", tock - tick)
-		
-		// console.log("Total: ", move)
 	}, [dispatch]);
 
 	useEffect(() => {
@@ -506,12 +508,21 @@ export default function ChessBoard({
 					// } else {
 					// 	setPrevMove([fromIndex, toIndex]);
 					// }
+					setBitboardState((currentBitboards) => {
+						const updatedBitboards = { ...currentBitboards }; // Shallow copy
 
+						UpdateBitboardsWithMove(boardState, updatedBitboards, [
+							fromIndex,
+							toIndex,
+						]);
+
+						console.log("running");
+
+						return updatedBitboards;
+					});
 					setBoardState(() => {
 						return updatedBoard;
 					});
-
-					console.log(Evaluate(updatedBoard, turn, prevMove, whiteCastling, blackCastling))
 				}
 			}
 		},
@@ -618,6 +629,7 @@ export default function ChessBoard({
 					pawnPromotionOpen={pawnPromotionOpen}
 					gameEnded={gameEnded}
 					clientTurnColour={clientTurnColour}
+					bitboards={bitboardState}
 				/>
 			);
 		});

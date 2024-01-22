@@ -2,8 +2,7 @@ import { ImprovedTotalMoveList } from "./aiMoves";
 import { EnPassantMoveList, CastlingMoveList } from "../helperFunctions";
 import { extractChessPosition, printChessboard } from "./aiHelperFunctions";
 import PawnPromotion from "../components/PawnPromotion";
-import { basename } from "path";
-import { arraysEqual } from "../helperFunctions";
+import { OrderMoves } from "./aiHelperFunctions";
 
 export function deepCopyBoard(boardState: string[][]): string[][] {
 	// Create a new array and copy the contents of the original array to it
@@ -87,6 +86,7 @@ export function MoveGenerator(
 		whiteCastling,
 		blackCastling
 	);
+
 
 	let moveNumber = 0;
 

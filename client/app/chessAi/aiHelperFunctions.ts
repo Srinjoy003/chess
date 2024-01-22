@@ -1,3 +1,5 @@
+import { InCheck } from "../helperFunctions";
+import { MoveMaker, UnmakeMove } from "./MoveGenerator";
 import { piecevalue } from "./basicEvaluation";
 
 export function extractChessPosition(position: number): string {
@@ -113,69 +115,144 @@ export function printChessboard(board: string[][]) {
 	}
 }
 
-export function OpponentPawnAttackSquares(boardState: string[][], currentTurn: string): number[]{
-	
-	const opponentColour = currentTurn === "w" ? "b" : "w"
-	const forwardDirection = opponentColour === "b" ? -1: 1
-	const pawn = opponentColour + "P"
-	const pawnAttackingSquares = []
+export function OpponentPawnAttackSquares(
+	boardState: string[][],
+	currentTurn: string
+): number[] {
+	const opponentColour = currentTurn === "w" ? "b" : "w";
+	const forwardDirection = opponentColour === "b" ? -1 : 1;
+	const pawn = opponentColour + "P";
+	const pawnAttackingSquares = [];
 
-	for(let row = 0; row < 8; row++){
-		for(let col = 0; col < 8; col++){
-			if(boardState[row][col] === pawn){
-				if(col + 1 < 8){
-					const position1 = (row + forwardDirection)*10 + col + 1
-					pawnAttackingSquares.push(position1)
-
+	for (let row = 0; row < 8; row++) {
+		for (let col = 0; col < 8; col++) {
+			if (boardState[row][col] === pawn) {
+				if (col + 1 < 8) {
+					const position1 = (row + forwardDirection) * 10 + col + 1;
+					pawnAttackingSquares.push(position1);
 				}
 
-				if(col - 1 >= 0){
-					const position2 = (row + forwardDirection)*10 + col - 1
-					pawnAttackingSquares.push(position2)
-
+				if (col - 1 >= 0) {
+					const position2 = (row + forwardDirection) * 10 + col - 1;
+					pawnAttackingSquares.push(position2);
 				}
 			}
-	}
-
+		}
 	}
 	return pawnAttackingSquares;
 }
 
-export function OrderMoves(boardState: string[][], moveList: number[][], currentTurn: string) {
-	for (let move of moveList) {
-		let moveScoreGuess = 0;
-		const [fromIndex, toIndex] = move;
-		const i1 = Math.floor(fromIndex / 10);
-		const j1 = fromIndex % 10;
+function isCheckMove(
+	boardState: string[][],
+	move: number[],
+	currentTurn: string
+) {
+	const opponentTurn = currentTurn === "w" ? "b" : "w";
+	const [fromIndex, toIndex] = move;
 
-		const i2 = Math.floor(toIndex / 10);
-		const j2 = toIndex % 10;
+	const i1 = Math.floor(fromIndex / 10);
+	const j1 = fromIndex % 10;
 
-		const movePiece = boardState[i1][j1];
-		const capturePiece = boardState[i2][j2];
-		const movePieceType = movePiece[1];
+	const i2 = Math.floor(toIndex / 10);
+	const j2 = toIndex % 10;
+	const capturedPiece = boardState[i2][j2];
+	const piece = boardState[i1][j1];
+	const isCastling =
+		piece !== "-" && piece[1] === "K" && Math.abs(j1 - j2) > 1 ? true : false;
 
-		if (capturePiece !== "-") {
-			const capturePieceType = capturePiece[1];
+	const isEnpassant =
+		piece !== "-" &&
+		piece[1] === "P" &&
+		j1 !== j2 &&
+		boardState[i2][j2] === "-";
 
-			moveScoreGuess =
-				10 * piecevalue[capturePieceType] - piecevalue[movePieceType];
-		}
+	const isPromotion = false;
+	const whiteCastling: [boolean, boolean, boolean] = [false, false, false];
+	const blackCastling: [boolean, boolean, boolean] = [false, false, false];
 
-		if (
-			//pawn promotion
-			movePieceType === "P" &&
-			((movePiece[0] === "w" && i2 === 7) || (movePiece[0] === "b" && i2 === 0))
-		) {
-			moveScoreGuess += 700;
-		}
+	let check = false;
+	const moveDesc: [number, number, string, boolean, boolean, boolean] = [
+		move[0],
+		move[1],
+		capturedPiece,
+		isEnpassant,
+		isCastling,
+		isPromotion,
+	];
+	
 
-		if(OpponentPawnAttackSquares(boardState, currentTurn).includes(toIndex)){
-			moveScoreGuess -= piecevalue[movePieceType]
-		}
+	MoveMaker(
+		boardState,
+		fromIndex,
+		toIndex,
+		"no promotion",
+		isPromotion,
+		isCastling,
+		isEnpassant,
+		whiteCastling,
+		blackCastling
+	);
 
+	if(InCheck(opponentTurn, boardState)){
+		check = true
 	}
+
+	UnmakeMove(boardState, moveDesc)
+
+	return check;
 }
+
+function CalculateMoveScore(boardState: string[][], move: number[], currentTurn: string): number{
+	let moveScoreGuess = 0;
+	const [fromIndex, toIndex] = move;
+	const i1 = Math.floor(fromIndex / 10);
+	const j1 = fromIndex % 10;
+
+	const i2 = Math.floor(toIndex / 10);
+	const j2 = toIndex % 10;
+
+	const movePiece = boardState[i1][j1];
+	const capturePiece = boardState[i2][j2];
+	const movePieceType = movePiece[1];
+
+	if (capturePiece !== "-") {
+		const capturePieceType = capturePiece[1];
+
+		moveScoreGuess =
+			10 * piecevalue[capturePieceType] - piecevalue[movePieceType];
+	}
+
+	if (
+		//pawn promotion
+		movePieceType === "P" &&
+		((movePiece[0] === "w" && i2 === 7) || (movePiece[0] === "b" && i2 === 0))
+	) {
+		moveScoreGuess += 700;
+	}
+
+	if (OpponentPawnAttackSquares(boardState, currentTurn).includes(toIndex)) {
+		moveScoreGuess -= piecevalue[movePieceType];
+	}
+
+	// if (isCheckMove(boardState, move, currentTurn)) moveScoreGuess += 50
+
+	return moveScoreGuess
+}
+
+
+
+
+export function OrderMoves(boardState: string[][], moveList: number[][], currentTurn: string) {
+	moveList.sort((moveA, moveB) => {
+	  const scoreA = CalculateMoveScore(boardState, moveA, currentTurn);
+	  const scoreB = CalculateMoveScore(boardState, moveB, currentTurn);
+  
+	  // Sort in descending order
+	  return scoreB - scoreA;
+	});
+  
+	// Rest of your code...
+  }
 
 // Example usage
 const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
