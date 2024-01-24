@@ -266,6 +266,4 @@ const [currentTurn, chessboard] = fenToChessboard(
 	blackCastling,
 	prevMove
 );
-// console.log(chessboard)
-// console.log(prevMove)
-// printChessboard(chessboard);
+

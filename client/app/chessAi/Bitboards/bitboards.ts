@@ -1,4 +1,4 @@
-import { PieceAtPosition } from "../helperFunctions";
+import { PieceAtPosition } from "../../helperFunctions";
 
 export function ConvertToLinearIndex(position: number): number {
 	//could slow down the engine
@@ -45,7 +45,8 @@ export function convertToBitboards(board: string[][]): Bitboards {
 	return bitboards;
 }
 
-export function UpdateBitboardsWithMove(
+export function UpdateBitboardsWithMove( //implement isPromotion later
+	//updating of castling privelages later
 	boardState: string[][],
 	bitboards: Bitboards,
 	move: number[]
@@ -76,7 +77,6 @@ export function UpdateBitboardsWithMove(
 		j1 !== j2 &&
 		boardState[i2][j2] === "-";
 
-
 	bitboards[movePiece] ^=
 		(BigInt(1) << BigInt(fromLinearIndex)) |
 		(BigInt(1) << BigInt(toLinearIndex));
@@ -88,12 +88,24 @@ export function UpdateBitboardsWithMove(
 	if (isEnpassant) {
 		const opponentPawnDirection = movePieceColour === "w" ? -8 : 8;
 		const capturedPiece = movePieceColour === "w" ? "bP" : "wP";
-        const capturedPawnPosition = toLinearIndex + opponentPawnDirection
-		
-        bitboards[capturedPiece] ^=
-			BigInt(1) << BigInt(capturedPawnPosition);
+		const capturedPawnPosition = toLinearIndex + opponentPawnDirection;
+
+		bitboards[capturedPiece] ^= BigInt(1) << BigInt(capturedPawnPosition);
 	}
-}   
+
+	if (isCastling) {
+		if (toIndex === 2) {
+			bitboards["wR"] ^= (BigInt(1) << BigInt(0)) | (BigInt(1) << BigInt(3));
+		} else if (toIndex === 6) {
+			bitboards["wR"] ^= (BigInt(1) << BigInt(7)) | (BigInt(1) << BigInt(5));
+		}
+		if (toIndex === 72) {
+			bitboards["bR"] ^= (BigInt(1) << BigInt(56)) | (BigInt(1) << BigInt(59));
+		} else if (toIndex === 76) {
+			bitboards["bR"] ^= (BigInt(1) << BigInt(63)) | (BigInt(1) << BigInt(61));
+		}
+	}
+}
 
 export function getNthBit(num: bigint, n: number): bigint {
 	const mask = BigInt(1) << BigInt(n);

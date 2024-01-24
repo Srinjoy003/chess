@@ -38,6 +38,36 @@ export function EnPassantMoveList(
 	return enpassantMoveList;
 }
 
+function FasterEnpassantMoveFinder(
+	currentPiece: string,
+	position: number,
+	boardState: string[][],
+	prevMove: [number, number] | null
+): number[] {
+	const enpassantMoveList = [];
+
+	if (currentPiece[1] === "P") {
+		const currentPieceColour = currentPiece[0];
+		const opponentColour = currentPieceColour === "w" ? "b" : "w";
+		const prevMoveDirection = opponentColour === "w" ? -1 : 1;
+		const row = opponentColour === "w" ? 3 : 4;
+
+		if (prevMove && prevMove[0] !== -1 && prevMove[1] !== -1) {
+			const opponentPosition = prevMove[1];
+			const col = opponentPosition % 10;
+			if (
+				boardState[row][col] === opponentColour + "P" &&
+				prevMove[0] === prevMove[1] + prevMoveDirection * 20 &&
+				(position === opponentPosition + 1 || position === opponentPosition - 1)
+			) {
+				enpassantMoveList.push(opponentPosition + prevMoveDirection * 10);
+			}
+		}
+	}
+
+	return enpassantMoveList;
+}
+
 function PawnMoveList( //refactor later
 	currentPiece: string,
 	position: number,
@@ -115,6 +145,14 @@ function PawnMoveList( //refactor later
 		prevMove
 	);
 	moveList.push(...enpassantMoveList);
+
+	// const enpassantMoveList = FasterEnpassantMoveFinder(
+	// 	currentPiece,
+	// 	position,
+	// 	boardState,
+	// 	prevMove
+	// );
+	// moveList.push(...enpassantMoveList);
 	return moveList;
 }
 
@@ -581,6 +619,84 @@ export function InCheck(currentTurn: string, boardState: string[][]): boolean {
 	return false;
 }
 
+// export function InCheck2(currentTurn: string, boardState: string[][]): boolean {
+// 	const kingPosition = findKing(currentTurn, boardState);
+// 	const row = Math.floor(kingPosition / 10); //0 to 7
+// 	const col = kingPosition % 10;
+// 	const opponentColour = currentTurn === "w" ? "b" : "w";
+// 	const pawnAttackDirection = currentTurn === "w" ? 1 : -1;
+
+// 	const pawnAttackMoves = [1, -1];
+
+// 	for (const dy of pawnAttackMoves) {
+// 		const moveRow = row + pawnAttackDirection;
+// 		const moveCol = col + dy;
+// 		if (moveRow >= 0 && moveRow <= 7 && moveCol >= 0 && moveCol <= 7) {
+// 			if (boardState[moveRow][moveCol] === opponentColour + "P") return true;
+// 		}
+// 	}
+
+// 	const knightMoves = [
+// 		[-2, -1],
+// 		[-2, 1],
+// 		[-1, -2],
+// 		[-1, 2],
+// 		[1, -2],
+// 		[1, 2],
+// 		[2, -1],
+// 		[2, 1],
+// 	];
+
+// 	for (const [dx, dy] of knightMoves) {
+// 		const moveRow = row + dx;
+// 		const moveCol = col + dy;
+
+// 		if (moveRow >= 0 && moveRow <= 7 && moveCol >= 0 && moveCol <= 7) {
+// 			if (boardState[moveRow][moveCol] === opponentColour + "H") {
+// 				return true;
+// 			}
+// 		}
+// 	}
+
+// 	const slidingDirections = [
+// 		[-1, -1],
+// 		[-1, 0],
+// 		[-1, 1],
+// 		[0, -1],
+// 		[0, 1],
+// 		[1, -1],
+// 		[1, 0],
+// 		[1, 1],
+// 	];
+
+// 	const slidingPieces = ["B", "Q", "R"];
+
+// 	for (const [dx, dy] of slidingDirections) {
+// 		//for sliding pieces
+// 		let moveRow = row + dx;
+// 		let moveCol = col + dy;
+// 		let iteration = 1
+
+// 		while (moveRow >= 0 && moveRow <= 7 && moveCol >= 0 && moveCol <= 7) {
+// 			const piece = boardState[moveRow][moveCol];
+// 			if (iteration === 1 && piece === opponentColour + "K"){
+// 				return true
+// 			}
+// 			if (piece[0] === opponentColour && slidingPieces.includes(piece[1])) {
+// 				return true;
+// 			} else if (piece !== "-")
+// 				//non empty square
+// 				break;
+
+// 			moveRow += dx;
+// 			moveCol += dy;
+// 			iteration++
+// 		}
+// 	}
+
+// 	return false;
+// }
+
 export function IsMoveAllowed(
 	currentTurn: string,
 	boardState: string[][],
@@ -760,8 +876,11 @@ export function CheckMate( //used unfixed version of movemaker
 					blackCastling
 				);
 
-				if (!InCheck(currentTurn, boardState)) isMate = false;
+				if (!InCheck(currentTurn, boardState)) {
+					isMate = false;
+				}
 				UnmakeMove(boardState, moveDesc);
+				if (!isMate) break;
 			}
 			return isMate;
 		}
@@ -938,7 +1057,10 @@ export function isGameOver(
 	return false;
 }
 
-export function PieceAtPosition(boardState: string[][], position: number): string {
+export function PieceAtPosition(
+	boardState: string[][],
+	position: number
+): string {
 	const rank = Math.floor(position / 10);
 	const file = position % 10;
 	return boardState[rank][file];

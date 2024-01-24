@@ -36,7 +36,9 @@ import {
 	Bitboards,
 	convertToBitboards,
 	UpdateBitboardsWithMove,
-} from "../chessAi/bitboards";
+} from "../chessAi/Bitboards/bitboards";
+import { EngineTest } from "../tests/testMoveGeneration";
+import { TranspositionTable } from "../chessAi/aiMain";
 
 type moveProps = {
 	moveFromIndex: number | null;
@@ -100,9 +102,6 @@ export default function ChessBoard({
 	type positionType = [string, string[][]];
 	const boardMap = CreateBoardMap();
 	const [boardState, setBoardState] = useState(Array.from(boardMap));
-	const [bitboardState, setBitboardState] = useState<Bitboards>(() =>
-		convertToBitboards(boardState)
-	);
 
 	const [selectedPiece, setSelectedPiece] = useState<[number, string] | null>(
 		null
@@ -173,11 +172,13 @@ export default function ChessBoard({
 	let aiRandomMoveBlack = useRef<number[]>([]);
 
 	useEffect(() => {
+		const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1"
 		// const fen =
 		// 	"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
-		const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-		// const fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - "
+		// const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+		// 	const fen =
+		// 		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
 		// const fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - "
 		// const fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
 		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  "
@@ -193,55 +194,56 @@ export default function ChessBoard({
 			prevMove
 		);
 
-		// if(currentTurn === "b"){
-		// 	dispatch(toggleTurn())
-		// 	console.log("Hello 	")
+		// // if(currentTurn === "b"){
+		// // 	dispatch(toggleTurn())
+		// // 	console.log("Hello 	")
 
-		// }
+		// // }
 		setBoardState(boardState);
 		setPrevMove(prevMove);
 		setWhiteCastling(whiteCastling);
 		setBlackCastling(blackCastling);
-		console.log(currentTurn);
 
-		// const tick = performance.now();
+		const nodeCount = { value: 0 };
+		const transpositionTable: TranspositionTable = {};
+		const tick = performance.now();
 
-		// const { bestMove, bestScore } = Minimax(
-		// 	3,
-		// 	boardState,
-		// 	currentTurn,
-		// 	prevMove,
-		// 	whiteCastling,
-		// 	blackCastling,
-		// 	true
-		// );
+		const {bestMove, bestScore } = Minimax(
+			1,
+			boardState,
+			currentTurn,
+			prevMove,
+			whiteCastling,
+			blackCastling,
+			true,
+			nodeCount,
+			transpositionTable
+		);
 
-		// const tock = performance.now();
+		const tock = performance.now();
 
-		// if (bestMove !== null) {
-		// 	const [fromIndex, toIndex, promotionMove] = bestMove;
-		// 	const fromPos = extractChessPosition(fromIndex);
-		// 	const toPos = extractChessPosition(toIndex);
-		// 	console.log(fromPos + toPos + promotionMove, bestScore);
-		// }
+		if (bestMove !== null) {
+			const [fromIndex, toIndex, promotionMove] = bestMove;
+			const fromPos = extractChessPosition(fromIndex);
+			const toPos = extractChessPosition(toIndex);
+			console.log(fromPos + toPos + promotionMove, bestScore);
+		}
 
-		// console.log("Time: ", tock - tick);
+		console.log("Time: ", tock - tick);
+		console.log("Nodes Searched: ", nodeCount.value);
 
-		// const move = Minimax(
-		// 	2,
-		// 	boardState,
-		// 	currentTurn,
-		// 	prevMove,
-		// 	whiteCastling,
-		// 	blackCastling,
-		// 	true
-		// );
 
 		// const tick = performance.now()
-		// for(let i = 1; i < 6; i++)
+		// for(let i = 1; i < 5; i++)
 		// console.log(i, MoveGenerator(i,i, boardState, currentTurn, prevMove, whiteCastling, blackCastling))
 		// const tock = performance.now()
 		// console.log("Time: ", tock - tick)
+		// const tick = performance.now();
+
+		// EngineTest();
+		// const tock = performance.now();
+		// console.log("Time: ", tock - tick)
+
 	}, [dispatch]);
 
 	useEffect(() => {
@@ -257,7 +259,7 @@ export default function ChessBoard({
 	const playSound = (audio: HTMLAudioElement | null) => {
 		if (audio) {
 			audio?.play().catch((error) => {
-				// console.error("Audio playback error:", error);
+				console.error("Audio playback error:", error);
 			});
 		}
 	};
@@ -508,18 +510,7 @@ export default function ChessBoard({
 					// } else {
 					// 	setPrevMove([fromIndex, toIndex]);
 					// }
-					setBitboardState((currentBitboards) => {
-						const updatedBitboards = { ...currentBitboards }; // Shallow copy
 
-						UpdateBitboardsWithMove(boardState, updatedBitboards, [
-							fromIndex,
-							toIndex,
-						]);
-
-						console.log("running");
-
-						return updatedBitboards;
-					});
 					setBoardState(() => {
 						return updatedBoard;
 					});
@@ -590,7 +581,7 @@ export default function ChessBoard({
 	}, [boardState, blackCastling, whiteCastling, prevMove, turn, movePiece]);
 
 	// useEffect(() => {
-	// 	const delay = 1000; // Set the desired delay in milliseconds
+	// 	const delay = 0; // Set the desired delay in milliseconds
 	// 	console.log(turn, boardState);
 	// 	if (!gameEnded) {
 	// 		console.log(turn);
@@ -599,6 +590,9 @@ export default function ChessBoard({
 	// 		}, delay);
 
 	// 		return () => clearTimeout(timer);
+	// 	}
+	// 	else{
+	// 		console.log("Game has ended")
 	// 	}
 	// 	// eslint-disable-next-line
 	// }, [boardState]);
@@ -629,7 +623,6 @@ export default function ChessBoard({
 					pawnPromotionOpen={pawnPromotionOpen}
 					gameEnded={gameEnded}
 					clientTurnColour={clientTurnColour}
-					bitboards={bitboardState}
 				/>
 			);
 		});

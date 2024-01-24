@@ -7,12 +7,35 @@ import {
 } from "./MoveGenerator";
 import { extractChessPosition, printChessboard } from "./aiHelperFunctions";
 import PawnPromotion from "../components/PawnPromotion";
-import { CheckMate, isGameOver, arraysEqualNumber } from "../helperFunctions";
+import { CheckMate, isGameOver, arraysEqualNumber, InCheck } from "../helperFunctions";
 import { Evaluate } from "./basicEvaluation";
 import { fenToChessboard } from "./aiHelperFunctions";
 import { UnmakeMove } from "./MoveGenerator";
 import { OrderMoves } from "./aiHelperFunctions";
 
+export type TranspositionTable = {
+    [key: string]: {
+        depth: number;
+        score: number;
+        bestMove: [number, number, string] | null;
+    };
+}
+
+function getBoardKey(
+    boardState: string[][],
+    whiteCastling: [boolean, boolean, boolean],
+    blackCastling: [boolean, boolean, boolean],
+    prevMove: [number, number] | null
+): string {
+    // Include castling and en passant information in the key
+    const keyObject = {
+        boardState,
+        whiteCastling,
+        blackCastling,
+        prevMove
+    };
+    return JSON.stringify(keyObject);
+}
 
 export function Minimax(
 	depth: number,
@@ -22,11 +45,25 @@ export function Minimax(
 	whiteCastling: [boolean, boolean, boolean],
 	blackCastling: [boolean, boolean, boolean],
 	maximizingPlayer: boolean,
+	nodeCount: { value: number },
+	transpositionTable: TranspositionTable,
 	alpha: number = -Infinity,
-	beta: number = Infinity
+	beta: number = Infinity,
 ): { bestMove: [number, number, string] | null; bestScore: number } {
+
+	const boardKey = getBoardKey(boardState, whiteCastling, blackCastling, prevMove);
+	if (transpositionTable[boardKey] && transpositionTable[boardKey].depth >= depth) {
+		return {
+			bestMove: transpositionTable[boardKey].bestMove,
+			bestScore: transpositionTable[boardKey].score
+		};
+	}
+
+	nodeCount.value++;
+
 	if (
-		depth === 0 ||
+		depth === 0
+		||
 		isGameOver(boardState, currentTurn, prevMove, whiteCastling, blackCastling)
 	) {
 		return {
@@ -53,7 +90,8 @@ export function Minimax(
 		blackCastling
 	);
 
-	OrderMoves(boardState, totalMoveList, currentTurn)
+
+	OrderMoves(boardState, totalMoveList, currentTurn);
 
 	for (let move of totalMoveList) {
 		// Apply the move to the board
@@ -104,7 +142,7 @@ export function Minimax(
 					isCastling,
 					isEnpassant,
 					newWhiteCastling,
-					newBlackCastling
+					newBlackCastling,
 				);
 
 				if (newPrevMove) {
@@ -120,8 +158,10 @@ export function Minimax(
 					newWhiteCastling,
 					newBlackCastling,
 					!maximizingPlayer, // Switch to minimizing player
+					nodeCount,
+					transpositionTable,
 					alpha,
-					beta
+					beta,
 				).bestScore;
 
 				UnmakeMove(boardState, moveDesc);
@@ -135,6 +175,8 @@ export function Minimax(
 					beta = bestScore;
 					bestMove = [fromIndex, toIndex, promotionMove];
 				}
+
+				
 
 				if (beta <= alpha) {
 					// Prune the branch
@@ -193,12 +235,13 @@ export function Minimax(
 				newWhiteCastling,
 				newBlackCastling,
 				!maximizingPlayer, // Switch to minimizing player
+				nodeCount,
+				transpositionTable,
 				alpha,
-				beta
+				beta,
 			).bestScore;
 
 			UnmakeMove(boardState, moveDesc);
-
 
 			if (maximizingPlayer && evaluation > bestScore) {
 				bestScore = evaluation;
@@ -209,8 +252,20 @@ export function Minimax(
 				beta = bestScore;
 				bestMove = [fromIndex, toIndex, ""];
 			}
+
+			if (beta <= alpha) {
+				// Prune the branch
+				break;
+			}
 		}
+
 	}
+
+	transpositionTable[boardKey] = {
+		depth,
+		score: bestScore,
+		bestMove
+	};
 
 	return { bestMove, bestScore };
 }

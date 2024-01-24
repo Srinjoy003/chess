@@ -9,7 +9,6 @@ import { MoveList } from "../helperFunctions";
 import { EnPassantMoveList } from "../helperFunctions";
 import { extractChessPosition } from "../chessAi/aiHelperFunctions";
 import { OpponentPawnAttackSquares } from "../chessAi/aiHelperFunctions";
-import { Bitboards, getNthBit, ConvertToLinearIndex } from "../chessAi/bitboards";
 
 
 type SquareProp = {
@@ -26,7 +25,6 @@ type SquareProp = {
 	blackCastling: [boolean, boolean, boolean];
 	gameEnded: boolean;
 	clientTurnColour: string | null
-	bitboards: Bitboards
 };
 
 const Square = ({
@@ -42,7 +40,6 @@ const Square = ({
 	whiteCastling,
 	blackCastling,
 	gameEnded,
-	bitboards
 	// clientTurnColour
 }: SquareProp) => {
 	const dispatch = useDispatch();
@@ -51,7 +48,6 @@ const Square = ({
 	const col = position % 10;
 
 	const positionName = extractChessPosition(position);
-	const linearIndex = ConvertToLinearIndex(position)
 
 	const enpassantMoveList = useMemo(() => {
 		if (selectedPiece) {
@@ -138,16 +134,16 @@ const Square = ({
 
 	return (
 		<div
-			className={`relative flex flex-row w-10 h-10 text-3xl md:w-20 md:h-20 md:text-5xl items-center justify-center ${getNthBit(bitboards["wP"], linearIndex) === BigInt(0) ? 'bg-blue-600' : 'bg-red-600'}
-			// 	(selectedPiece &&
-			// 		selectedPiece[0] === position &&
-			// 		boardState[row][col][0] === turn) ||
-			// 	prevMove?.includes(position)
-			// 		? colour === "bg-chess-light"
-			// 			? "bg-chess-selected-light"
-			// 			: "bg-chess-selected-dark"
-			// 		: colour
-			// }`}
+			className={`relative flex flex-row w-10 h-10 text-3xl md:w-20 md:h-20 md:text-5xl items-center justify-center ${
+				(selectedPiece &&
+					selectedPiece[0] === position &&
+					boardState[row][col][0] === turn) ||
+				prevMove?.includes(position)
+					? colour === "bg-chess-light"
+						? "bg-chess-selected-light"
+						: "bg-chess-selected-dark"
+					: colour
+			}`}
 			ref={drop}
 			onMouseDown={handlePieceSelection}
 		>

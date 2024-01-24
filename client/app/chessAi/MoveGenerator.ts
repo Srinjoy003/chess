@@ -1,5 +1,4 @@
 import { ImprovedTotalMoveList } from "./aiMoves";
-import { EnPassantMoveList, CastlingMoveList } from "../helperFunctions";
 import { extractChessPosition, printChessboard } from "./aiHelperFunctions";
 import PawnPromotion from "../components/PawnPromotion";
 import { OrderMoves } from "./aiHelperFunctions";
