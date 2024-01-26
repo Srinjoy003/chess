@@ -1,4 +1,4 @@
-import { InCheck } from "../helperFunctions";
+import { InCheck, PieceAtPosition } from "../helperFunctions";
 import { MoveMaker, UnmakeMove } from "./MoveGenerator";
 import { piecevalue } from "./basicEvaluation";
 
@@ -179,7 +179,6 @@ function isCheckMove(
 		isCastling,
 		isPromotion,
 	];
-	
 
 	MoveMaker(
 		boardState,
@@ -193,16 +192,20 @@ function isCheckMove(
 		blackCastling
 	);
 
-	if(InCheck(opponentTurn, boardState)){
-		check = true
+	if (InCheck(opponentTurn, boardState)) {
+		check = true;
 	}
 
-	UnmakeMove(boardState, moveDesc)
+	UnmakeMove(boardState, moveDesc);
 
 	return check;
 }
 
-function CalculateMoveScore(boardState: string[][], move: number[], currentTurn: string): number{
+function CalculateMoveScore(
+	boardState: string[][],
+	move: number[],
+	currentTurn: string
+): number {
 	let moveScoreGuess = 0;
 	const [fromIndex, toIndex] = move;
 	const i1 = Math.floor(fromIndex / 10);
@@ -236,34 +239,37 @@ function CalculateMoveScore(boardState: string[][], move: number[], currentTurn:
 
 	// if (isCheckMove(boardState, move, currentTurn)) moveScoreGuess += 50
 
-	return moveScoreGuess
+	return moveScoreGuess;
 }
 
-
-
-
-export function OrderMoves(boardState: string[][], moveList: number[][], currentTurn: string) {
+export function OrderMoves(
+	boardState: string[][],
+	moveList: number[][],
+	currentTurn: string
+) {
 	moveList.sort((moveA, moveB) => {
-	  const scoreA = CalculateMoveScore(boardState, moveA, currentTurn);
-	  const scoreB = CalculateMoveScore(boardState, moveB, currentTurn);
-  
-	  // Sort in descending order
-	  return scoreB - scoreA;
+		const scoreA = CalculateMoveScore(boardState, moveA, currentTurn);
+		const scoreB = CalculateMoveScore(boardState, moveB, currentTurn);
+
+		// Sort in descending order
+		return scoreB - scoreA;
 	});
-  
-	// Rest of your code...
-  }
+}
 
-// Example usage
-const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
-const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
-const blackCastling: [boolean, boolean, boolean] = [true, true, true];
-const prevMove: [number, number] = [-1, -1];
+export function getEnpassantSquare(
+	boardState: string[][],
+	prevMove: [number, number],
+	currentTurn: string
+) {
+	const dir = currentTurn === "w" ? 1 : -1;
 
-const [currentTurn, chessboard] = fenToChessboard(
-	fen,
-	whiteCastling,
-	blackCastling,
-	prevMove
-);
-
+	if (prevMove[1] === -1) return -1
+	
+	if (
+		PieceAtPosition(boardState, prevMove[1]) === "P" &&
+		Math.abs(prevMove[0] - prevMove[1]) === 20
+	)
+		return prevMove[1] + 10 * dir;
+	
+		return -1
+}

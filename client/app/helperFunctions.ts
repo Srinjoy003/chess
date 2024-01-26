@@ -1065,3 +1065,38 @@ export function PieceAtPosition(
 	const file = position % 10;
 	return boardState[rank][file];
 }
+
+function isCaptureMove(boardState: string[][], move: number[]): boolean {
+	const [fromIndex, toIndex] = move;
+	const i1 = Math.floor(fromIndex / 10);
+	const j1 = fromIndex % 10;
+
+	const i2 = Math.floor(toIndex / 10);
+	const j2 = toIndex % 10;
+
+	const capturePiece = boardState[i2][j2];
+
+	if (capturePiece !== "-") return true;
+
+	return false;
+}
+
+export function CaptureMoveList(
+	boardState: string[][],
+	currentTurn: string,
+	prevMove: [number, number] | null,
+	whiteCastling: [boolean, boolean, boolean],
+	blackCastling: [boolean, boolean, boolean]
+): number[][] {
+	const totalMoveList = ImprovedTotalMoveList(
+		boardState,
+		currentTurn,
+		prevMove,
+		whiteCastling,
+		blackCastling
+	);
+	const captureMoveList = totalMoveList.filter((move) =>
+		isCaptureMove(boardState, move)
+	);
+	return captureMoveList;
+}
