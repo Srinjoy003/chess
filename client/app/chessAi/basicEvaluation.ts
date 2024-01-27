@@ -52,7 +52,6 @@ export function Evaluate(
 		const [fromIndex, toIndex] = prevMove;
 		const fromPos = extractChessPosition(fromIndex);
 		const toPos = extractChessPosition(toIndex);
-		// console.log(fromPos+toPos, evaluation);
 	}
 
 	return evaluation;

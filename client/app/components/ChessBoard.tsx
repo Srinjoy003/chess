@@ -121,7 +121,7 @@ export default function ChessBoard({
 	>(null);
 
 	const [isTimeUp, setIsTimeUp] = useState(false);
-	const [playTime, setplayTime] = useState(5);
+	const [playTime, setplayTime] = useState(20);
 
 	const turn = useSelector((state: RootState) => state.turn);
 	const dispatch = useDispatch();
@@ -171,9 +171,10 @@ export default function ChessBoard({
 
 	let aiRandomMoveWhite = useRef<number[]>([]);
 	let aiRandomMoveBlack = useRef<number[]>([]);
+	let aiMinimaxMove = useRef<[number, number, string] | null>(null);
 
 	useEffect(() => {
-		// const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1"
+		// const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1"		
 		const fen =
 			"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
@@ -198,11 +199,11 @@ export default function ChessBoard({
 			prevMove
 		);
 
-		// // if(currentTurn === "b"){
-		// // 	dispatch(toggleTurn())
-		// // 	console.log("Hello 	")
+		// // // if(currentTurn === "b"){
+		// // // 	dispatch(toggleTurn())
+		// // // 	console.log("Hello 	")
 
-		// // }
+		// // // }
 		setBoardState(boardState);
 		setPrevMove(prevMove);
 		setWhiteCastling(whiteCastling);
@@ -213,7 +214,7 @@ export default function ChessBoard({
 		const tick = performance.now();
 
 		const { bestMove, bestScore } = Minimax(
-			4,
+			3,
 			boardState,
 			currentTurn,
 			prevMove,
@@ -236,19 +237,9 @@ export default function ChessBoard({
 		console.log("Time: ", tock - tick);
 		console.log("Nodes Searched: ", nodeCount.value);
 
-		// const moveList = CaptureMoveList(
-		// 	boardState,
-		// 	currentTurn,
-		// 	prevMove,
-		// 	whiteCastling,
-		// 	blackCastling
-		// );
+		
 
-		// for (let move of moveList) {
-		// 	const from = extractChessPosition(move[0]);
-		// 	const to = extractChessPosition(move[1]);
-		// 	console.log(from + to);
-		// }
+	
 
 		// const tick = performance.now()
 		// for(let i = 1; i < 5; i++)
@@ -323,7 +314,7 @@ export default function ChessBoard({
 	);
 
 	const movePiece = useCallback(
-		(fromIndex: number, toIndex: number, ai: boolean, recieved: boolean) => {
+		(fromIndex: number, toIndex: number, ai: boolean, recieved: boolean = false, aiPromotionMove: string = "Q") => {
 			if (fromIndex != toIndex) {
 				const updatedBoard = boardState.map((item) => {
 					return item.slice();
@@ -365,7 +356,7 @@ export default function ChessBoard({
 							(aiPiece[0] === "b" && i2 === 0))
 					) {
 						setPromotedPiecePosition([fromIndex, toIndex]);
-						updatedBoard[i2][j2] = turn + "Q";
+						updatedBoard[i2][j2] = turn + aiPromotionMove;
 						updatedBoard[i1][j1] = "-";
 						setSound("promote");
 						dispatch(toggleTurn());
@@ -554,15 +545,15 @@ export default function ChessBoard({
 				blackCastling
 			);
 		}
-		if (turn === "w") {
-			aiRandomMoveWhite.current = AiRandomMove(
-				boardState,
-				turn,
-				prevMove,
-				whiteCastling,
-				blackCastling
-			);
-		}
+		// if (turn === "w") {
+		// 	aiRandomMoveWhite.current = AiRandomMove(
+		// 		boardState,
+		// 		turn,
+		// 		prevMove,
+		// 		whiteCastling,
+		// 		blackCastling
+		// 	);
+		// }
 
 		if (turn === "b") {
 			if (aiRandomMoveBlack.current.length !== 0) {
@@ -579,21 +570,64 @@ export default function ChessBoard({
 				setSelectedPiece(null);
 			}
 		}
-		if (turn === "w") {
-			if (aiRandomMoveWhite.current.length !== 0) {
+		// if (turn === "w") {
+		// 	if (aiRandomMoveWhite.current.length !== 0) {
+		// 		movePiece(
+		// 			aiRandomMoveWhite.current[0],
+		// 			aiRandomMoveWhite.current[1],
+		// 			true,
+		// 			false
+		// 		);
+		// 		setPrevMove([
+		// 			aiRandomMoveWhite.current[0],
+		// 			aiRandomMoveWhite.current[1],
+		// 		]); //infinite loop caused by this
+		// 		setSelectedPiece(null);
+		// 	}
+		// }
+	}, [boardState, blackCastling, whiteCastling, prevMove, turn, movePiece]);
+
+	const aiBetterMove = useCallback(() => {
+
+		if (turn === "b") {
+			const nodeCount = { value: 0 };
+			const transpositionTable: TranspositionTable = {};
+			const {bestScore, bestMove} = Minimax(
+					3,
+					boardState,
+					turn,
+					prevMove,
+					whiteCastling,
+					blackCastling,
+					false,
+					nodeCount,
+					transpositionTable
+				)
+			
+			aiMinimaxMove.current = bestMove
+			console.log("Evaluation:",bestScore)
+			
+		}
+		
+
+		if (turn === "b") {
+			if (aiMinimaxMove.current) {
 				movePiece(
-					aiRandomMoveWhite.current[0],
-					aiRandomMoveWhite.current[1],
+					aiMinimaxMove.current[0],
+					aiMinimaxMove.current[1],
 					true,
-					false
+					false,
+					aiMinimaxMove.current[2],
+
 				);
 				setPrevMove([
-					aiRandomMoveWhite.current[0],
-					aiRandomMoveWhite.current[1],
-				]); //infinite loop caused by this
+					aiMinimaxMove.current[0],
+					aiMinimaxMove.current[1],
+				]); 
 				setSelectedPiece(null);
 			}
 		}
+	
 	}, [boardState, blackCastling, whiteCastling, prevMove, turn, movePiece]);
 
 	// useEffect(() => {
@@ -602,7 +636,8 @@ export default function ChessBoard({
 	// 	if (!gameEnded) {
 	// 		console.log(turn);
 	// 		const timer = setTimeout(() => {
-	// 			aiMove();
+	// 			// aiMove();
+	// 			aiBetterMove();
 	// 		}, delay);
 
 	// 		return () => clearTimeout(timer);
