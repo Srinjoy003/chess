@@ -33,11 +33,7 @@ import {
 	deepCopyPrevMove,
 } from "../chessAi/MoveGenerator";
 import { Evaluate } from "../chessAi/basicEvaluation";
-import {
-	Bitboards,
-	convertToBitboards,
-	UpdateBitboardsWithMove,
-} from "../chessAi/Bitboards/bitboards";
+
 import { EngineTest } from "../tests/testMoveGeneration";
 import { TranspositionTable } from "../chessAi/aiMain";
 
@@ -175,8 +171,8 @@ export default function ChessBoard({
 
 	useEffect(() => {
 		// const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1"		
-		const fen =
-			"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+		// const fen =
+		// 	"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
 		// const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 		// 	const fen =
@@ -188,54 +184,50 @@ export default function ChessBoard({
 
 		// const fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1R1K w kq - 0 1"
 
-		const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
-		const blackCastling: [boolean, boolean, boolean] = [true, true, true];
-		const prevMove: [number, number] = [-1, -1];
+		// const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
+		// const blackCastling: [boolean, boolean, boolean] = [true, true, true];
+		// const prevMove: [number, number] = [-1, -1];
 
-		const [currentTurn, boardState] = fenToChessboard(
-			fen,
-			whiteCastling,
-			blackCastling,
-			prevMove
-		);
+		// const [currentTurn, boardState] = fenToChessboard(
+		// 	fen,
+		// 	whiteCastling,
+		// 	blackCastling,
+		// 	prevMove
+		// );
 
-		// // // if(currentTurn === "b"){
-		// // // 	dispatch(toggleTurn())
-		// // // 	console.log("Hello 	")
+		
+		// setBoardState(boardState);
+		// setPrevMove(prevMove);
+		// setWhiteCastling(whiteCastling);
+		// setBlackCastling(blackCastling);
 
-		// // // }
-		setBoardState(boardState);
-		setPrevMove(prevMove);
-		setWhiteCastling(whiteCastling);
-		setBlackCastling(blackCastling);
+		// const nodeCount = { value: 0 };
+		// const transpositionTable: TranspositionTable = {};
+		// const tick = performance.now();
 
-		const nodeCount = { value: 0 };
-		const transpositionTable: TranspositionTable = {};
-		const tick = performance.now();
+		// const { bestMove, bestScore } = Minimax(
+		// 	3,
+		// 	boardState,
+		// 	currentTurn,
+		// 	prevMove,
+		// 	whiteCastling,
+		// 	blackCastling,
+		// 	true,
+		// 	nodeCount,
+		// 	transpositionTable
+		// );
 
-		const { bestMove, bestScore } = Minimax(
-			3,
-			boardState,
-			currentTurn,
-			prevMove,
-			whiteCastling,
-			blackCastling,
-			true,
-			nodeCount,
-			transpositionTable
-		);
+		// const tock = performance.now();
 
-		const tock = performance.now();
+		// if (bestMove !== null) {
+		// 	const [fromIndex, toIndex, promotionMove] = bestMove;
+		// 	const fromPos = extractChessPosition(fromIndex);
+		// 	const toPos = extractChessPosition(toIndex);
+		// 	console.log(fromPos + toPos + promotionMove, bestScore);
+		// }
 
-		if (bestMove !== null) {
-			const [fromIndex, toIndex, promotionMove] = bestMove;
-			const fromPos = extractChessPosition(fromIndex);
-			const toPos = extractChessPosition(toIndex);
-			console.log(fromPos + toPos + promotionMove, bestScore);
-		}
-
-		console.log("Time: ", tock - tick);
-		console.log("Nodes Searched: ", nodeCount.value);
+		// console.log("Time: ", tock - tick);
+		// console.log("Nodes Searched: ", nodeCount.value);
 
 		
 
@@ -589,7 +581,9 @@ export default function ChessBoard({
 
 	const aiBetterMove = useCallback(() => {
 
+
 		if (turn === "b") {
+
 			const nodeCount = { value: 0 };
 			const transpositionTable: TranspositionTable = {};
 			const {bestScore, bestMove} = Minimax(
@@ -611,6 +605,7 @@ export default function ChessBoard({
 		
 
 		if (turn === "b") {
+			console.log("Plays Move");
 			if (aiMinimaxMove.current) {
 				movePiece(
 					aiMinimaxMove.current[0],
@@ -630,23 +625,21 @@ export default function ChessBoard({
 	
 	}, [boardState, blackCastling, whiteCastling, prevMove, turn, movePiece]);
 
-	// useEffect(() => {
-	// 	const delay = 0; // Set the desired delay in milliseconds
-	// 	console.log(turn, boardState);
-	// 	if (!gameEnded) {
-	// 		console.log(turn);
-	// 		const timer = setTimeout(() => {
-	// 			// aiMove();
-	// 			aiBetterMove();
-	// 		}, delay);
+	useEffect(() => {
+		const delay = 0; // Set the desired delay in milliseconds
+		if (!gameEnded) {
+			const timer = setTimeout(() => {
+				// aiMove();
+				aiBetterMove();
+			}, delay);
 
-	// 		return () => clearTimeout(timer);
-	// 	}
-	// 	else{
-	// 		console.log("Game has ended")
-	// 	}
-	// 	// eslint-disable-next-line
-	// }, [boardState]);
+			return () => clearTimeout(timer);
+		}
+		else{
+			console.log("Game has ended")
+		}
+		// eslint-disable-next-line
+	}, [boardState]);
 
 	useEffect(() => {
 		if (moveFromIndex !== null && moveToIndex !== null) {

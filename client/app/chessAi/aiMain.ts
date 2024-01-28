@@ -253,7 +253,7 @@ export function SearchAllCaptures(
 	transpositionTable: TranspositionTable,
 	alpha: number = -Infinity,
 	beta: number = Infinity,
-	depth = 2
+	depth = 3
 ) {
 	nodeCount.value++;
 
