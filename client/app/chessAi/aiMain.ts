@@ -257,9 +257,7 @@ export function SearchAllCaptures(
 ) {
 	nodeCount.value++;
 
-	if (
-		depth === 0
-	) {
+	if (depth === 0) {
 		return {
 			bestMove: null,
 			bestScore: Evaluate(
@@ -377,11 +375,11 @@ export function SearchAllCaptures(
 
 				UnmakeMove(boardState, moveDesc);
 
-				if (maximizingPlayer && evaluation > bestScore) {
+				if (maximizingPlayer && evaluation >= bestScore) {
 					bestScore = evaluation;
 					alpha = bestScore;
 					bestMove = [fromIndex, toIndex, promotionMove];
-				} else if (!maximizingPlayer && evaluation < bestScore) {
+				} else if (!maximizingPlayer && evaluation <= bestScore) {
 					bestScore = evaluation;
 					beta = bestScore;
 					bestMove = [fromIndex, toIndex, promotionMove];
@@ -452,11 +450,11 @@ export function SearchAllCaptures(
 
 			UnmakeMove(boardState, moveDesc);
 
-			if (maximizingPlayer && evaluation > bestScore) {
+			if (maximizingPlayer && evaluation >= bestScore) {
 				bestScore = evaluation;
 				alpha = bestScore;
 				bestMove = [fromIndex, toIndex, ""];
-			} else if (!maximizingPlayer && evaluation < bestScore) {
+			} else if (!maximizingPlayer && evaluation <= bestScore) {
 				bestScore = evaluation;
 				beta = bestScore;
 				bestMove = [fromIndex, toIndex, ""];
@@ -525,29 +523,29 @@ export function Minimax(
 	}
 
 	if (depth === 0) {
-		return SearchAllCaptures(
-			boardState,
-			currentTurn,
-			prevMove,
-			whiteCastling,
-			blackCastling,
-			maximizingPlayer,
-			nodeCount,
-			transpositionTable,
-			alpha,
-			beta
-		);
+		// return SearchAllCaptures(
+		// 	boardState,
+		// 	currentTurn,
+		// 	prevMove,
+		// 	whiteCastling,
+		// 	blackCastling,
+		// 	maximizingPlayer,
+		// 	nodeCount,
+		// 	transpositionTable,
+		// 	alpha,
+		// 	beta
+		// );
 
-		// return {
-		// 	bestMove: null,
-		// 	bestScore: Evaluate(
-		// 		boardState,
-		// 		currentTurn,
-		// 		prevMove,
-		// 		whiteCastling,
-		// 		blackCastling
-		// 	),
-		// };
+		return {
+			bestMove: null,
+			bestScore: Evaluate(
+				boardState,
+				currentTurn,
+				prevMove,
+				whiteCastling,
+				blackCastling
+			),
+		};
 	}
 
 	const totalMoveList = ImprovedTotalMoveList(
@@ -634,6 +632,7 @@ export function Minimax(
 					bestScore = evaluation;
 					alpha = bestScore;
 					bestMove = [fromIndex, toIndex, promotionMove];
+					
 				} else if (!maximizingPlayer && evaluation < bestScore) {
 					bestScore = evaluation;
 					beta = bestScore;
@@ -703,13 +702,16 @@ export function Minimax(
 				beta
 			).bestScore;
 
+
 			UnmakeMove(boardState, moveDesc);
 
-			if (maximizingPlayer && evaluation > bestScore) {
+			if (maximizingPlayer && evaluation >= bestScore) {
 				bestScore = evaluation;
 				alpha = bestScore;
 				bestMove = [fromIndex, toIndex, ""];
-			} else if (!maximizingPlayer && evaluation < bestScore) {
+				// if (evaluation === Infinity)
+				// 		console.log(bestMove, boardState)
+			} else if (!maximizingPlayer && evaluation <= bestScore) {
 				bestScore = evaluation;
 				beta = bestScore;
 				bestMove = [fromIndex, toIndex, ""];
@@ -722,11 +724,13 @@ export function Minimax(
 		}
 	}
 
+
 	transpositionTable[boardKey] = {
 		depth,
 		score: bestScore,
 		bestMove,
 	};
+
 
 	return { bestMove, bestScore };
 }

@@ -186,6 +186,53 @@ const kingSquareTable: {[key:string]: number[][]} = {
 
 
 
+// export function Evaluate(
+// 	boardState: string[][],
+// 	currentTurn: string,
+// 	prevMove: [number, number] | null,
+// 	whiteCastling: [boolean, boolean, boolean],
+// 	blackCastling: [boolean, boolean, boolean]
+// ): number {
+// 	let evaluation = 0;
+// 	if (
+// 		CheckMate(currentTurn, boardState, prevMove, whiteCastling, blackCastling)
+// 	) {
+// 		evaluation = currentTurn === "w" ? -Infinity : Infinity;
+// 	} else if (
+// 		StaleMate(
+// 			boardState,
+// 			currentTurn,
+// 			prevMove,
+// 			whiteCastling,
+// 			blackCastling
+// 		) ||
+// 		InsufficientMaterial(boardState)
+// 	) {
+// 		evaluation = 0;
+// 	} else {
+		
+// 		for (let i = 0; i < 8; i++) {
+// 			for (let j = 0; j < 8; j++) {
+// 				if (boardState[i][j] !== "-" && boardState[i][j][1] !== "K") {
+// 					let piece = boardState[i][j][1];
+// 					let colour = boardState[i][j][0];
+// 					let direction = colour === "w" ? 1 : -1;
+// 					const pieceTable = pieceSquareTable[colour + piece]
+// 					evaluation += (piecevalue[piece] +  pieceTable[i][j])* direction;
+// 				}
+// 			}
+// 		}
+// 	}
+// 	if (prevMove) {
+// 		const [fromIndex, toIndex] = prevMove;
+// 		const fromPos = extractChessPosition(fromIndex);
+// 		const toPos = extractChessPosition(toIndex);
+// 	}
+
+
+// 	return evaluation;
+// }
+
 export function Evaluate(
 	boardState: string[][],
 	currentTurn: string,
@@ -211,105 +258,54 @@ export function Evaluate(
 	) {
 		evaluation = 0;
 	} else {
-		
+		let whiteQueenAlive = false;
+		let blackQueenAlive = false;
+		let whiteMajorPieceCount = 0;
+		let blackMajorPieceCount = 0;
+		const majorPieceList = ["H", "R", "B"];
+
+		let whiteKingPosition = [-1, -1];
+		let blackKingPosition = [-1, -1];
+
 		for (let i = 0; i < 8; i++) {
 			for (let j = 0; j < 8; j++) {
-				if (boardState[i][j] !== "-" && boardState[i][j][1] !== "K") {
+				if (boardState[i][j] !== "-") {
 					let piece = boardState[i][j][1];
 					let colour = boardState[i][j][0];
 					let direction = colour === "w" ? 1 : -1;
-					const pieceTable = pieceSquareTable[colour + piece]
-					evaluation += (piecevalue[piece] +  pieceTable[i][j])* direction;
+					if (piece !== "K") {
+						const pieceTable = pieceSquareTable[colour + piece];
+						evaluation += (piecevalue[piece] + pieceTable[i][j]) * direction;
+
+						if (colour === "w") {
+							if (piece === "Q") whiteQueenAlive = true;
+							else if (majorPieceList.includes(piece)) whiteMajorPieceCount++;
+						} else {
+							if (piece === "Q") blackQueenAlive = true;
+							else if (majorPieceList.includes(piece)) blackMajorPieceCount++;
+						}
+					} else if (piece === "K") {
+						if (colour === "w") whiteKingPosition = [i, j];
+						else blackKingPosition = [i, j];
+					}
 				}
 			}
 		}
+
+		const whiteEndgame =
+			!whiteQueenAlive || whiteMajorPieceCount <= 1 ? true : false;
+		const blackEndgame =
+			!blackQueenAlive || blackMajorPieceCount <= 1 ? true : false;
+
+		const [blackKingRow, blackKingCol] = blackKingPosition;
+		const [whiteKingRow, whiteKingCol] = whiteKingPosition;
+		const gamePhase = whiteEndgame && blackEndgame ? "eg" : "mg";
+
+		evaluation +=
+			kingSquareTable[gamePhase + "wK"][whiteKingRow][whiteKingCol] -
+			kingSquareTable[gamePhase + "bK"][blackKingRow][blackKingCol];
 	}
-	if (prevMove) {
-		const [fromIndex, toIndex] = prevMove;
-		const fromPos = extractChessPosition(fromIndex);
-		const toPos = extractChessPosition(toIndex);
-	}
+	
 
 	return evaluation;
 }
-
-// export function Evaluate(
-// 	boardState: string[][],
-// 	currentTurn: string,
-// 	prevMove: [number, number] | null,
-// 	whiteCastling: [boolean, boolean, boolean],
-// 	blackCastling: [boolean, boolean, boolean]
-// ): number {
-// 	let evaluation = 0;
-
-// 	if (
-// 		CheckMate(currentTurn, boardState, prevMove, whiteCastling, blackCastling)
-// 	) {
-// 		evaluation = currentTurn === "w" ? -Infinity : Infinity;
-// 	} else if (
-// 		StaleMate(
-// 			boardState,
-// 			currentTurn,
-// 			prevMove,
-// 			whiteCastling,
-// 			blackCastling
-// 		) ||
-// 		InsufficientMaterial(boardState)
-// 	) {
-// 		evaluation = 0;
-// 	} else {
-// 		let whiteQueenAlive = false;
-// 		let blackQueenAlive = false;
-// 		let whiteMajorPieceCount = 0;
-// 		let blackMajorPieceCount = 0;
-// 		const majorPieceList = ["H", "R", "B"];
-
-// 		let whiteKingPosition = [-1, -1];
-// 		let blackKingPosition = [-1, -1];
-
-// 		for (let i = 0; i < 8; i++) {
-// 			for (let j = 0; j < 8; j++) {
-// 				if (boardState[i][j] !== "-") {
-// 					let piece = boardState[i][j][1];
-// 					let colour = boardState[i][j][0];
-// 					let direction = colour === "w" ? 1 : -1;
-// 					if (piece !== "K") {
-// 						const pieceTable = pieceSquareTable[colour + piece];
-// 						evaluation += (piecevalue[piece] + pieceTable[i][j]) * direction;
-
-// 						if (colour === "w") {
-// 							if (piece === "Q") whiteQueenAlive = true;
-// 							else if (majorPieceList.includes(piece)) whiteMajorPieceCount++;
-// 						} else {
-// 							if (piece === "Q") blackQueenAlive = true;
-// 							else if (majorPieceList.includes(piece)) blackMajorPieceCount++;
-// 						}
-// 					} else if (piece === "K") {
-// 						if (colour === "w") whiteKingPosition = [i, j];
-// 						else blackKingPosition = [i, j];
-// 					}
-// 				}
-// 			}
-// 		}
-
-// 		const whiteEndgame =
-// 			!whiteQueenAlive || whiteMajorPieceCount <= 1 ? true : false;
-// 		const blackEndgame =
-// 			!blackQueenAlive || blackMajorPieceCount <= 1 ? true : false;
-
-// 		const [blackKingRow, blackKingCol] = blackKingPosition;
-// 		const [whiteKingRow, whiteKingCol] = whiteKingPosition;
-// 		const gamePhase = whiteEndgame && blackEndgame ? "eg" : "mg";
-
-// 		evaluation +=
-// 			kingSquareTable[gamePhase + "wK"][whiteKingRow][whiteKingCol] -
-// 			kingSquareTable[gamePhase + "bK"][blackKingRow][blackKingCol];
-// 	}
-// 	if (prevMove) {
-// 		const [fromIndex, toIndex] = prevMove;
-// 		const fromPos = extractChessPosition(fromIndex);
-// 		const toPos = extractChessPosition(toIndex);
-// 	}
-
-// 	return evaluation;
-// }

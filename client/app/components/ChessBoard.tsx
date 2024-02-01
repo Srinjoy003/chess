@@ -170,7 +170,7 @@ export default function ChessBoard({
 	let aiMinimaxMove = useRef<[number, number, string] | null>(null);
 
 	useEffect(() => {
-		// const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1"		
+		// const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1"
 		// const fen =
 		// 	"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
@@ -181,8 +181,13 @@ export default function ChessBoard({
 		// const fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
 		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  "
 
-
 		// const fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1R1K w kq - 0 1"
+
+		// const fen = "7r/8/8/8/8/6p1/6PP/5kBK b - - 0 1";
+		// const fen = "8/8/8/8/8/6pr/6PP/5kBK w - - 0 1"; //black mate
+		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 b - - 0 1"; //white mate
+		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 w - - 0 1"; //white mate
+
 
 		// const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
 		// const blackCastling: [boolean, boolean, boolean] = [true, true, true];
@@ -194,8 +199,10 @@ export default function ChessBoard({
 		// 	blackCastling,
 		// 	prevMove
 		// );
-
 		
+		// const maximising = currentTurn === "w" ? true : false
+
+
 		// setBoardState(boardState);
 		// setPrevMove(prevMove);
 		// setWhiteCastling(whiteCastling);
@@ -206,13 +213,13 @@ export default function ChessBoard({
 		// const tick = performance.now();
 
 		// const { bestMove, bestScore } = Minimax(
-		// 	3,
+		// 	2,
 		// 	boardState,
 		// 	currentTurn,
 		// 	prevMove,
 		// 	whiteCastling,
 		// 	blackCastling,
-		// 	true,
+		// 	maximising,
 		// 	nodeCount,
 		// 	transpositionTable
 		// );
@@ -228,10 +235,6 @@ export default function ChessBoard({
 
 		// console.log("Time: ", tock - tick);
 		// console.log("Nodes Searched: ", nodeCount.value);
-
-		
-
-	
 
 		// const tick = performance.now()
 		// for(let i = 1; i < 5; i++)
@@ -306,7 +309,13 @@ export default function ChessBoard({
 	);
 
 	const movePiece = useCallback(
-		(fromIndex: number, toIndex: number, ai: boolean, recieved: boolean = false, aiPromotionMove: string = "Q") => {
+		(
+			fromIndex: number,
+			toIndex: number,
+			ai: boolean,
+			recieved: boolean = false,
+			aiPromotionMove: string = "Q"
+		) => {
 			if (fromIndex != toIndex) {
 				const updatedBoard = boardState.map((item) => {
 					return item.slice();
@@ -580,31 +589,28 @@ export default function ChessBoard({
 	}, [boardState, blackCastling, whiteCastling, prevMove, turn, movePiece]);
 
 	const aiBetterMove = useCallback(() => {
-
-
-		if (turn === "b") {
-
+		const aiTurn: string = "b";
+		const maximising = aiTurn === "w" ? true : false;
+		if (turn === aiTurn) {
 			const nodeCount = { value: 0 };
 			const transpositionTable: TranspositionTable = {};
-			const {bestScore, bestMove} = Minimax(
-					3,
-					boardState,
-					turn,
-					prevMove,
-					whiteCastling,
-					blackCastling,
-					false,
-					nodeCount,
-					transpositionTable
-				)
-			
-			aiMinimaxMove.current = bestMove
-			console.log("Evaluation:",bestScore)
-			
-		}
-		
+			const { bestScore, bestMove } = Minimax(
+				3,
+				boardState,
+				aiTurn,
+				prevMove,
+				whiteCastling,
+				blackCastling,
+				maximising,
+				nodeCount,
+				transpositionTable
+			);
 
-		if (turn === "b") {
+			aiMinimaxMove.current = bestMove;
+			console.log("Evaluation:", bestScore, bestMove);
+		}
+
+		if (turn === aiTurn) {
 			console.log("Plays Move");
 			if (aiMinimaxMove.current) {
 				movePiece(
@@ -612,21 +618,16 @@ export default function ChessBoard({
 					aiMinimaxMove.current[1],
 					true,
 					false,
-					aiMinimaxMove.current[2],
-
+					aiMinimaxMove.current[2]
 				);
-				setPrevMove([
-					aiMinimaxMove.current[0],
-					aiMinimaxMove.current[1],
-				]); 
+				setPrevMove([aiMinimaxMove.current[0], aiMinimaxMove.current[1]]);
 				setSelectedPiece(null);
 			}
 		}
-	
 	}, [boardState, blackCastling, whiteCastling, prevMove, turn, movePiece]);
 
 	useEffect(() => {
-		const delay = 0; // Set the desired delay in milliseconds
+		const delay = 1; // Set the desired delay in milliseconds
 		if (!gameEnded) {
 			const timer = setTimeout(() => {
 				// aiMove();
@@ -634,9 +635,8 @@ export default function ChessBoard({
 			}, delay);
 
 			return () => clearTimeout(timer);
-		}
-		else{
-			console.log("Game has ended")
+		} else {
+			console.log("Game has ended");
 		}
 		// eslint-disable-next-line
 	}, [boardState]);
