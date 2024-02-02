@@ -1,5 +1,6 @@
 import { CheckMate, InsufficientMaterial, StaleMate } from "../helperFunctions";
 import { extractChessPosition, printChessboard } from "./aiHelperFunctions";
+import { MATE_VAL } from "./aiMain";
 
 export const piecevalue: { [key: string]: number } = {
 	P: 100,
@@ -238,14 +239,15 @@ export function Evaluate(
 	currentTurn: string,
 	prevMove: [number, number] | null,
 	whiteCastling: [boolean, boolean, boolean],
-	blackCastling: [boolean, boolean, boolean]
+	blackCastling: [boolean, boolean, boolean],
+	depth: number
 ): number {
 	let evaluation = 0;
 
 	if (
 		CheckMate(currentTurn, boardState, prevMove, whiteCastling, blackCastling)
 	) {
-		evaluation = currentTurn === "w" ? -Infinity : Infinity;
+		evaluation = currentTurn === "w" ? -MATE_VAL - depth : MATE_VAL + depth;
 	} else if (
 		StaleMate(
 			boardState,
