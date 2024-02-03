@@ -18,7 +18,7 @@ import {
 	InCheck,
 	PieceAtPosition,
 } from "../helperFunctions";
-import { Evaluate } from "./basicEvaluation";
+import { Evaluate } from "./evaluation";
 import { fenToChessboard } from "./aiHelperFunctions";
 import { UnmakeMove } from "./MoveGenerator";
 import { OrderMoves } from "./aiHelperFunctions";
@@ -61,12 +61,13 @@ export function SearchAllCaptures(
 	nodeCount: { value: number },
 	transpositionTable: TranspositionTable,
 	endTime: number,
-	alpha: number = -Infinity,
-	beta: number = Infinity,
+	cancel: { isCancelled: boolean },
+	alpha: number,
+	beta: number
 ) {
 	nodeCount.value++;
 
-	if (/*depth === 0 ||*/ Date.now() >= endTime) {
+	if (Date.now() >= endTime) {
 		return {
 			bestMove: null,
 			bestScore: Evaluate(
@@ -82,7 +83,8 @@ export function SearchAllCaptures(
 
 	if (prevMove === null) prevMove = [-1, -1];
 	let bestMove: [number, number, string] | null = null;
-	let bestScore = maximizingPlayer ? -MATE_VAL - 100 : MATE_VAL + 100;
+	// let bestScore = maximizingPlayer ? -MATE_VAL - 100 : MATE_VAL + 100;
+	let bestScore = Evaluate(boardState, currentTurn, prevMove, whiteCastling, blackCastling, depth)
 
 	const captureMoveList = CaptureMoveList(
 		boardState,
@@ -92,15 +94,8 @@ export function SearchAllCaptures(
 		blackCastling
 	);
 
-	OrderMoves(boardState, captureMoveList, currentTurn);
+	OrderMoves(boardState, captureMoveList, currentTurn, null);
 
-	// console.log(
-	// 	"Depth:",
-	// 	depth,
-	// 	"Moves:",
-	// 	captureMoveList.length,
-	// 	captureMoveList
-	// );
 
 	if (captureMoveList.length === 0) {
 		return {
@@ -116,8 +111,9 @@ export function SearchAllCaptures(
 		};
 	}
 
-	for (let captureMove of captureMoveList) {
+	
 
+	for (let captureMove of captureMoveList) {
 		if (Date.now() >= endTime) break;
 
 		const [fromIndex, toIndex] = captureMove;
@@ -178,7 +174,7 @@ export function SearchAllCaptures(
 				}
 
 				const evaluation = SearchAllCaptures(
-					depth-1,
+					depth - 1,
 					boardState, // Updated board state after the move
 					nextTurn,
 					newPrevMove,
@@ -188,8 +184,9 @@ export function SearchAllCaptures(
 					nodeCount,
 					transpositionTable,
 					endTime,
+					cancel,
 					alpha,
-					beta,
+					beta
 				).bestScore;
 
 				UnmakeMove(boardState, moveDesc);
@@ -268,8 +265,9 @@ export function SearchAllCaptures(
 				nodeCount,
 				transpositionTable,
 				endTime,
+				cancel,
 				alpha,
-				beta,
+				beta
 			).bestScore;
 
 			UnmakeMove(boardState, moveDesc);
@@ -278,6 +276,8 @@ export function SearchAllCaptures(
 				bestScore = evaluation;
 				alpha = bestScore;
 				bestMove = [fromIndex, toIndex, ""];
+				if (prevMove[0] === 67 && prevMove[1] == 57)
+					console.log("Capture:", bestMove, bestScore);
 			} else if (!maximizingPlayer && evaluation < bestScore) {
 				bestScore = evaluation;
 				beta = bestScore;
@@ -294,8 +294,6 @@ export function SearchAllCaptures(
 	return { bestMove, bestScore };
 }
 
-
-
 export function Minimax(
 	depth: number,
 	boardState: string[][],
@@ -307,6 +305,8 @@ export function Minimax(
 	nodeCount: { value: number },
 	transpositionTable: TranspositionTable,
 	endTime: number,
+	cancel: { isCancelled: boolean },
+	previousIterationBestMove: [number, number] | null,
 	alpha: number = -Infinity,
 	beta: number = Infinity
 ): { bestMove: [number, number, string] | null; bestScore: number } {
@@ -344,6 +344,8 @@ export function Minimax(
 		) ||
 		Date.now() >= endTime
 	) {
+		if (Date.now() >= endTime) cancel.isCancelled = true;
+
 		return {
 			bestMove: null,
 			bestScore: Evaluate(
@@ -369,8 +371,9 @@ export function Minimax(
 			nodeCount,
 			transpositionTable,
 			endTime,
+			cancel,
 			alpha,
-			beta,
+			beta
 		);
 
 		// return {
@@ -394,10 +397,13 @@ export function Minimax(
 		blackCastling
 	);
 
-	OrderMoves(boardState, totalMoveList, currentTurn);
+	OrderMoves(boardState, totalMoveList, currentTurn, previousIterationBestMove);
 
 	for (let move of totalMoveList) {
-		if (Date.now() >= endTime) break;
+		if (Date.now() >= endTime) {
+			cancel.isCancelled = true;
+			break;
+		}
 
 		const [fromIndex, toIndex] = move;
 
@@ -463,6 +469,8 @@ export function Minimax(
 					nodeCount,
 					transpositionTable,
 					endTime,
+					cancel,
+					null,
 					alpha,
 					beta
 				).bestScore;
@@ -539,6 +547,8 @@ export function Minimax(
 				nodeCount,
 				transpositionTable,
 				endTime,
+				cancel,
+				null,
 				alpha,
 				beta
 			).bestScore;
@@ -549,8 +559,6 @@ export function Minimax(
 				bestScore = evaluation;
 				alpha = bestScore;
 				bestMove = [fromIndex, toIndex, ""];
-				// if (evaluation === Infinity)
-				// 		console.log(bestMove, boardState)
 			} else if (!maximizingPlayer && evaluation <= bestScore) {
 				bestScore = evaluation;
 				beta = bestScore;

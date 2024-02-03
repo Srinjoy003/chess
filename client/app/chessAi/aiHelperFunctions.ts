@@ -1,6 +1,6 @@
 import { InCheck, PieceAtPosition } from "../helperFunctions";
 import { MoveMaker, UnmakeMove } from "./MoveGenerator";
-import { piecevalue } from "./basicEvaluation";
+import { piecevalue } from "./evaluation";
 
 export function extractChessPosition(position: number): string {
 	const row = Math.floor(position / 10); // Extract the "tens" place as row
@@ -245,7 +245,8 @@ function CalculateMoveScore(
 export function OrderMoves(
 	boardState: string[][],
 	moveList: number[][],
-	currentTurn: string
+	currentTurn: string,
+	previousIterationBestMove: [number, number] | null
 ) {
 	moveList.sort((moveA, moveB) => {
 		const scoreA = CalculateMoveScore(boardState, moveA, currentTurn);
@@ -254,6 +255,18 @@ export function OrderMoves(
 		// Sort in descending order
 		return scoreB - scoreA;
 	});
+
+	if (previousIterationBestMove) {
+
+		const bestMoveIndex = moveList.findIndex((move) =>
+			move.every((coord, index) => coord === previousIterationBestMove[index])
+		);
+
+		if (bestMoveIndex !== -1) {
+			moveList.splice(bestMoveIndex, 1); // Remove the best move from its current position
+			moveList.unshift(previousIterationBestMove); // Move it to the start
+		} 
+	}
 }
 
 export function getEnpassantSquare(
@@ -263,13 +276,13 @@ export function getEnpassantSquare(
 ) {
 	const dir = currentTurn === "w" ? 1 : -1;
 
-	if (prevMove[1] === -1) return -1
-	
+	if (prevMove[1] === -1) return -1;
+
 	if (
 		PieceAtPosition(boardState, prevMove[1]) === "P" &&
 		Math.abs(prevMove[0] - prevMove[1]) === 20
 	)
 		return prevMove[1] + 10 * dir;
-	
-		return -1
+
+	return -1;
 }

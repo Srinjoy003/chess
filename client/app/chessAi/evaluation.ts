@@ -165,7 +165,7 @@ const egWhiteKingTable = [
 	[-50, -40, -30, -20, -20, -30, -40, -50],
 ];
 
-const pieceSquareTable: {[key:string]: number[][]} = {
+const pieceSquareTable: { [key: string]: number[][] } = {
 	wP: whitePawnTable,
 	bP: blackPawnTable,
 	wH: whiteKnightTable,
@@ -175,17 +175,15 @@ const pieceSquareTable: {[key:string]: number[][]} = {
 	wR: whiteRookTable,
 	bR: blackRookTable,
 	wQ: whiteQueenTable,
-	bQ: blackQueenTable
-}
+	bQ: blackQueenTable,
+};
 
-const kingSquareTable: {[key:string]: number[][]} = {
+const kingSquareTable: { [key: string]: number[][] } = {
 	egwK: egWhiteKingTable,
 	egbK: egBlackKingTable,
 	mgwK: mgWhiteKingTable,
-	mgbK: mgBlackKingTable
-}
-
-
+	mgbK: mgBlackKingTable,
+};
 
 // export function Evaluate(
 // 	boardState: string[][],
@@ -211,7 +209,7 @@ const kingSquareTable: {[key:string]: number[][]} = {
 // 	) {
 // 		evaluation = 0;
 // 	} else {
-		
+
 // 		for (let i = 0; i < 8; i++) {
 // 			for (let j = 0; j < 8; j++) {
 // 				if (boardState[i][j] !== "-" && boardState[i][j][1] !== "K") {
@@ -229,7 +227,6 @@ const kingSquareTable: {[key:string]: number[][]} = {
 // 		const fromPos = extractChessPosition(fromIndex);
 // 		const toPos = extractChessPosition(toIndex);
 // 	}
-
 
 // 	return evaluation;
 // }
@@ -260,6 +257,8 @@ export function Evaluate(
 	) {
 		evaluation = 0;
 	} else {
+		
+
 		let whiteQueenAlive = false;
 		let blackQueenAlive = false;
 		let whiteMajorPieceCount = 0;
@@ -277,6 +276,7 @@ export function Evaluate(
 					let direction = colour === "w" ? 1 : -1;
 					if (piece !== "K") {
 						const pieceTable = pieceSquareTable[colour + piece];
+						// console.log(colour + piece, i, j, pieceTable[i][j])
 						evaluation += (piecevalue[piece] + pieceTable[i][j]) * direction;
 
 						if (colour === "w") {
@@ -306,7 +306,9 @@ export function Evaluate(
 		evaluation +=
 			kingSquareTable[gamePhase + "wK"][whiteKingRow][whiteKingCol] -
 			kingSquareTable[gamePhase + "bK"][blackKingRow][blackKingCol];
+
 	}
+
 	
 
 	return evaluation;

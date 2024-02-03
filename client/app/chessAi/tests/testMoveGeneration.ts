@@ -1,6 +1,6 @@
 import { testArray } from "./testPositions";
-import { MoveGenerator } from "../chessAi/MoveGenerator";
-import { fenToChessboard } from "../chessAi/aiHelperFunctions";
+import { MoveGenerator } from "../MoveGenerator";
+import { fenToChessboard } from "../aiHelperFunctions";
 
 export function EngineTest() {
 	let passed = 0;
@@ -44,5 +44,5 @@ export function EngineTest() {
 		console.log("");
 	}
 
-    console.log("Passed:", passed, " Failed", failed)
+	console.log("Passed:", passed, " Failed", failed);
 }

@@ -32,11 +32,13 @@ import {
 	deepCopyCastling,
 	deepCopyPrevMove,
 } from "../chessAi/MoveGenerator";
-import { Evaluate } from "../chessAi/basicEvaluation";
+import { Evaluate } from "../chessAi/evaluation";
 
-import { EngineTest } from "../tests/testMoveGeneration";
+import { EngineTest } from "../chessAi/tests/testMoveGeneration";
 import { TranspositionTable } from "../chessAi/aiMain";
 import { MATE_VAL } from "../chessAi/aiMain";
+import { iterativeDeepeningSearch } from "../chessAi/iterativeDeepening";
+import { EvaluationTest } from "../chessAi/tests/evaluationTest";
 
 type moveProps = {
 	moveFromIndex: number | null;
@@ -173,11 +175,9 @@ export default function ChessBoard({
 	useEffect(() => {
 		//Mate pos
 		// const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1";
-		const fen = "8/k1PK4/p7/8/4B3/8/8/1R6 w - - 0 1";
-
+		// const fen = "8/k1PK4/p7/8/4B3/8/8/1R6 w - - 0 1";
 		// const fen =
 		// 	"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-
 		// const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 		// 	const fen =
 		// 		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
@@ -185,73 +185,72 @@ export default function ChessBoard({
 		// const fen =
 		// 	"r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
 		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
-
 		// const fen =
 		// 	"r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1R1K w kq - 0 1";
-
 		// const fen = "7r/8/8/8/8/6p1/6PP/5kBK b - - 0 1";
 		// const fen = "8/8/8/8/8/6pr/6PP/5kBK w - - 0 1"; //black mate
 		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 b - - 0 1"; //white mate
 		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 w - - 0 1"; //white mate
-
-		const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
-		const blackCastling: [boolean, boolean, boolean] = [true, true, true];
-		const prevMove: [number, number] = [-1, -1];
-
-		const [currentTurn, boardState] = fenToChessboard(
-			fen,
-			whiteCastling,
-			blackCastling,
-			prevMove
-		);
-
-		const maximising = currentTurn === "w" ? true : false;
-
-		setBoardState(boardState);
-		setPrevMove(prevMove);
-		setWhiteCastling(whiteCastling);
-		setBlackCastling(blackCastling);
-
-		const nodeCount = { value: 0 };
-		const transpositionTable: TranspositionTable = {};
-		const endTime = Date.now() + 3000;
-		const tick = performance.now();
-
-		const { bestMove, bestScore } = Minimax(
-			3,
-			boardState,
-			currentTurn,
-			prevMove,
-			whiteCastling,
-			blackCastling,
-			maximising,
-			nodeCount,
-			transpositionTable,
-			endTime
-		);
-
-		const tock = performance.now();
-
-		if (bestMove !== null) {
-			const [fromIndex, toIndex, promotionMove] = bestMove;
-			const fromPos = extractChessPosition(fromIndex);
-			const toPos = extractChessPosition(toIndex);
-			console.log(fromPos + toPos + promotionMove, bestScore);
-		}
-
-		console.log("Time: ", tock - tick);
-		console.log("Nodes Searched: ", nodeCount.value);
-
+		// const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
+		// const blackCastling: [boolean, boolean, boolean] = [true, true, true];
+		// const prevMove: [number, number] = [-1, -1];
+		// const [currentTurn, boardState] = fenToChessboard(
+		// 	fen,
+		// 	whiteCastling,
+		// 	blackCastling,
+		// 	prevMove
+		// );
+		// // const maximising = currentTurn === "w" ? true : false;
+		// setBoardState(boardState);
+		// setPrevMove(prevMove);
+		// setWhiteCastling(whiteCastling);
+		// setBlackCastling(blackCastling);
+		// const nodeCount = { value: 0 };
+		// const transpositionTable: TranspositionTable = {};
+		// const endTime = Date.now() + 3000;
+		// const tick = performance.now();
+		// const cancel = { isCancelled: false };
+		// const { bestMove, bestScore } = Minimax(
+		// 	3,
+		// 	boardState,
+		// 	currentTurn,
+		// 	prevMove,
+		// 	whiteCastling,
+		// 	blackCastling,
+		// 	maximising,
+		// 	nodeCount,
+		// 	transpositionTable,
+		// 	endTime,
+		// 	cancel
+		// );
+		// const { finalBestMove, finalBestScore } = iterativeDeepeningSearch(
+		// 	boardState,
+		// 	currentTurn,
+		// 	prevMove,
+		// 	whiteCastling,
+		// 	blackCastling,
+		// 	3000
+		// );
+		// const tock = performance.now();
+		// if (finalBestMove !== null) {
+		// 	const [fromIndex, toIndex, promotionMove] = finalBestMove;
+		// 	const fromPos = extractChessPosition(fromIndex);
+		// 	const toPos = extractChessPosition(toIndex);
+		// 	console.log("\n Final Output:\n");
+		// 	console.log(fromPos + toPos + promotionMove, finalBestScore);
+		// }
+		// console.log("Time: ", tock - tick);
+		// console.log("Nodes Searched: ", nodeCount.value);
 		// const tick = performance.now()
 		// for(let i = 1; i < 5; i++)
 		// console.log(i, MoveGenerator(i,i, boardState, currentTurn, prevMove, whiteCastling, blackCastling))
 		// const tock = performance.now()
 		// console.log("Time: ", tock - tick)
 		// const tick = performance.now();
-
 		// EngineTest();
 		// const tock = performance.now();
 		// console.log("Time: ", tock - tick)
+		// EvaluationTest();
 	}, [dispatch]);
 
 	useEffect(() => {
@@ -597,26 +596,42 @@ export default function ChessBoard({
 	const aiBetterMove = useCallback(() => {
 		const aiTurn: string = "b";
 		const maximising = aiTurn === "w" ? true : false;
-		const endTime = 1000; //change while using
+		const endTime = Date.now() + 3000; //change while using
 
 		if (turn === aiTurn) {
 			const nodeCount = { value: 0 };
 			const transpositionTable: TranspositionTable = {};
-			const { bestScore, bestMove } = Minimax(
-				3,
+			const cancel = { isCancelled: false };
+
+			// const { bestScore, bestMove } = Minimax(
+			// 	1,
+			// 	boardState,
+			// 	aiTurn,
+			// 	prevMove,
+			// 	whiteCastling,
+			// 	blackCastling,
+			// 	maximising,
+			// 	nodeCount,
+			// 	transpositionTable,
+			// 	endTime,
+			// 	cancel,
+			// 	null
+			// );
+
+			const { finalBestMove, finalBestScore } = iterativeDeepeningSearch(
 				boardState,
 				aiTurn,
 				prevMove,
 				whiteCastling,
 				blackCastling,
-				maximising,
-				nodeCount,
-				transpositionTable,
-				endTime
+				4000
 			);
 
-			aiMinimaxMove.current = bestMove;
-			console.log("Evaluation:", bestScore, bestMove);
+			// aiMinimaxMove.current = bestMove;
+			// console.log("Evaluation:", bestScore, bestMove, cancel.isCancelled);
+
+			aiMinimaxMove.current = finalBestMove;
+			console.log("Evaluation:", finalBestScore, finalBestMove);
 		}
 
 		if (turn === aiTurn) {
@@ -636,19 +651,18 @@ export default function ChessBoard({
 	}, [boardState, blackCastling, whiteCastling, prevMove, turn, movePiece]);
 
 	useEffect(() => {
-		const delay = 1; // Set the desired delay in milliseconds
+		const delay = 0; // Set the desired delay in milliseconds
 		if (!gameEnded) {
 			const timer = setTimeout(() => {
-				aiMove();
-				// aiBetterMove();
+				// aiMove();
+				aiBetterMove();
 			}, delay);
 
 			return () => clearTimeout(timer);
 		} else {
 			console.log("Game has ended");
 		}
-		// eslint-disable-next-line
-	}, [boardState]);
+	}, [boardState, aiBetterMove, gameEnded]);
 
 	useEffect(() => {
 		if (moveFromIndex !== null && moveToIndex !== null) {
