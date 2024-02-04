@@ -1,6 +1,6 @@
 import { ImprovedTotalMoveList } from "./aiMoves";
 import { extractChessPosition, printChessboard } from "./aiHelperFunctions";
-import PawnPromotion from "../components/PawnPromotion";
+import PawnPromotion from "../../components/PawnPromotion";
 import { OrderMoves } from "./aiHelperFunctions";
 
 export function deepCopyBoard(boardState: string[][]): string[][] {
@@ -86,7 +86,6 @@ export function MoveGenerator(
 		blackCastling
 	);
 
-
 	let moveNumber = 0;
 
 	for (let move of totalMoveList) {
@@ -125,8 +124,6 @@ export function MoveGenerator(
 				const newWhiteCastling = deepCopyCastling(whiteCastling);
 				const newBlackCastling = deepCopyCastling(blackCastling);
 				const newPrevMove = deepCopyPrevMove(prevMove);
-
-				
 
 				MoveMaker(
 					boardState,
@@ -196,8 +193,6 @@ export function MoveGenerator(
 			const newBlackCastling = deepCopyCastling(blackCastling);
 			const newPrevMove = deepCopyPrevMove(prevMove);
 
-			
-
 			MoveMaker(
 				boardState,
 				fromIndex,
@@ -240,7 +235,6 @@ export function MoveGenerator(
 	}
 	return moveNumber;
 }
-
 
 export function MoveMaker(
 	boardState: string[][],

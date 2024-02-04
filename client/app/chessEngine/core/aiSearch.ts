@@ -10,19 +10,19 @@ import {
 	getEnpassantSquare,
 	printChessboard,
 } from "./aiHelperFunctions";
-import PawnPromotion from "../components/PawnPromotion";
+import PawnPromotion from "../../components/PawnPromotion";
 import {
 	CheckMate,
 	isGameOver,
 	arraysEqualNumber,
 	InCheck,
 	PieceAtPosition,
-} from "../helperFunctions";
+} from "../../helperFunctions";
 import { Evaluate } from "./evaluation";
 import { fenToChessboard } from "./aiHelperFunctions";
 import { UnmakeMove } from "./MoveGenerator";
 import { OrderMoves } from "./aiHelperFunctions";
-import { CaptureMoveList } from "../helperFunctions";
+import { CaptureMoveList } from "../../helperFunctions";
 
 export type TranspositionTable = {
 	[key: string]: {
@@ -84,7 +84,14 @@ export function SearchAllCaptures(
 	if (prevMove === null) prevMove = [-1, -1];
 	let bestMove: [number, number, string] | null = null;
 	// let bestScore = maximizingPlayer ? -MATE_VAL - 100 : MATE_VAL + 100;
-	let bestScore = Evaluate(boardState, currentTurn, prevMove, whiteCastling, blackCastling, depth)
+	let bestScore = Evaluate(
+		boardState,
+		currentTurn,
+		prevMove,
+		whiteCastling,
+		blackCastling,
+		depth
+	);
 
 	const captureMoveList = CaptureMoveList(
 		boardState,
@@ -95,7 +102,6 @@ export function SearchAllCaptures(
 	);
 
 	OrderMoves(boardState, captureMoveList, currentTurn, null);
-
 
 	if (captureMoveList.length === 0) {
 		return {
@@ -110,8 +116,6 @@ export function SearchAllCaptures(
 			),
 		};
 	}
-
-	
 
 	for (let captureMove of captureMoveList) {
 		if (Date.now() >= endTime) break;

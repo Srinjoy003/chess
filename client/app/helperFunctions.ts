@@ -4,8 +4,8 @@ import {
 	deepCopyCastling,
 	deepCopyPrevMove,
 	UnmakeMove,
-} from "./chessAi/MoveGenerator";
-import { ImprovedTotalMoveList } from "./chessAi/aiMoves";
+} from "./chessEngine/core/MoveGenerator";
+import { ImprovedTotalMoveList } from "./chessEngine/core/aiMoves";
 
 export function EnPassantMoveList(
 	currentPiece: string,

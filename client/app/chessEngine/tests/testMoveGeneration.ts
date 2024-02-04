@@ -1,6 +1,6 @@
 import { testArray } from "./testPositions";
-import { MoveGenerator } from "../MoveGenerator";
-import { fenToChessboard } from "../aiHelperFunctions";
+import { MoveGenerator } from "../core/MoveGenerator";
+import { fenToChessboard } from "../core/aiHelperFunctions";
 
 export function EngineTest() {
 	let passed = 0;

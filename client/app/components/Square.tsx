@@ -7,16 +7,20 @@ import { useSelector } from "react-redux";
 import { RootState } from "../reduxStore/store";
 import { MoveList } from "../helperFunctions";
 import { EnPassantMoveList } from "../helperFunctions";
-import { extractChessPosition } from "../chessAi/aiHelperFunctions";
-import { OpponentPawnAttackSquares } from "../chessAi/aiHelperFunctions";
-
+import { extractChessPosition } from "../chessEngine/core/aiHelperFunctions";
+import { OpponentPawnAttackSquares } from "../chessEngine/core/aiHelperFunctions";
 
 type SquareProp = {
 	pawnPromotionOpen: boolean;
 	boardState: Array<Array<string>>;
 	colour: string;
 	position: number;
-	movePiece: (fromIndex: number, toIndex: number, ai: boolean, recieved: boolean) => void;
+	movePiece: (
+		fromIndex: number,
+		toIndex: number,
+		ai: boolean,
+		recieved: boolean
+	) => void;
 	selectedPiece: [number, string] | null;
 	setSelectedPiece: (newSelectedPiece: [number, string] | null) => void;
 	prevMove: [number, number] | null;
@@ -24,7 +28,7 @@ type SquareProp = {
 	whiteCastling: [boolean, boolean, boolean];
 	blackCastling: [boolean, boolean, boolean];
 	gameEnded: boolean;
-	clientTurnColour: string | null
+	clientTurnColour: string | null;
 };
 
 const Square = ({
@@ -40,8 +44,8 @@ const Square = ({
 	whiteCastling,
 	blackCastling,
 	gameEnded,
-	// clientTurnColour
-}: SquareProp) => {
+}: // clientTurnColour
+SquareProp) => {
 	const dispatch = useDispatch();
 	const turn = useSelector((state: RootState) => state.turn);
 	const row = Math.floor(position / 10);

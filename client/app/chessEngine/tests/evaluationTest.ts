@@ -1,5 +1,5 @@
-import { fenToChessboard, printChessboard } from "../aiHelperFunctions";
-import { Evaluate } from "../evaluation";
+import { fenToChessboard, printChessboard } from "../core/aiHelperFunctions";
+import { Evaluate } from "../core/evaluation";
 
 const evaluationTestPositions = [
 	{

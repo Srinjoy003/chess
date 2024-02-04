@@ -1,7 +1,7 @@
-import { Minimax } from "./aiMain";
-import { TranspositionTable } from "./aiMain";
+import { Minimax } from "./aiSearch";
+import { TranspositionTable } from "./aiSearch";
 import { extractChessPosition } from "./aiHelperFunctions";
-import { MATE_VAL } from "./aiMain";
+import { MATE_VAL } from "./aiSearch";
 
 export function iterativeDeepeningSearch(
 	boardState: string[][],
@@ -10,8 +10,10 @@ export function iterativeDeepeningSearch(
 	whiteCastling: [boolean, boolean, boolean],
 	blackCastling: [boolean, boolean, boolean],
 	timeLimit: number
-): {finalBestMove: [number, number, string] | null, finalBestScore: number| null} {
-
+): {
+	finalBestMove: [number, number, string] | null;
+	finalBestScore: number | null;
+} {
 	let previousIterationBestMove: [number, number] | null = null;
 	const cancel = { isCancelled: false };
 	const endTime = Date.now() + timeLimit;
@@ -46,7 +48,6 @@ export function iterativeDeepeningSearch(
 			const fromPos = extractChessPosition(fromIndex);
 			const toPos = extractChessPosition(toIndex);
 
-	
 			console.log(
 				"Depth:",
 				depth,
@@ -55,9 +56,9 @@ export function iterativeDeepeningSearch(
 				" Eval:",
 				bestScore
 			);
-			console.log("Previous Best Move:", previousIterationBestMove)
+			console.log("Previous Best Move:", previousIterationBestMove);
 
-			previousIterationBestMove = [bestMove[0], bestMove[1]]
+			previousIterationBestMove = [bestMove[0], bestMove[1]];
 		}
 
 		console.log("Time: ", tock - tick);
@@ -74,9 +75,9 @@ export function iterativeDeepeningSearch(
 		}
 
 		finalBestMove = bestMove;
-		finalBestScore = bestScore
+		finalBestScore = bestScore;
 		depth++;
 	}
 
-	return {finalBestMove, finalBestScore}
+	return { finalBestMove, finalBestScore };
 }

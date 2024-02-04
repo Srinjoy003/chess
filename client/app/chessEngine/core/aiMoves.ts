@@ -1,5 +1,4 @@
-import { MoveList } from "../helperFunctions";
-
+import { MoveList } from "../../helperFunctions";
 
 export function ImprovedTotalMoveList(
 	boardState: string[][],

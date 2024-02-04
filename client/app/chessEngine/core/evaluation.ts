@@ -1,6 +1,10 @@
-import { CheckMate, InsufficientMaterial, StaleMate } from "../helperFunctions";
+import {
+	CheckMate,
+	InsufficientMaterial,
+	StaleMate,
+} from "../../helperFunctions";
 import { extractChessPosition, printChessboard } from "./aiHelperFunctions";
-import { MATE_VAL } from "./aiMain";
+import { MATE_VAL } from "./aiSearch";
 
 export const piecevalue: { [key: string]: number } = {
 	P: 100,
@@ -257,8 +261,6 @@ export function Evaluate(
 	) {
 		evaluation = 0;
 	} else {
-		
-
 		let whiteQueenAlive = false;
 		let blackQueenAlive = false;
 		let whiteMajorPieceCount = 0;
@@ -306,10 +308,7 @@ export function Evaluate(
 		evaluation +=
 			kingSquareTable[gamePhase + "wK"][whiteKingRow][whiteKingCol] -
 			kingSquareTable[gamePhase + "bK"][blackKingRow][blackKingCol];
-
 	}
-
-	
 
 	return evaluation;
 }

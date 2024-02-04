@@ -1,4 +1,4 @@
-import { InCheck, PieceAtPosition } from "../helperFunctions";
+import { InCheck, PieceAtPosition } from "../../helperFunctions";
 import { MoveMaker, UnmakeMove } from "./MoveGenerator";
 import { piecevalue } from "./evaluation";
 
@@ -8,12 +8,21 @@ export function extractChessPosition(position: number): string {
 	return String.fromCharCode("a".charCodeAt(0) + col) + (row + 1);
 }
 
+export function semiUCIToChessPosition(coordinate: string): number {
+    const col = coordinate.charCodeAt(0) - "a".charCodeAt(0);
+    const row = parseInt(coordinate.charAt(1), 10) - 1;
+
+    return row * 10 + col;
+}
+
 function chessPositionToIndices(position: string): [number, number] {
 	return [
 		parseInt(position[1]) - 1,
 		position[0].charCodeAt(0) - "a".charCodeAt(0),
 	];
 }
+
+
 
 export function fenToChessboard(
 	fen: string,
@@ -257,7 +266,6 @@ export function OrderMoves(
 	});
 
 	if (previousIterationBestMove) {
-
 		const bestMoveIndex = moveList.findIndex((move) =>
 			move.every((coord, index) => coord === previousIterationBestMove[index])
 		);
@@ -265,7 +273,7 @@ export function OrderMoves(
 		if (bestMoveIndex !== -1) {
 			moveList.splice(bestMoveIndex, 1); // Remove the best move from its current position
 			moveList.unshift(previousIterationBestMove); // Move it to the start
-		} 
+		}
 	}
 }
 
