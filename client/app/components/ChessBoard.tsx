@@ -690,28 +690,26 @@ export default function ChessBoard({
 					</div>
 				</div>
 
-				<div className="absolute flex flex-col top-10 right-20 gap-[600px] lg:gap-60 lg:right-10 lg:top-1/4 item-start justify-center">
-					<div>
-						<Timer
-							playTime={playTime}
-							timerFor={"b"}
-							turn={turn}
-							pawnPromotionOpen={pawnPromotionOpen}
-							setIsTimeUp={setIsTimeUp}
-							gameEnded={gameEnded}
-						/>
-					</div>
+				<div className="absolute flex flex-col top-1/2 right-1/2 translate-x-44 -translate-y-[260px] sm:top-1/2 sm:right-1/2 sm:translate-x-52 sm:-translate-y-72 md:top-1/2 md:right-1/2 md:translate-x-64 md:-translate-y-[360px] lg:right-10 lg:top-1/4 lg:translate-x-0 lg:translate-y-0 item-start justify-center">
+					<Timer
+						playTime={playTime}
+						timerFor={"b"}
+						turn={turn}
+						pawnPromotionOpen={pawnPromotionOpen}
+						setIsTimeUp={setIsTimeUp}
+						gameEnded={gameEnded}
+					/>
+				</div>
 
-					<div>
-						<Timer
-							playTime={playTime}
-							timerFor={"w"}
-							turn={turn}
-							pawnPromotionOpen={pawnPromotionOpen}
-							setIsTimeUp={setIsTimeUp}
-							gameEnded={gameEnded}
-						/>
-					</div>
+				<div className="absolute flex flex-col top-1/2 right-1/2 translate-x-44 translate-y-52 sm:bottom-1/2 sm:right-1/2 sm:translate-x-52 sm:translate-y-64 md:top-1/2 md:right-1/2 md:translate-x-64 md:translate-y-80 lg:right-10 lg:bottom-1/4 lg:translate-x-0 lg:translate-y-0 item-start justify-center">
+					<Timer
+						playTime={playTime}
+						timerFor={"w"}
+						turn={turn}
+						pawnPromotionOpen={pawnPromotionOpen}
+						setIsTimeUp={setIsTimeUp}
+						gameEnded={gameEnded}
+					/>
 				</div>
 
 				<div
