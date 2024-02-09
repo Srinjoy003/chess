@@ -34,7 +34,7 @@ const ChessPiece = ({
 		}),
 	});
 
-	const size = "w-10 h-10 md:w-20 md:h-20";
+	const size = "w-11 h-11 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20";
 
 	return (
 		<div

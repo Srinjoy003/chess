@@ -44,8 +44,8 @@ const Square = ({
 	whiteCastling,
 	blackCastling,
 	gameEnded,
-}: // clientTurnColour
-SquareProp) => {
+	clientTurnColour,
+}: SquareProp) => {
 	const dispatch = useDispatch();
 	const turn = useSelector((state: RootState) => state.turn);
 	const row = Math.floor(position / 10);
@@ -107,7 +107,9 @@ SquareProp) => {
 				movePiece(selectedPiece[0], position, false, false);
 				setPrevMove([selectedPiece[0], position]);
 				setSelectedPiece(null);
-			} else if (boardState[row][col][0] === turn) {
+			} else if (
+				boardState[row][col][0] === turn /*&& turn == clientTurnColour*/
+			) {
 				setSelectedPiece([position, boardState[row][col]]);
 			}
 		}
@@ -124,7 +126,7 @@ SquareProp) => {
 		setPrevMove,
 		pawnPromotionOpen,
 		gameEnded,
-		// clientTurnColour
+		clientTurnColour,
 	]);
 
 	const pieceColour = boardState[row][col][0];
@@ -138,7 +140,7 @@ SquareProp) => {
 
 	return (
 		<div
-			className={`relative flex flex-row w-10 h-10 text-3xl md:w-20 md:h-20 md:text-5xl items-center justify-center ${
+			className={`relative flex flex-row w-11 h-11 text-xs sm:w-12 sm:h-12 sm:text-sm md:w-16 md:h-16 md:text-lg lg:w-20 lg:h-20 lg:text-xl items-center justify-center ${
 				(selectedPiece &&
 					selectedPiece[0] === position &&
 					boardState[row][col][0] === turn) ||
@@ -164,7 +166,7 @@ SquareProp) => {
 				boardState[row][col] === "-" &&
 				!enpassantMoveList.includes(position) && (
 					<div
-						className={`w-4 h-4 md:w-7 md:h-7 rounded-full ${
+						className={`w-4 h-4 sm:w-4 sm:h-4 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full ${
 							colour === "bg-chess-light"
 								? "bg-chess-move-light"
 								: "bg-chess-move-dark"
@@ -177,7 +179,7 @@ SquareProp) => {
 					enpassantMoveList.includes(position)) &&
 				pieceColour !== selectedPieceColour && (
 					<div
-						className={`w-20 h-20 border-8 rounded-full absolute ${
+						className={`w-11 h-11 border-4 sm:w-12 sm:h-12 sm:border-4 md:w-16 md:h-16 md:border-[6px] lg:w-20 lg:h-20 lg:border-8 rounded-full absolute ${
 							colour === "bg-chess-light"
 								? "border-chess-move-light"
 								: "border-chess-move-dark"
@@ -187,7 +189,7 @@ SquareProp) => {
 
 			{positionName[0] === "a" && (
 				<div
-					className={`absolute left-0 top-0 text-xl font-semibold ${
+					className={`absolute left-0 top-0 font-semibold ${
 						colour === "bg-chess-light" ? "text-chess-dark" : "text-chess-light"
 					}`}
 				>
@@ -197,7 +199,7 @@ SquareProp) => {
 
 			{positionName[1] === "1" && (
 				<div
-					className={`absolute right-0 bottom-0 text-xl font-semibold ${
+					className={`absolute right-0 bottom-0 font-semibold ${
 						colour === "bg-chess-light" ? "text-chess-dark" : "text-chess-light"
 					}`}
 				>

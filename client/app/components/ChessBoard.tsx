@@ -27,10 +27,16 @@ import { iterativeDeepeningSearch } from "../chessEngine/core/iterativeDeepening
 import { moveToUCI } from "../chessEngine/openings/openingParser";
 import { findOpeningMove } from "../chessEngine/openings/openingParser";
 import { MakeEngineMove } from "../chessEngine/core/aiMain";
+import {
+	MoveMaker,
+	deepCopyBoard,
+	deepCopyCastling,
+} from "../chessEngine/core/MoveGenerator";
 
 type moveProps = {
 	moveFromIndex: number | null;
 	moveToIndex: number | null;
+	promotionMove: string | null;
 	socket: Socket;
 	clientTurnColour: string | null;
 };
@@ -68,6 +74,7 @@ export function CreateBoardMap() {
 export default function ChessBoard({
 	moveFromIndex,
 	moveToIndex,
+	promotionMove,
 	socket,
 	clientTurnColour,
 }: moveProps) {
@@ -92,7 +99,7 @@ export default function ChessBoard({
 	>(null);
 
 	const [isTimeUp, setIsTimeUp] = useState(false);
-	const [playTime, setplayTime] = useState(20);
+	const [playTime, setplayTime] = useState(10);
 
 	const turn = useSelector((state: RootState) => state.turn);
 	const dispatch = useDispatch();
@@ -236,7 +243,7 @@ export default function ChessBoard({
 
 	useEffect(() => {
 		setPosition([turn, boardState]);
-	}, [turn, boardState]);
+	}, [turn, boardState]); //could be problematic for multiplayer
 
 	useEffect(() => {
 		if (positionList.length === noOfMoves.current) {
@@ -397,6 +404,12 @@ export default function ChessBoard({
 								setPromotedPiecePosition([fromIndex, toIndex]);
 								return true;
 							});
+							socket.emit("move", {
+								fromIndex,
+								toIndex,
+								promotionMove: boardState[i2][j2][1],
+							});
+							console.log("sent promotion", boardState[i2][j2][1]);
 						}
 					}
 
@@ -500,13 +513,7 @@ export default function ChessBoard({
 				) {
 					noOfMoves.current++;
 					dispatch(toggleTurn());
-
-					// if (!recieved) {                                    //for sockets
-					// 	socket.emit("move", { fromIndex, toIndex });
-					// 	console.log("SENT DATA", fromIndex, toIndex);
-					// } else {
-					// 	setPrevMove([fromIndex, toIndex]);
-					// }
+					socket.emit("move", { fromIndex, toIndex, promotionMove: "" });
 
 					setBoardState(() => {
 						return updatedBoard;
@@ -522,6 +529,7 @@ export default function ChessBoard({
 			prevMove,
 			selectedPiece,
 			turn,
+			socket,
 		]
 	);
 
@@ -563,13 +571,21 @@ export default function ChessBoard({
 				setSelectedPiece(null);
 			}
 		}
-	}, [boardState, blackCastling, whiteCastling, prevMove, turn, movePiece]);
+	}, [
+		boardState,
+		blackCastling,
+		whiteCastling,
+		prevMove,
+		turn,
+		movePiece,
+		moveList,
+	]);
 
 	useEffect(() => {
 		const delay = 0; // Set the desired delay in milliseconds
 		if (!gameEnded) {
 			const timer = setTimeout(() => {
-				aiMove();
+				// aiMove();
 			}, delay);
 
 			return () => clearTimeout(timer);
@@ -579,9 +595,56 @@ export default function ChessBoard({
 	}, [boardState, aiMove, gameEnded]);
 
 	useEffect(() => {
-		if (moveFromIndex !== null && moveToIndex !== null) {
-			movePiece(moveFromIndex, moveToIndex, false, true);
-			// console.log("RECIEVED DATA", fromIndex, toIndex);
+		if (
+			moveFromIndex !== null &&
+			moveToIndex !== null &&
+			promotionMove != null
+		) {
+			// movePiece(moveFromIndex, moveToIndex, false, true);
+			const i1 = Math.floor(moveFromIndex / 10);
+			const j1 = moveFromIndex % 10;
+
+			const i2 = Math.floor(moveToIndex / 10);
+			const j2 = moveToIndex % 10;
+
+			const piece = boardState[i1][j1];
+			const boardStateMul = deepCopyBoard(boardState);
+			const whiteCastlingMul = deepCopyCastling(whiteCastling);
+			const blackCastlingMul = deepCopyCastling(blackCastling);
+			const capturedPiece = boardState[i2][j2];
+			const isCastling =
+				piece !== "-" && piece[1] === "K" && Math.abs(j1 - j2) > 1
+					? true
+					: false;
+
+			const isEnpassant =
+				piece !== "-" &&
+				piece[1] === "P" &&
+				j1 !== j2 &&
+				boardState[i2][j2] === "-";
+
+			const isPromotion =
+				piece[1] == "P" &&
+				((piece[0] == "w" && i2 == 7) || (piece[0] == "b" && i2 == 0));
+			const promotedPiece = promotionMove;
+
+			MoveMaker(
+				boardStateMul,
+				moveFromIndex,
+				moveToIndex,
+				promotedPiece,
+				isPromotion,
+				isCastling,
+				isEnpassant,
+				whiteCastling,
+				blackCastling
+			);
+			setBoardState(boardStateMul);
+			setBlackCastling(blackCastlingMul);
+			setWhiteCastling(whiteCastling);
+			setPrevMove([moveFromIndex, moveToIndex]);
+			dispatch(toggleTurn());
+			console.log("RECIEVED DATA", moveFromIndex, moveToIndex);
 		}
 		// eslint-disable-next-line
 	}, [moveFromIndex, moveToIndex]); //multiplayer
@@ -616,7 +679,7 @@ export default function ChessBoard({
 
 	return (
 		<>
-			<div className="flex flex-row gap-10  bg-chess-bg">
+			<div className="flex flex-row gap-10 bg-yellow-950">
 				<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
 					<div className="flex flex-col-reverse">{board}</div>
 					<div className="absolute z-20 -translate-x-10">
@@ -627,23 +690,28 @@ export default function ChessBoard({
 					</div>
 				</div>
 
-				<div className="absolute flex flex-col md:gap-60 md:right-10 md:top-1/4 item-start justify-center">
-					<Timer
-						playTime={playTime}
-						timerFor={"b"}
-						turn={turn}
-						pawnPromotionOpen={pawnPromotionOpen}
-						setIsTimeUp={setIsTimeUp}
-						gameEnded={gameEnded}
-					/>
-					<Timer
-						playTime={playTime}
-						timerFor={"w"}
-						turn={turn}
-						pawnPromotionOpen={pawnPromotionOpen}
-						setIsTimeUp={setIsTimeUp}
-						gameEnded={gameEnded}
-					/>
+				<div className="absolute flex flex-col top-10 right-20 gap-[600px] lg:gap-60 lg:right-10 lg:top-1/4 item-start justify-center">
+					<div>
+						<Timer
+							playTime={playTime}
+							timerFor={"b"}
+							turn={turn}
+							pawnPromotionOpen={pawnPromotionOpen}
+							setIsTimeUp={setIsTimeUp}
+							gameEnded={gameEnded}
+						/>
+					</div>
+
+					<div>
+						<Timer
+							playTime={playTime}
+							timerFor={"w"}
+							turn={turn}
+							pawnPromotionOpen={pawnPromotionOpen}
+							setIsTimeUp={setIsTimeUp}
+							gameEnded={gameEnded}
+						/>
+					</div>
 				</div>
 
 				<div

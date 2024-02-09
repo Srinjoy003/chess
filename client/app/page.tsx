@@ -6,35 +6,54 @@ import ChessBoard from "./components/ChessBoard";
 import { Providers } from "./reduxStore/provider";
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
 
-type moveProps = { fromIndex: number; toIndex: number };
-const socket = io("http://localhost:3001");
+type moveProps = { fromIndex: number; toIndex: number; promotionMove: string };
+// const socket = io("http://localhost:3001", { reconnection: false });
 
 export default function Home() {
+	const [socket, setSocket] = useState<Socket>(io("http://localhost:3002",));
 	const [moveFromIndex, setMoveFromIndex] = useState<number | null>(null); //for sockets
 	const [moveToIndex, setMoveToIndex] = useState<number | null>(null);
-	const [colour, setColour] = useState<string | null>(null);
+	const [promotionMove, setPromotionMove] = useState<string | null>(null);
+	const [colour, setColour] = useState<string | null>(
+		null
+	);
 
-	// useEffect(() => {
-	// 	socket.on("move", (move: moveProps) => {
-	// 		setMoveFromIndex(move.fromIndex);
-	// 		setMoveToIndex(move.toIndex);
-	// 		console.log("RECIEVED DATA", move.fromIndex, move.toIndex);
-	// 	});
+	useEffect(() => {
+		const socket = io("http://localhost:3001", { reconnection: false });
+		setSocket(socket);
+		return () => {
+			socket.disconnect();
+		};
+	}, []);
 
-	// 	socket.on("colorAssigned", (colour: string) => {
-	// 		setColour(colour);
-	// 		console.log("RECIEVED COLOUR", colour);
-	// 	});
-	// }, []);
+	useEffect(() => {
+		socket.on("move", (move: moveProps) => {
+			setMoveFromIndex(move.fromIndex);
+			setMoveToIndex(move.toIndex);
+			setPromotionMove(move.promotionMove);
+			console.log(
+				"RECIEVED DATA",
+				move.fromIndex,
+				move.toIndex,
+				move.promotionMove
+			);
+		});
 
-	
+		socket.on("colorAssigned", (colour: string) => {
+			setColour(colour);
+			console.log("RECIEVED COLOUR", colour);
+		});
+	}, [socket]);
+
 	return (
 		<Providers>
 			<DndProvider backend={HTML5Backend}>
 				<ChessBoard
 					moveFromIndex={moveFromIndex}
 					moveToIndex={moveToIndex}
+					promotionMove={promotionMove}
 					socket={socket}
 					clientTurnColour={colour}
 				/>

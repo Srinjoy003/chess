@@ -33,7 +33,7 @@ function PawnPromotion({ open, handleSelect }: PawnPromotionProps) {
 					<BlackBishop size={size} />
 				)}
 			</div>
-			<div onClick={() => handleSelect(turn + "K", false)}>
+			<div onClick={() => handleSelect(turn + "H", false)}>
 				{turn === "w" ? (
 					<WhiteKnight size={size} />
 				) : (
