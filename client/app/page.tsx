@@ -9,16 +9,21 @@ import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 
 type moveProps = { fromIndex: number; toIndex: number; promotionMove: string };
-// const socket = io("http://localhost:3001", { reconnection: false });
+export type PlayState = {
+	serverBoardState: string[][];
+	serverPrevMove: [number, number];
+	serverWhiteCastling: [boolean, boolean, boolean];
+	serverBlackCastling: [boolean, boolean, boolean];
+	serverTurn: string;
+};
 
 export default function Home() {
-	const [socket, setSocket] = useState<Socket>(io("http://localhost:3002",));
+	const [socket, setSocket] = useState<Socket>(io("http://localhost:3002"));
 	const [moveFromIndex, setMoveFromIndex] = useState<number | null>(null); //for sockets
 	const [moveToIndex, setMoveToIndex] = useState<number | null>(null);
 	const [promotionMove, setPromotionMove] = useState<string | null>(null);
-	const [colour, setColour] = useState<string | null>(
-		null
-	);
+	const [colour, setColour] = useState<string | null>(null);
+	const [playState, setPlayState] = useState<PlayState | null>(null);
 
 	useEffect(() => {
 		const socket = io("http://localhost:3001", { reconnection: false });
@@ -45,6 +50,11 @@ export default function Home() {
 			setColour(colour);
 			console.log("RECIEVED COLOUR", colour);
 		});
+
+		socket.on("playState", (playState: PlayState) => {
+			setPlayState(playState);
+			console.log("RECIEVED PLAYSTATE", playState);
+		});
 	}, [socket]);
 
 	return (
@@ -56,6 +66,7 @@ export default function Home() {
 					promotionMove={promotionMove}
 					socket={socket}
 					clientTurnColour={colour}
+					playState={playState}
 				/>
 			</DndProvider>
 		</Providers>

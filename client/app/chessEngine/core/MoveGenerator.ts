@@ -1,7 +1,6 @@
 import { ImprovedTotalMoveList } from "./aiMoves";
 import { extractChessPosition, printChessboard } from "./aiHelperFunctions";
-import PawnPromotion from "../../components/PawnPromotion";
-import { OrderMoves } from "./aiHelperFunctions";
+
 
 export function deepCopyBoard(boardState: string[][]): string[][] {
 	// Create a new array and copy the contents of the original array to it

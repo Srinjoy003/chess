@@ -14,31 +14,26 @@ import {
 	MoveList,
 	CaptureMoveList,
 } from "../helperFunctions";
-import PawnPromotion from "./PawnPromotion";
-import Timer from "./Timer";
+import PawnPromotion from "../components/PawnPromotion";
+import Timer from "../components/Timer";
 import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";
 
+import { current } from "@reduxjs/toolkit";
 import { Socket } from "socket.io-client";
+import { Minimax } from "../chessEngine/core/aiSearch";
 import { TranspositionTable } from "../chessEngine/core/aiSearch";
+import { iterativeDeepeningSearch } from "../chessEngine/core/iterativeDeepening";
 import { moveToUCI } from "../chessEngine/openings/openingParser";
+import { findOpeningMove } from "../chessEngine/openings/openingParser";
 import { MakeEngineMove } from "../chessEngine/core/aiMain";
 import {
 	MoveMaker,
 	deepCopyBoard,
 	deepCopyCastling,
 } from "../chessEngine/core/MoveGenerator";
-import { PlayState } from "../page";
 import { FaChessKing } from "react-icons/fa6";
-
-type moveProps = {
-	moveFromIndex: number | null;
-	moveToIndex: number | null;
-	promotionMove: string | null;
-	socket: Socket;
-	clientTurnColour: string | null;
-	playState: PlayState | null;
-};
+import { fenToChessboard } from "../chessEngine/core/aiHelperFunctions";
 
 export function CreateBoardMap() {
 	const board = [];
@@ -70,14 +65,7 @@ export function CreateBoardMap() {
 	return board;
 }
 
-export default function ChessBoard({
-	moveFromIndex,
-	moveToIndex,
-	promotionMove,
-	socket,
-	clientTurnColour,
-	playState,
-}: moveProps) {
+export default function ChessBoard() {
 	type positionType = [string, string[][]];
 	const boardMap = CreateBoardMap();
 	const [boardState, setBoardState] = useState(Array.from(boardMap));
@@ -86,7 +74,7 @@ export default function ChessBoard({
 		null
 	);
 
-	const [prevMove, setPrevMove] = useState<[number, number] | null>([-1, -1]);
+	const [prevMove, setPrevMove] = useState<[number, number] | null>(null);
 	const [whiteCastling, setWhiteCastling] = useState<
 		[boolean, boolean, boolean]
 	>([false, false, false]);
@@ -99,7 +87,7 @@ export default function ChessBoard({
 	>(null);
 
 	const [isTimeUp, setIsTimeUp] = useState(false);
-	const [playTime, setplayTime] = useState(10);
+	const [playTime, setplayTime] = useState(30);
 
 	const turn = useSelector((state: RootState) => state.turn);
 	const dispatch = useDispatch();
@@ -172,20 +160,24 @@ export default function ChessBoard({
 		// const fen = "8/8/8/8/8/6pr/6PP/5kBK w - - 0 1"; //black mate
 		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 b - - 0 1"; //white mate
 		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 w - - 0 1"; //white mate
-		// const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
-		// const blackCastling: [boolean, boolean, boolean] = [true, true, true];
-		// const prevMove: [number, number] = [-1, -1];
-		// const [currentTurn, boardState] = fenToChessboard(
-		// 	fen,
-		// 	whiteCastling,
-		// 	blackCastling,
-		// 	prevMove
-		// );
+		const fen = "8/8/4k3/8/4P3/4K3/8/8 w - - 0 1"
+		const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
+		const blackCastling: [boolean, boolean, boolean] = [true, true, true];
+		const prevMove: [number, number] = [-1, -1];
+		const [currentTurn, boardState] = fenToChessboard(
+			fen,
+			whiteCastling,
+			blackCastling,
+			prevMove
+		);
 		// // const maximising = currentTurn === "w" ? true : false;
-		// setBoardState(boardState);
-		// setPrevMove(prevMove);
-		// setWhiteCastling(whiteCastling);
-		// setBlackCastling(blackCastling);
+		setBoardState(boardState);
+		setPrevMove(prevMove);
+		setWhiteCastling(whiteCastling);
+		setBlackCastling(blackCastling);
+		
+			
+
 		// const nodeCount = { value: 0 };
 		// const transpositionTable: TranspositionTable = {};
 		// const endTime = Date.now() + 3000;
@@ -404,12 +396,6 @@ export default function ChessBoard({
 								setPromotedPiecePosition([fromIndex, toIndex]);
 								return true;
 							});
-							socket.emit("move", {
-								fromIndex,
-								toIndex,
-								promotionMove: boardState[i2][j2][1],
-							});
-							console.log("sent promotion", boardState[i2][j2][1]);
 						}
 					}
 
@@ -513,8 +499,6 @@ export default function ChessBoard({
 				) {
 					noOfMoves.current++;
 					dispatch(toggleTurn());
-					socket.emit("move", { fromIndex, toIndex, promotionMove: "" });
-
 					setBoardState(() => {
 						return updatedBoard;
 					});
@@ -529,7 +513,6 @@ export default function ChessBoard({
 			prevMove,
 			selectedPiece,
 			turn,
-			socket,
 		]
 	);
 
@@ -549,7 +532,7 @@ export default function ChessBoard({
 				prevMove,
 				whiteCastling,
 				blackCastling,
-				4000,
+				20000,
 				moveList
 			);
 
@@ -585,7 +568,7 @@ export default function ChessBoard({
 		const delay = 0; // Set the desired delay in milliseconds
 		if (!gameEnded) {
 			const timer = setTimeout(() => {
-				// aiMove();
+				aiMove();
 			}, delay);
 
 			return () => clearTimeout(timer);
@@ -593,76 +576,6 @@ export default function ChessBoard({
 			console.log("Game has ended");
 		}
 	}, [boardState, aiMove, gameEnded]);
-
-	useEffect(() => {
-		if (
-			moveFromIndex !== null &&
-			moveToIndex !== null &&
-			promotionMove != null
-		) {
-			// movePiece(moveFromIndex, moveToIndex, false, true);
-			const i1 = Math.floor(moveFromIndex / 10);
-			const j1 = moveFromIndex % 10;
-
-			const i2 = Math.floor(moveToIndex / 10);
-			const j2 = moveToIndex % 10;
-
-			const piece = boardState[i1][j1];
-			const boardStateMul = deepCopyBoard(boardState);
-			const whiteCastlingMul = deepCopyCastling(whiteCastling);
-			const blackCastlingMul = deepCopyCastling(blackCastling);
-			const capturedPiece = boardState[i2][j2];
-			const isCastling =
-				piece !== "-" && piece[1] === "K" && Math.abs(j1 - j2) > 1
-					? true
-					: false;
-
-			const isEnpassant =
-				piece !== "-" &&
-				piece[1] === "P" &&
-				j1 !== j2 &&
-				boardState[i2][j2] === "-";
-
-			const isPromotion =
-				piece[1] == "P" &&
-				((piece[0] == "w" && i2 == 7) || (piece[0] == "b" && i2 == 0));
-			const promotedPiece = promotionMove;
-
-			MoveMaker(
-				boardStateMul,
-				moveFromIndex,
-				moveToIndex,
-				promotedPiece,
-				isPromotion,
-				isCastling,
-				isEnpassant,
-				whiteCastlingMul,
-				blackCastlingMul
-			);
-			setBoardState(boardStateMul);
-			setBlackCastling(blackCastlingMul);
-			setWhiteCastling(whiteCastlingMul);
-			setPrevMove([moveFromIndex, moveToIndex]);
-			dispatch(toggleTurn());
-			setSelectedPiece(null);
-			console.log("RECIEVED DATA", moveFromIndex, moveToIndex);
-		}
-		// eslint-disable-next-line
-	}, [moveFromIndex, moveToIndex]); //multiplayer
-
-	useEffect(() => {
-		if (playState !== null) {
-			setBoardState(playState.serverBoardState);
-			setPrevMove(playState.serverPrevMove);
-			setWhiteCastling(playState.serverWhiteCastling);
-			setBlackCastling(playState.serverBlackCastling);
-
-			if (playState.serverTurn !== turn) {
-				dispatch(toggleTurn());
-			}
-		}
-		// eslint-disable-next-line
-	}, [playState, dispatch]);
 
 	const board = boardState.map((row, i) => {
 		let newRow = row.map((_, j) => {
@@ -681,8 +594,6 @@ export default function ChessBoard({
 					blackCastling={blackCastling}
 					pawnPromotionOpen={pawnPromotionOpen}
 					gameEnded={gameEnded}
-					socket={socket}
-					clientTurnColour={clientTurnColour}
 				/>
 			);
 		});
@@ -695,7 +606,7 @@ export default function ChessBoard({
 
 	return (
 		<>
-			<div className="flex flex-row gap-10 bg-chess-background">
+			<div className="flex flex-row gap-10 bg-yellow-950">
 				<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
 					<div className="flex flex-col-reverse">{board}</div>
 					<div className="absolute z-20 -translate-x-10">
@@ -755,18 +666,9 @@ export default function ChessBoard({
 			<audio ref={promoteSound} src="/sound/promote.mp3" />
 			<audio ref={endSound} src="/sound/end.mp3" />
 
-			<div className="absolute w-52 h-fit p-4 bg-black lg:right-10 lg:top-1/4 lg:translate-x-0 lg:-translate-y-28 lg:gap-4 text-white flex justify-start items-center rounded-2xl font-extrabold text-base">
-				<div className=" text-xl lg:w-8 lg:h-8 flex items-center justify-center rounded-2xl text-gray-400 bg-white">
-					<FaChessKing />
-				</div>
-				Hellooo
-			</div>
-			<div className="absolute w-52 h-fit p-4 bg-black lg:right-10 lg:bottom-1/4 lg:translate-x-0 lg:translate-y-20 lg:gap-4 text-white flex justify-center items-center rounded-2xl font-extrabold text-base">
-				<div className="text-xl lg:w-8 lg:h-8 flex items-center justify-center rounded-2xl text-gray-400 bg-white">
-					<FaChessKing />
-				</div>
-				Byeeeeeeeeee
-			</div>
+			{/* <div className="absolute bg-slate-600 w-32 h-32 top-1/2 right-1/2 text-white flex justify-center items-center text-7xl rounded-2xl">
+				<FaChessKing />
+			</div> */}
 		</>
 	);
 }
