@@ -1,25 +1,30 @@
-import React from "react";
-import "./index.css";
-import { Bebas_Neue, Source_Code_Pro } from "next/font/google";
+"use client";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
-const BebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
+function GameRoom() {
+	const router = useRouter();
+	const searchParams = useSearchParams();
+	let pathname = usePathname();
+	pathname = pathname.replace("GameRoom", "NameInput");
+	let roomId = searchParams.get("roomId");
+	let link = `http://localhost:3000${pathname}?roomId=${roomId}`;
 
-function Home() {
+	// useEffect(() => {
+	// 	// Fetch room data or perform any other necessary setup
+	// 	// Here, we're just logging the room ID and name for demonstration purposes
+	// 	// console.log(searchParams.get("name")); // Access specific parameter
+	// 	const newLink = searchParams.get("roomId");
+	// 	if (newLink) setLink(newLink);
+	// }, [searchParams]);
+
 	return (
-		<div className="w-screen h-screen bg-black flex flex-col items-center justify-center gap-10">
-			<div>
-				<div className="inputbox">
-					<input required={true} type="text" />
-					<span>Enter your Name</span>
-					<i></i>
-				</div>
-			</div>
-
-			<button className="h-10 w-32 sm:w-36 text-zinc-700 hover:text-zinc-200 backdrop-blur-lg bg-gradient-to-tr from-transparent via-[rgba(121,121,121,0.16)] to-transparent rounded-md py-2 px-6 shadow hover:shadow-zinc-400 duration-700">
-				Submit
-			</button>
+		<div>
+			<h1>Chess Game Room</h1>
+			<p>Welcome! Link: {link}</p>
+			{/* Add your game content here */}
 		</div>
 	);
 }
 
-export default Home;
+export default GameRoom;

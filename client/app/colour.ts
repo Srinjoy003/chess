@@ -8,4 +8,8 @@ export const colour = {
 	"chess-move-dark": "#6b894b",
 	"chess-background": "#302e2b",
 	"ui-blue": "#45f3ff",
+	"timer-black": "#1f1f1f",
+	"test-bg": "#020817",
+	"test-primary": "#3b82f6",
+	"test-secondary": "#1e293b",
 };

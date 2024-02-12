@@ -695,7 +695,7 @@ export default function ChessBoard({
 
 	return (
 		<>
-			<div className="flex flex-row gap-10 bg-chess-background">
+			<div className="flex flex-row gap-10 bg-test-bg">
 				<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
 					<div className="flex flex-col-reverse">{board}</div>
 					<div className="absolute z-20 -translate-x-10">
@@ -755,13 +755,13 @@ export default function ChessBoard({
 			<audio ref={promoteSound} src="/sound/promote.mp3" />
 			<audio ref={endSound} src="/sound/end.mp3" />
 
-			<div className="absolute w-52 h-fit p-4 bg-black lg:right-10 lg:top-1/4 lg:translate-x-0 lg:-translate-y-28 lg:gap-4 text-white flex justify-start items-center rounded-2xl font-extrabold text-base">
+			<div className="absolute w-52 h-fit p-4 bg-test-secondary lg:right-10 lg:top-1/4 lg:translate-x-0 lg:-translate-y-28 lg:gap-4 text-white flex justify-start items-center rounded-2xl font-extrabold text-base">
 				<div className=" text-xl lg:w-8 lg:h-8 flex items-center justify-center rounded-2xl text-gray-400 bg-white">
 					<FaChessKing />
 				</div>
 				Hellooo
 			</div>
-			<div className="absolute w-52 h-fit p-4 bg-black lg:right-10 lg:bottom-1/4 lg:translate-x-0 lg:translate-y-20 lg:gap-4 text-white flex justify-center items-center rounded-2xl font-extrabold text-base">
+			<div className="absolute w-52 h-fit p-4 bg-test-secondary lg:right-10 lg:bottom-1/4 lg:translate-x-0 lg:translate-y-20 lg:gap-4 text-white flex justify-center items-center rounded-2xl font-extrabold text-base">
 				<div className="text-xl lg:w-8 lg:h-8 flex items-center justify-center rounded-2xl text-gray-400 bg-white">
 					<FaChessKing />
 				</div>

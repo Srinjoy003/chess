@@ -52,10 +52,8 @@ export default function Timer({
 	const renderer = ({ minutes, seconds }: CountdownRenderProps) => {
 		return (
 			<p
-				className={`h-12 w-24 text-4xl px-16 py-8 md:h-14 md:w-28 md:text-[40px] md:px-20 md:py-10 lg:h-24 lg:w-48 lg:text-5xl flex items-center justify-center rounded-xl  text-bold ${
-					timerFor === turn
-						? "bg-white text-black"
-						: "bg-black text-gray-400"
+				className={`h-12 w-24 text-4xl px-16 py-8 md:h-14 md:w-28 md:text-[40px] md:px-20 md:py-10 lg:h-24 lg:w-48 lg:text-5xl flex items-center justify-center rounded-xl text-bold ${
+					timerFor === turn ? "bg-white text-black" : "bg-black text-gray-400"
 				}`}
 			>{`${minutes}:${seconds < 10 ? "0" : ""}${seconds}`}</p>
 		);
