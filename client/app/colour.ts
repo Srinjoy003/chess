@@ -7,4 +7,5 @@ export const colour = {
 	"chess-move-light": "#d1d5b7",
 	"chess-move-dark": "#6b894b",
 	"chess-background": "#302e2b",
+	"ui-blue": "#45f3ff",
 };
