@@ -1,4 +1,5 @@
-// /** @type {import('next').NextConfig} */
-// export const nextConfig = {}
-
-// // module.exports = nextConfig
+module.exports = {
+    images: {
+      domains: ['"next/babel"'], // Add your domain or hostname here
+    },
+  };
