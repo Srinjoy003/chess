@@ -7,9 +7,11 @@ export const colour = {
 	"chess-move-light": "#d1d5b7",
 	"chess-move-dark": "#6b894b",
 	"chess-background": "#302e2b",
-	"ui-blue": "#45f3ff",
 	"timer-black": "#1f1f1f",
-	"test-bg": "#020817",
 	"test-primary": "#3b82f6",
 	"test-secondary": "#1e293b",
+	"dark-background": "#212121",
+	"shad-dark": "#09090b",
+	"shad-border": "#27272a",
+	"shad-white": "#f6f6f6",
 };

@@ -695,7 +695,7 @@ export default function ChessBoard({
 
 	return (
 		<>
-			<div className="flex flex-row gap-10 bg-test-bg">
+			<div className="flex flex-row gap-10 bg-dark-background">
 				<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
 					<div className="flex flex-col-reverse">{board}</div>
 					<div className="absolute z-20 -translate-x-10">

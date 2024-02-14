@@ -1,11 +1,13 @@
-// declare var require: any;
-// const {
-// 	CreateBoardMap,
-// 	ImprovedTotalMoveList,
-// } = require("./chessFunctions/moves");
 import { formatWithOptions } from "util";
 import { CreateBoardMap } from "./chessFunctions/moves";
 import { MoveValidator, PlayMove } from "./chessFunctions/moveValidator";
+import { Server } from "socket.io";
+import {
+	PlayerDetails,
+	removePlayerFromRoom,
+	addPlayerToRoom,
+} from "./serverOperations/room";
+
 const express = require("express");
 const http = require("http");
 const app = express();
@@ -13,7 +15,8 @@ const server = http.createServer(app);
 
 type moveProps = { fromIndex: number; toIndex: number; promotionMove: string };
 
-import { Server } from "socket.io";
+const playersByRoom: Record<string, PlayerDetails[]> = {};
+const playerRoomMap: Record<string, string> = {};
 
 const io = new Server(server, {
 	cors: {
@@ -35,9 +38,15 @@ let currentTurn: string = "w";
 
 io.on("connection", (socket) => {
 	console.log("connected with ", socket.id);
-	const playState = {serverBoardState:boardState, serverPrevMove:prevMove, serverWhiteCastling:whiteCastling, serverBlackCastling:blackCastling, serverTurn:currentTurn}
-	socket.emit('playState', playState)
-	console.log("Sent PlayState")
+	const playState = {
+		serverBoardState: boardState,
+		serverPrevMove: prevMove,
+		serverWhiteCastling: whiteCastling,
+		serverBlackCastling: blackCastling,
+		serverTurn: currentTurn,
+	};
+	socket.emit("playState", playState);
+	console.log("Sent PlayState");
 
 	socket.on("disconnect", () => {
 		console.log("disconnected: ", socket.id);
@@ -47,6 +56,7 @@ io.on("connection", (socket) => {
 		const disconnectedPlayerIndex = players.findIndex(
 			(player) => player.id === socket.id
 		);
+
 		if (disconnectedPlayerIndex !== -1) {
 			players.splice(disconnectedPlayerIndex, 1);
 			console.log("No of players after removal:", players.length);
@@ -57,6 +67,11 @@ io.on("connection", (socket) => {
 				console.log("reassigned");
 			}
 		}
+		const roomId = playerRoomMap[socket.id]
+		removePlayerFromRoom(playersByRoom, playerRoomMap, socket.id);
+		const playersInRoom = playersByRoom[roomId] ?? [];
+		io.to(roomId).emit("playerList", playersInRoom);
+
 	});
 
 	socket.on("move", ({ fromIndex, toIndex, promotionMove }: moveProps) => {
@@ -110,6 +125,28 @@ io.on("connection", (socket) => {
 		console.log("sent spectator");
 		io.to(socket.id).emit("colorAssigned", "s");
 	}
+
+	socket.on(
+		"playerDetails",
+		(
+			{ playerName, roomId, colour }: PlayerDetails,
+			setPlayerId: (playerId: string) => void
+		) => {
+			addPlayerToRoom(playersByRoom, playerRoomMap, socket.id, roomId, {
+				playerId: socket.id,
+				playerName,
+				roomId,
+				colour,
+			});
+			setPlayerId(socket.id);
+			socket.join(roomId);
+			console.log("Recieved Player Details", { playerName, roomId, colour });
+			console.log("Player List", playersByRoom);
+			console.log(" ");
+			const playersInRoom = playersByRoom[roomId] ?? [];
+			io.to(roomId).emit("playerList", playersInRoom);
+		}
+	);
 });
 
 server.listen(3001, () => {
