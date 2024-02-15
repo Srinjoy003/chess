@@ -1,9 +1,9 @@
 "use client";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
-import SelectBox from "./SelectBox";
+import { PlayerSelectBox, TimeSelectBox } from "./SelectBox";
 import { v4 as uuidv4 } from "uuid";
 import "./index.css";
 
@@ -13,7 +13,7 @@ type PlayerDetails = {
 	colour: "w" | "b" | "s";
 };
 
-type PlayerDetailsWithID = {
+export type PlayerDetailsWithID = {
 	playerId: string;
 	playerName: string;
 	roomId: string;
@@ -21,6 +21,7 @@ type PlayerDetailsWithID = {
 };
 
 export type RoomSettings = {
+	roomId: string;
 	whitePlayer: string;
 	blackPlayer: string;
 	time: number;
@@ -36,11 +37,15 @@ function GameRoom() {
 	const [isSubmitted, setIsSubmitted] = useState(false);
 	const [isHost, setIsHost] = useState<boolean>(false);
 	const [roomSettings, setRoomSettings] = useState<RoomSettings>({
+		roomId: "",
 		whitePlayer: "",
 		blackPlayer: "",
 		time: 1,
 		increment: 0,
 	});
+
+	const whitePlayerRef = useRef<HTMLSelectElement>(null);
+	const blackPlayerRef = useRef<HTMLSelectElement>(null);
 
 	const searchParams = useSearchParams();
 	let pathname = usePathname();
@@ -57,8 +62,13 @@ function GameRoom() {
 		if (roomId) {
 			setRoomId(roomId);
 		} else {
-			setRoomId(uuidv4());
+			const newRoomId = uuidv4();
+			setRoomId(newRoomId);
 			setIsHost(true);
+			setRoomSettings((currentRoomSettings) => ({
+				...currentRoomSettings,
+				roomId: newRoomId,
+			}));
 		}
 	}, [searchParams]);
 
@@ -88,20 +98,15 @@ function GameRoom() {
 				setPlayerList(playerList);
 				console.log("RECIEVED PLAYERLIST", playerList);
 			});
+
+			socket.on("roomSettings", (roomSettings: RoomSettings) => {
+				setRoomSettings(roomSettings);
+				console.log("RECIEVED ROOM SETTINGS", roomSettings);
+			});
 		}
 	}, [socket]);
 
 	let link = `http://localhost:3000${pathname}?roomId=${roomId}`;
-
-	const field = "White";
-	const options = ["Asteraxx", "Zen", "FK", "Vatira", "Beastmode"];
-
-	useEffect(() => {
-		if (socket) {
-			socket.emit("roomSettings", roomId, roomSettings);
-			console.log("Room Settings sent", roomSettings);
-		}
-	}, [roomSettings, roomId, socket]);
 
 	if (!isSubmitted)
 		return (
@@ -143,27 +148,37 @@ function GameRoom() {
 					</div>
 				</div>
 				<div className="w-1/2 ">
-					<SelectBox
+					<PlayerSelectBox
 						field={"whitePlayer"}
-						options={options}
+						options={playerList}
 						onSelectChange={setRoomSettings}
+						playerRef={whitePlayerRef}
+						roomSettings={roomSettings}
+						socket={socket}
 					/>
-					<SelectBox
+					<PlayerSelectBox
 						field={"blackPlayer"}
-						options={options}
+						options={playerList}
 						onSelectChange={setRoomSettings}
+						playerRef={blackPlayerRef}
+						roomSettings={roomSettings}
+						socket={socket}
 					/>
-					<SelectBox
+					<TimeSelectBox
 						field={"time"}
 						options={[1, 3, 5, 10, 15, 20, 30, 60, 120]}
 						unit="min"
 						onSelectChange={setRoomSettings}
+						roomSettings={roomSettings}
+						socket={socket}
 					/>
-					<SelectBox
+					<TimeSelectBox
 						field={"increment"}
 						options={[0, 1, 2, 3, 5, 10, 20]}
 						unit="sec"
 						onSelectChange={setRoomSettings}
+						roomSettings={roomSettings}
+						socket={socket}
 					/>
 				</div>
 			</div>
