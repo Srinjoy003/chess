@@ -20,6 +20,13 @@ type PlayerDetailsWithID = {
 	colour: "w" | "b" | "s";
 };
 
+export type RoomSettings = {
+	whitePlayer: string;
+	blackPlayer: string;
+	time: number;
+	increment: number;
+};
+
 function GameRoom() {
 	const [socket, setSocket] = useState<Socket | null>(null);
 	const [playerList, setPlayerList] = useState<PlayerDetailsWithID[]>([]);
@@ -27,7 +34,13 @@ function GameRoom() {
 	const [playerName, setPlayerName] = useState<string>("");
 	const [playerId, setPlayerId] = useState<string>("");
 	const [isSubmitted, setIsSubmitted] = useState(false);
-	const [isHost, setIsHost] = useState(false);
+	const [isHost, setIsHost] = useState<boolean>(false);
+	const [roomSettings, setRoomSettings] = useState<RoomSettings>({
+		whitePlayer: "",
+		blackPlayer: "",
+		time: 1,
+		increment: 0,
+	});
 
 	const searchParams = useSearchParams();
 	let pathname = usePathname();
@@ -83,6 +96,13 @@ function GameRoom() {
 	const field = "White";
 	const options = ["Asteraxx", "Zen", "FK", "Vatira", "Beastmode"];
 
+	useEffect(() => {
+		if (socket) {
+			socket.emit("roomSettings", roomId, roomSettings);
+			console.log("Room Settings sent", roomSettings);
+		}
+	}, [roomSettings, roomId, socket]);
+
 	if (!isSubmitted)
 		return (
 			<main className="w-screen h-screen bg-dark-background flex flex-col items-center justify-center gap-10">
@@ -110,8 +130,6 @@ function GameRoom() {
 	else {
 		return (
 			<div className="w-screen h-screen bg-shad-dark text-white p-4 flex ">
-				{/* <h1>Chess Game Room</h1>
-	<p>Welcome! Link: {link}</p> */}
 				<div className="w-1/2 border-2 border-shad-border p-6 rounded-md">
 					<h1 className="text-4xl text-shad-white font-bold">Room Members</h1>
 					<h1 className="text-4xl text-shad-white font-bold">Link: {link}</h1>
@@ -124,8 +142,29 @@ function GameRoom() {
 						))}
 					</div>
 				</div>
-				<div className="w-1/2">
-					<SelectBox field={field} options={options} />
+				<div className="w-1/2 ">
+					<SelectBox
+						field={"whitePlayer"}
+						options={options}
+						onSelectChange={setRoomSettings}
+					/>
+					<SelectBox
+						field={"blackPlayer"}
+						options={options}
+						onSelectChange={setRoomSettings}
+					/>
+					<SelectBox
+						field={"time"}
+						options={[1, 3, 5, 10, 15, 20, 30, 60, 120]}
+						unit="min"
+						onSelectChange={setRoomSettings}
+					/>
+					<SelectBox
+						field={"increment"}
+						options={[0, 1, 2, 3, 5, 10, 20]}
+						unit="sec"
+						onSelectChange={setRoomSettings}
+					/>
 				</div>
 			</div>
 		);

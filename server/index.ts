@@ -6,6 +6,8 @@ import {
 	PlayerDetails,
 	removePlayerFromRoom,
 	addPlayerToRoom,
+	RoomSettings,
+	updateRoomSettings
 } from "./serverOperations/room";
 
 const express = require("express");
@@ -17,6 +19,8 @@ type moveProps = { fromIndex: number; toIndex: number; promotionMove: string };
 
 const playersByRoom: Record<string, PlayerDetails[]> = {};
 const playerRoomMap: Record<string, string> = {};
+const settingsByRoom: Record<string, RoomSettings> = {};
+
 
 const io = new Server(server, {
 	cors: {
@@ -67,10 +71,12 @@ io.on("connection", (socket) => {
 				console.log("reassigned");
 			}
 		}
+
 		const roomId = playerRoomMap[socket.id]
 		removePlayerFromRoom(playersByRoom, playerRoomMap, socket.id);
 		const playersInRoom = playersByRoom[roomId] ?? [];
 		io.to(roomId).emit("playerList", playersInRoom);
+		
 
 	});
 
@@ -147,6 +153,13 @@ io.on("connection", (socket) => {
 			io.to(roomId).emit("playerList", playersInRoom);
 		}
 	);
+
+	socket.on("roomSettings", (roomId: string, roomSettings: RoomSettings) => {
+		console.log("Received Room Settings:", roomId, roomSettings);
+		updateRoomSettings(settingsByRoom, roomId, roomSettings)
+		console.log("New Room Settings:", settingsByRoom);
+
+	});
 });
 
 server.listen(3001, () => {

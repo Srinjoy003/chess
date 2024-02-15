@@ -5,12 +5,12 @@ export type PlayerDetails = {
 	colour: "w" | "b" | "s";
 };
 
-export type RoomDetails = {
-	hostPlayerId: string;
-	whitePlayerId: string;
-	blackPlayerId: string;
+export type RoomSettings = {
+	whitePlayer: string;
+	blackPlayer: string;
+	time: number;
+	increment: number;
 };
-
 export function removePlayerFromRoom(
 	playersByRoom: Record<string, PlayerDetails[]>,
 	playerRoomMap: Record<string, string>,
@@ -34,7 +34,7 @@ export function removePlayerFromRoom(
 export function addPlayerToRoom(
 	playersByRoom: Record<string, PlayerDetails[]>,
 	playerRoomMap: Record<string, string>,
-    playerId: string,
+	playerId: string,
 	roomId: string,
 	player: PlayerDetails
 ) {
@@ -45,4 +45,12 @@ export function addPlayerToRoom(
 	}
 
 	playersByRoom[roomId].push(player);
+}
+
+export function updateRoomSettings(
+	settingsByRoom: Record<string, RoomSettings>,
+	roomId: string,
+	roomSettings: RoomSettings
+) {
+	settingsByRoom[roomId] =  roomSettings
 }
