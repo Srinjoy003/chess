@@ -7,7 +7,8 @@ import {
 	removePlayerFromRoom,
 	addPlayerToRoom,
 	RoomSettings,
-	updateRoomSettings
+	updateRoomSettings,
+	updateRoomColourPlayersOnDisconnect,
 } from "./serverOperations/room";
 
 const express = require("express");
@@ -20,7 +21,6 @@ type moveProps = { fromIndex: number; toIndex: number; promotionMove: string };
 const playersByRoom: Record<string, PlayerDetails[]> = {};
 const playerRoomMap: Record<string, string> = {};
 const settingsByRoom: Record<string, RoomSettings> = {};
-
 
 const io = new Server(server, {
 	cors: {
@@ -72,11 +72,14 @@ io.on("connection", (socket) => {
 			}
 		}
 
-		const roomId = playerRoomMap[socket.id]
+		const roomId = playerRoomMap[socket.id];
 		removePlayerFromRoom(playersByRoom, playerRoomMap, socket.id);
+		updateRoomColourPlayersOnDisconnect(settingsByRoom, playersByRoom, roomId, socket.id);
 		const playersInRoom = playersByRoom[roomId] ?? [];
+		const roomSettings: RoomSettings = settingsByRoom[roomId]
+
 		io.to(roomId).emit("playerList", playersInRoom);
-		
+		io.to(roomId).emit("roomSettings", roomSettings);
 
 	});
 
@@ -154,11 +157,12 @@ io.on("connection", (socket) => {
 		}
 	);
 
-	socket.on("roomSettings", (roomId: string, roomSettings: RoomSettings) => {
-		console.log("Received Room Settings:", roomId, roomSettings);
-		updateRoomSettings(settingsByRoom, roomId, roomSettings)
+	socket.on("roomSettings", (roomSettings: RoomSettings) => {
+		console.log("Received Room Settings:", roomSettings);
+		updateRoomSettings(settingsByRoom, roomSettings.roomId, roomSettings);
 		console.log("New Room Settings:", settingsByRoom);
-
+		socket.to(roomSettings.roomId).emit("roomSettings", roomSettings);
+		
 	});
 });
 
