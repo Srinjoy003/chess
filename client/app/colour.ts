@@ -14,4 +14,10 @@ export const colour = {
 	"shad-dark": "#09090b",
 	"shad-border": "#27272a",
 	"shad-white": "#f6f6f6",
+
+	"room-bg": "#1A120B",
+	"room-primary": "#3C2A21",
+	"room-secondary": "#D5CEA3",
+	"room-tertiary": "#E5E5CB",
+	"room-accent": "#CA965C",
 };

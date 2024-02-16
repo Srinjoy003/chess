@@ -6,6 +6,10 @@ import { io } from "socket.io-client";
 import { PlayerSelectBox, TimeSelectBox } from "./SelectBox";
 import { v4 as uuidv4 } from "uuid";
 import "./index.css";
+import { Itim, Merienda } from "next/font/google";
+
+const heading = Merienda({ weight: "800", subsets: ["latin"] });
+const playerFont = Merienda({ weight: "400", subsets: ["latin"] });
 
 type PlayerDetails = {
 	playerName: string;
@@ -46,6 +50,13 @@ function GameRoom() {
 
 	const whitePlayerRef = useRef<HTMLSelectElement>(null);
 	const blackPlayerRef = useRef<HTMLSelectElement>(null);
+	const playerListExample = [
+		"Zen",
+		"Beastmode",
+		"Vatira",
+		"ApparentlyJack",
+		"FirstKiller",
+	];
 
 	const searchParams = useSearchParams();
 	let pathname = usePathname();
@@ -119,7 +130,7 @@ function GameRoom() {
 							value={playerName}
 							onChange={(e) => setPlayerName(e.target.value)}
 						/>
-						<span>Enter your Name</span>
+						<span className="">Enter your Name</span>
 						<i></i>
 					</div>
 				</div>
@@ -134,21 +145,40 @@ function GameRoom() {
 		);
 	else {
 		return (
-			<div className="w-screen h-screen bg-shad-dark text-white p-4 flex ">
-				<div className="w-1/2 border-2 border-shad-border p-6 rounded-md">
-					<h1 className="text-4xl text-shad-white font-bold">Room Members</h1>
-					<h1 className="text-4xl text-shad-white font-bold">Link: {link}</h1>
+			<div className="w-screen h-screen bg-room-bg  text-white p-4 flex gap-20">
+				<div className="w-1/3 p-6 rounded-md mt-10 ml-10">
+					<h1
+						className={`${heading.className} md:text-3xl lg:text-4xl text-room-tertiary font-bold`}
+					>
+						Room Members
+					</h1>
+					{/* <h1 className="text-4xl text-shad-white font-bold">Link: {link}</h1> */}
 
-					<div className="flex flex-col gap-5 items-start mt-10 mx-3">
-						{playerList.map((player) => (
-							<h2 className="text-lg font-medium" key={uuidv4()}>
+					<div
+						className={`${playerFont.className} flex flex-col gap-5 items-start mt-10 mx-3`}
+					>
+						{/* {playerList.map((player) => (
+							<h2
+								className="md:text-base lg:text-lg md:w-48 lg:w-56 text-room-primary bg-room-secondary  py-3 px-8 rounded-md font-semibold"
+								key={uuidv4()}
+							>
 								{player.playerName}
+							</h2>
+						))} */}
+
+						{playerListExample.map((player) => (
+							<h2
+								className="md:text-base lg:text-lg md:w-48 lg:w-56 text-room-primary bg-room-secondary  py-3 px-8 rounded-md font-semibold"
+								key={uuidv4()}
+							>
+								{player}
 							</h2>
 						))}
 					</div>
 				</div>
-				<div className="w-1/2 ">
+				<div className="w-1/2 h-5/6 md:mt-auto md:mb-auto mr-10 px-10 gap-9 flex flex-col items-center justify-center bg-room-accent border-room-tertiary border- rounded-lg shadow-lg shadow-room-accent">
 					<PlayerSelectBox
+						name={"White Player"}
 						field={"whitePlayer"}
 						options={playerList}
 						onSelectChange={setRoomSettings}
@@ -157,6 +187,7 @@ function GameRoom() {
 						socket={socket}
 					/>
 					<PlayerSelectBox
+						name={"Black Player"}
 						field={"blackPlayer"}
 						options={playerList}
 						onSelectChange={setRoomSettings}
@@ -165,6 +196,7 @@ function GameRoom() {
 						socket={socket}
 					/>
 					<TimeSelectBox
+						name={"Time"}
 						field={"time"}
 						options={[1, 3, 5, 10, 15, 20, 30, 60, 120]}
 						unit="min"
@@ -173,6 +205,7 @@ function GameRoom() {
 						socket={socket}
 					/>
 					<TimeSelectBox
+						name={"Increment"}
 						field={"increment"}
 						options={[0, 1, 2, 3, 5, 10, 20]}
 						unit="sec"
@@ -180,6 +213,10 @@ function GameRoom() {
 						roomSettings={roomSettings}
 						socket={socket}
 					/>
+
+					<button className="w-32 h-14 text-2xl text-room-secondary bg-room-primary hover:text-white hover:bg-amber-950 rounded-lg mt-10">
+						Start!
+					</button>
 				</div>
 			</div>
 		);

@@ -5,8 +5,17 @@ import { RoomSettings } from "./page";
 import { RefObject } from "react";
 import { PlayerDetailsWithID } from "./page";
 import { Socket } from "socket.io-client";
+import { Itim, Merienda } from "next/font/google";
+
+const labelFont = Merienda({ weight: "700", subsets: ["latin"] });
+const selectFont = Merienda({ weight: "500", subsets: ["latin"] });
+
+const divClass = `md:p-2 lg:px-4 flex md:gap-5 lg:gap-28 items-center w-full justify-center`;
+const labelClass = `${labelFont.className} text-room-primary w-96 md:text-xl lg:text-2xl`;
+const selectClass = `${selectFont.className} bg-room-secondary text-room-primary p-2 rounded-md outline-none w-40 text-center`;
 
 type PlayerSelectBoxProps = {
+	name: string;
 	options: PlayerDetailsWithID[];
 	field: "whitePlayer" | "blackPlayer";
 	unit?: string;
@@ -17,6 +26,7 @@ type PlayerSelectBoxProps = {
 };
 
 type TimeSelectBoxProps = {
+	name: string;
 	options: number[];
 	field: "time" | "increment";
 	unit?: string;
@@ -26,6 +36,7 @@ type TimeSelectBoxProps = {
 };
 
 export function PlayerSelectBox({
+	name,
 	options,
 	field,
 	unit,
@@ -68,14 +79,14 @@ export function PlayerSelectBox({
 	}, [roomSettings, field, playerRef]);
 
 	return (
-		<div className="p-4 flex gap-20 items-center border-2 border-shad-border">
-			<label htmlFor="Select" className="text-white w-20">
-				{field}
+		<div className={divClass}>
+			<label htmlFor="Select" className={labelClass}>
+				{name}
 			</label>
 			<select
 				ref={playerRef}
 				id="Select"
-				className="bg-black text-white p-2 rounded-md outline-none w-40 text-center"
+				className={selectClass}
 				onChange={handleSelectChange}
 			>
 				<option value="" selected disabled hidden>
@@ -92,6 +103,7 @@ export function PlayerSelectBox({
 }
 
 export function TimeSelectBox({
+	name,
 	options,
 	field,
 	unit,
@@ -128,21 +140,21 @@ export function TimeSelectBox({
 	}, [roomSettings, field, playerRef]);
 
 	return (
-		<div className="p-4 flex gap-20 items-center border-2 border-shad-border">
-			<label htmlFor="Select" className="text-white w-20">
-				{field}
+		<div className={divClass}>
+			<label htmlFor="Select" className={labelClass}>
+				{name}
 			</label>
 			<select
 				ref={playerRef}
 				id="Select"
-				className="bg-black text-white p-2 rounded-md outline-none w-40 text-center"
+				className={selectClass}
 				onChange={handleSelectChange}
 			>
 				<option value="" selected disabled hidden>
 					Choose here
 				</option>
 				{options.map((option) => (
-					<option key={option} value={option}>
+					<option key={option} value={option} className="hover:bg-room-primary">
 						{option} {unit}
 					</option>
 				))}
