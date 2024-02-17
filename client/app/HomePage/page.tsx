@@ -34,7 +34,6 @@ function Home() {
 				className="opacity-25"
 				src="/Images/chess-2730034_1920.jpg"
 				alt="Description of the image"
-				// layout="responsive"
 				width={1920}
 				height={1080}
 			/>

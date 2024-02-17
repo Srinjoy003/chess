@@ -30,6 +30,10 @@ import {
 } from "../chessEngine/core/MoveGenerator";
 import { PlayState } from "../page";
 import { FaChessKing } from "react-icons/fa6";
+import Image from "next/image";
+import { Merienda } from "next/font/google";
+
+const playerFont = Merienda({ weight: "900", subsets: ["latin"] });
 
 type moveProps = {
 	moveFromIndex: number | null;
@@ -672,6 +676,7 @@ export default function ChessBoard({
 					key={i * 10 + j}
 					position={i * 10 + j}
 					colour={(i + j) % 2 ? "bg-chess-light" : "bg-chess-dark"}
+					// colour={(i + j) % 2 ? "bg-chess-light2" : "bg-chess-dark2"}
 					movePiece={movePiece}
 					selectedPiece={selectedPiece}
 					setSelectedPiece={setSelectedPiece}
@@ -695,6 +700,13 @@ export default function ChessBoard({
 
 	return (
 		<>
+			<Image
+				className="absolute opacity-10"
+				src="/Images/woodenBackground.jpg"
+				alt="Description of the image"
+				width={1920}
+				height={1080}
+			/>
 			<div className="flex flex-row gap-10 bg-room-bg">
 				<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
 					<div className="flex flex-col-reverse">{board}</div>
@@ -755,16 +767,18 @@ export default function ChessBoard({
 			<audio ref={promoteSound} src="/sound/promote.mp3" />
 			<audio ref={endSound} src="/sound/end.mp3" />
 
-			<div className="absolute w-52 h-fit p-4 bg-room-secondary text-amber-950 lg:right-3/4 lg:top-36 lg:translate-x-64 lg:-translate-y-28 lg:gap-4 flex justify-start items-center rounded-2xl font-extrabold lg:text-xl">
-				<div className=" text-xl lg:w-8 lg:h-8 flex items-center justify-center rounded-2xl text-amber-950 bg-room-secondary">
+			<div
+				className={`${playerFont.className} absolute w-52 h-fit p-4 bg-room-secondary text-amber-950 lg:right-3/4 lg:top-36 lg:translate-x-64 lg:-translate-y-28 lg:gap-4 flex justify-start items-center rounded-2xl font-extrabold lg:text-xl`}
+			>
+				{/* <div className=" text-xl lg:w-8 lg:h-8 flex items-center justify-center rounded-2xl text-amber-950 bg-room-secondary">
 					<FaChessKing />
-				</div>
+				</div> */}
 				Hellooo
 			</div>
 			<div className="absolute w-52 h-fit p-4 bg-room-secondary text-amber-950 lg:right-3/4 lg:bottom-28 lg:translate-x-64 lg:translate-y-20 lg:gap-4 flex justify-center items-center rounded-2xl font-extrabold lg:text-xl">
-				<div className="text-xl lg:w-8 lg:h-8 flex items-center justify-center rounded-2xl text-amber-950 bg-room-secondary">
+				{/* <div className="text-xl lg:w-8 lg:h-8 flex items-center justify-center rounded-2xl text-amber-950 bg-room-secondary">
 					<FaChessKing />
-				</div>
+				</div> */}
 				Byeeeeeeeeee
 			</div>
 		</>

@@ -7,6 +7,7 @@ import { PlayerSelectBox, TimeSelectBox } from "./SelectBox";
 import { v4 as uuidv4 } from "uuid";
 import "./index.css";
 import { Itim, Merienda } from "next/font/google";
+import CopyToClipboard from "../components/clipBoard";
 
 const heading = Merienda({ weight: "800", subsets: ["latin"] });
 const playerFont = Merienda({ weight: "400", subsets: ["latin"] });
@@ -67,6 +68,25 @@ function GameRoom() {
 		setIsSubmitted(true);
 	};
 
+	const handleStart = () => {
+		
+		if (playerList.length < 2){
+			console.log("Error!! Need At Least Two Players to Start")
+
+		}
+		else if (roomSettings.whitePlayer === roomSettings.blackPlayer){
+			console.log("Error!! White and Black Cannot be the Same")
+		}
+
+		else if (roomSettings.whitePlayer === ""){
+			console.log("Error!! Select White Player")
+		}
+
+		else if (roomSettings.blackPlayer === ""){
+			console.log("Error!! Select Black Player")
+		}
+	}
+
 	useEffect(() => {
 		const roomId = searchParams.get("roomId");
 
@@ -99,8 +119,16 @@ function GameRoom() {
 			return () => {
 				socket.disconnect();
 			};
+
 		}
 	}, [isSubmitted]);
+
+	useEffect(() => {
+		if (isSubmitted) {
+			console.log(roomSettings);
+		}
+	}, [isSubmitted,roomSettings]);
+
 
 	useEffect(() => {
 		if (socket) {
@@ -145,80 +173,75 @@ function GameRoom() {
 		);
 	else {
 		return (
-			<div className="w-screen h-screen bg-room-bg  text-white p-4 flex gap-20">
-				<div className="w-1/3 p-6 rounded-md mt-10 ml-10">
-					<h1
-						className={`${heading.className} md:text-3xl lg:text-4xl text-room-tertiary font-bold`}
-					>
-						Room Members
-					</h1>
-					{/* <h1 className="text-4xl text-shad-white font-bold">Link: {link}</h1> */}
+			<>
+				<div className="w-screen h-screen bg-room-bg text-white p-4 flex md:flex-row flex-col md:items-start items-center justify-start gap-32 md:gap-20">
+					<div className="h-fit md:w-1/3 p-6 rounded-md mt-10 ml-10">
+						<h1
+							className={`${heading.className} md:text-3xl lg:text-4xl text-room-tertiary font-bold`}
+						>
+							Room Members
+						</h1>
+						{/* <h1 className="text-4xl text-shad-white font-bold">Link: {link}</h1> */}
 
-					<div
-						className={`${playerFont.className} flex flex-col gap-5 items-start mt-10 mx-3`}
-					>
-						{/* {playerList.map((player) => (
-							<h2
-								className="md:text-base lg:text-lg md:w-48 lg:w-56 text-room-primary bg-room-secondary  py-3 px-8 rounded-md font-semibold"
-								key={uuidv4()}
-							>
-								{player.playerName}
-							</h2>
-						))} */}
+						<div
+							className={`${playerFont.className} flex-wrap flex md:flex-col gap-6 items-start mt-10 mx-3`}
+						>
+							{playerList.map((player) => (
+								<h2
+									className="w-40 md:text-base lg:text-lg md:w-48 lg:w-56 text-room-primary bg-room-secondary  py-3 px-8 rounded-md font-semibold"
+									key={uuidv4()}
+								>
+									{player.playerName}
+								</h2>
+							))}
+						</div>
+					</div>
+					<div className="h-fit w-5/6 mr-auto ml-auto md:w-1/2 md:h-5/6 md:mt-auto md:mb-auto md:mr-10 px-10 gap-5 md:gap-10 flex flex-col items-center justify-center bg-room-accent border-room-tertiary border- rounded-lg shadow-lg shadow-room-accent">
+						<PlayerSelectBox
+							name={"White Player"}
+							field={"whitePlayer"}
+							options={playerList}
+							onSelectChange={setRoomSettings}
+							playerRef={whitePlayerRef}
+							roomSettings={roomSettings}
+							socket={socket}
+						/>
+						<PlayerSelectBox
+							name={"Black Player"}
+							field={"blackPlayer"}
+							options={playerList}
+							onSelectChange={setRoomSettings}
+							playerRef={blackPlayerRef}
+							roomSettings={roomSettings}
+							socket={socket}
+						/>
+						<TimeSelectBox
+							name={"Time"}
+							field={"time"}
+							options={[1, 3, 5, 10, 15, 20, 30, 60, 120]}
+							unit="min"
+							onSelectChange={setRoomSettings}
+							roomSettings={roomSettings}
+							socket={socket}
+						/>
+						<TimeSelectBox
+							name={"Increment"}
+							field={"increment"}
+							options={[0, 1, 2, 3, 5, 10, 20]}
+							unit="sec"
+							onSelectChange={setRoomSettings}
+							roomSettings={roomSettings}
+							socket={socket}
+						/>
 
-						{playerListExample.map((player) => (
-							<h2
-								className="md:text-base lg:text-lg md:w-48 lg:w-56 text-room-primary bg-room-secondary  py-3 px-8 rounded-md font-semibold"
-								key={uuidv4()}
-							>
-								{player}
-							</h2>
-						))}
+						<button onClick={handleStart} className="w-32 h-14 text-2xl text-room-secondary bg-room-primary hover:text-white hover:bg-amber-950 rounded-lg mt-10">
+							Start!
+						</button>
+
+						<CopyToClipboard textToCopy={link} />
 					</div>
 				</div>
-				<div className="w-1/2 h-5/6 md:mt-auto md:mb-auto mr-10 px-10 gap-9 flex flex-col items-center justify-center bg-room-accent border-room-tertiary border- rounded-lg shadow-lg shadow-room-accent">
-					<PlayerSelectBox
-						name={"White Player"}
-						field={"whitePlayer"}
-						options={playerList}
-						onSelectChange={setRoomSettings}
-						playerRef={whitePlayerRef}
-						roomSettings={roomSettings}
-						socket={socket}
-					/>
-					<PlayerSelectBox
-						name={"Black Player"}
-						field={"blackPlayer"}
-						options={playerList}
-						onSelectChange={setRoomSettings}
-						playerRef={blackPlayerRef}
-						roomSettings={roomSettings}
-						socket={socket}
-					/>
-					<TimeSelectBox
-						name={"Time"}
-						field={"time"}
-						options={[1, 3, 5, 10, 15, 20, 30, 60, 120]}
-						unit="min"
-						onSelectChange={setRoomSettings}
-						roomSettings={roomSettings}
-						socket={socket}
-					/>
-					<TimeSelectBox
-						name={"Increment"}
-						field={"increment"}
-						options={[0, 1, 2, 3, 5, 10, 20]}
-						unit="sec"
-						onSelectChange={setRoomSettings}
-						roomSettings={roomSettings}
-						socket={socket}
-					/>
-
-					<button className="w-32 h-14 text-2xl text-room-secondary bg-room-primary hover:text-white hover:bg-amber-950 rounded-lg mt-10">
-						Start!
-					</button>
-				</div>
-			</div>
+			</>
 		);
 	}
 }

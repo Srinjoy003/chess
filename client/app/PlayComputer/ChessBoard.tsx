@@ -160,7 +160,7 @@ export default function ChessBoard() {
 		// const fen = "8/8/8/8/8/6pr/6PP/5kBK w - - 0 1"; //black mate
 		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 b - - 0 1"; //white mate
 		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 w - - 0 1"; //white mate
-		const fen = "8/8/4k3/8/4P3/4K3/8/8 w - - 0 1"
+		const fen = "8/8/4k3/8/4P3/4K3/8/8 w - - 0 1";
 		const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
 		const blackCastling: [boolean, boolean, boolean] = [true, true, true];
 		const prevMove: [number, number] = [-1, -1];
@@ -175,8 +175,6 @@ export default function ChessBoard() {
 		setPrevMove(prevMove);
 		setWhiteCastling(whiteCastling);
 		setBlackCastling(blackCastling);
-		
-			
 
 		// const nodeCount = { value: 0 };
 		// const transpositionTable: TranspositionTable = {};

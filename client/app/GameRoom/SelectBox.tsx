@@ -12,7 +12,7 @@ const selectFont = Merienda({ weight: "500", subsets: ["latin"] });
 
 const divClass = `md:p-2 lg:px-4 flex md:gap-5 lg:gap-28 items-center w-full justify-center`;
 const labelClass = `${labelFont.className} text-room-primary w-96 md:text-xl lg:text-2xl`;
-const selectClass = `${selectFont.className} bg-room-secondary text-room-primary p-2 rounded-md outline-none w-40 text-center`;
+const selectClass = `${selectFont.className} bg-room-secondary text-room-primary p-2 rounded-md outline-none md:w-1/2 text-center`;
 
 type PlayerSelectBoxProps = {
 	name: string;
@@ -89,9 +89,8 @@ export function PlayerSelectBox({
 				className={selectClass}
 				onChange={handleSelectChange}
 			>
-				<option value="" selected disabled hidden>
-					Choose here
-				</option>
+				{!playerRef.current?.value && <option value="" hidden></option>}
+
 				{options.map((option) => (
 					<option key={option.playerId} value={option.playerName}>
 						{option.playerName} {unit}

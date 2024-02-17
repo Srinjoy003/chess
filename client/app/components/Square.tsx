@@ -121,7 +121,7 @@ const Square = ({
 				});
 				// setPrevMove([selectedPiece[0], position]);
 				// setSelectedPiece(null);
-			} else if (boardState[row][col][0] === turn && turn == clientTurnColour) {
+			} else if (boardState[row][col][0] === turn /*&& turn == clientTurnColour*/) {
 				setSelectedPiece([position, boardState[row][col]]);
 			}
 		}
@@ -129,13 +129,11 @@ const Square = ({
 		boardState,
 		row,
 		col,
-		movePiece,
 		selectedPiece,
 		setSelectedPiece,
 		position,
 		moveList,
 		turn,
-		setPrevMove,
 		pawnPromotionOpen,
 		gameEnded,
 		socket,

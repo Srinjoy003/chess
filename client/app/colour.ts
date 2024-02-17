@@ -1,11 +1,26 @@
 export const colour = {
 	"chess-bg": "#161512",
-	"chess-dark": "#779954",
-	"chess-light": "#e9edcc",
-	"chess-selected-light": "#f4f680",
-	"chess-selected-dark": "#bbcc44",
-	"chess-move-light": "#d1d5b7",
-	"chess-move-dark": "#6b894b",
+	// "chess-dark": "#779954",
+	// "chess-light": "#e9edcc",
+	// "chess-selected-light": "#f4f680",
+	// "chess-selected-dark": "#bbcc44",
+	// "chess-move-light": "#d1d5b7",
+	// "chess-move-dark": "#6b894b",
+
+	// "chess-dark": "#8b613d",
+	// "chess-light": "#c29f66",
+	// "chess-selected-light": "#c9a04f",
+	// "chess-selected-dark": "#aa7a2f",
+	// "chess-move-light": "#ae9b72",
+	// "chess-move-dark": "#7a5c3b",
+
+	"chess-dark": "#76563c",
+	"chess-light": "#b89c76",
+	"chess-selected-light": "#caa75a",
+	"chess-selected-dark": "#a37c34",
+	"chess-move-light": "#a48d6f",
+	"chess-move-dark": "#644833",
+
 	"chess-background": "#302e2b",
 	"timer-black": "#1f1f1f",
 	"test-primary": "#3b82f6",
@@ -20,4 +35,10 @@ export const colour = {
 	"room-secondary": "#D5CEA3",
 	"room-tertiary": "#E5E5CB",
 	"room-accent": "#CA965C",
+
+	// "room-bg": "#222831",
+	// "room-primary": "#393E46",
+	// "room-secondary": "#00ADB5",
+	// "room-tertiary": "#EEEEEE",
+	// "room-accent": "#CA965C",
 };

@@ -74,13 +74,17 @@ io.on("connection", (socket) => {
 
 		const roomId = playerRoomMap[socket.id];
 		removePlayerFromRoom(playersByRoom, playerRoomMap, socket.id);
-		updateRoomColourPlayersOnDisconnect(settingsByRoom, playersByRoom, roomId, socket.id);
+		updateRoomColourPlayersOnDisconnect(
+			settingsByRoom,
+			playersByRoom,
+			roomId,
+			socket.id
+		);
 		const playersInRoom = playersByRoom[roomId] ?? [];
-		const roomSettings: RoomSettings = settingsByRoom[roomId]
+		const roomSettings: RoomSettings = settingsByRoom[roomId];
 
 		io.to(roomId).emit("playerList", playersInRoom);
 		io.to(roomId).emit("roomSettings", roomSettings);
-
 	});
 
 	socket.on("move", ({ fromIndex, toIndex, promotionMove }: moveProps) => {
@@ -154,6 +158,9 @@ io.on("connection", (socket) => {
 			console.log(" ");
 			const playersInRoom = playersByRoom[roomId] ?? [];
 			io.to(roomId).emit("playerList", playersInRoom);
+
+			if (roomId in settingsByRoom)
+				socket.emit("roomSettings", settingsByRoom[roomId]);
 		}
 	);
 
@@ -162,7 +169,6 @@ io.on("connection", (socket) => {
 		updateRoomSettings(settingsByRoom, roomSettings.roomId, roomSettings);
 		console.log("New Room Settings:", settingsByRoom);
 		socket.to(roomSettings.roomId).emit("roomSettings", roomSettings);
-		
 	});
 });
 
