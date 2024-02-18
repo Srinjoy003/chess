@@ -8,7 +8,7 @@ import {
 	addPlayerToRoom,
 	RoomSettings,
 	updateRoomSettings,
-	updateRoomColourPlayersOnDisconnect,
+	updateRoomSettingsOnDisconnect,
 } from "./serverOperations/room";
 
 const express = require("express");
@@ -73,8 +73,12 @@ io.on("connection", (socket) => {
 		}
 
 		const roomId = playerRoomMap[socket.id];
+		const playerName = playersByRoom[roomId]?.find(
+			(player) => player.playerId === socket.id
+		)?.playerName;
+
 		removePlayerFromRoom(playersByRoom, playerRoomMap, socket.id);
-		updateRoomColourPlayersOnDisconnect(
+		updateRoomSettingsOnDisconnect(
 			settingsByRoom,
 			playersByRoom,
 			roomId,
@@ -85,6 +89,7 @@ io.on("connection", (socket) => {
 
 		io.to(roomId).emit("playerList", playersInRoom);
 		io.to(roomId).emit("roomSettings", roomSettings);
+		io.to(roomId).emit("playerLeft", playerName);
 	});
 
 	socket.on("move", ({ fromIndex, toIndex, promotionMove }: moveProps) => {
@@ -159,8 +164,23 @@ io.on("connection", (socket) => {
 			const playersInRoom = playersByRoom[roomId] ?? [];
 			io.to(roomId).emit("playerList", playersInRoom);
 
-			if (roomId in settingsByRoom)
+			if (roomId in settingsByRoom) {
 				socket.emit("roomSettings", settingsByRoom[roomId]);
+				console.log(playerName, "is NOT Host");
+			} else {
+				settingsByRoom[roomId] = {
+					roomId: roomId,
+					host: socket.id,
+					whitePlayer: "",
+					blackPlayer: "",
+					time: 1,
+					increment: 0,
+				};
+				socket.emit("roomSettings", settingsByRoom[roomId]);
+				console.log(playerName, "is Host");
+			}
+
+			socket.to(roomId).emit("playerJoined", playerName);
 		}
 	);
 

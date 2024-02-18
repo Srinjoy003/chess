@@ -16,12 +16,12 @@ function CopyToClipboard({ textToCopy }: clipBoardProps) {
 	};
 
 	return (
-		<div className="absolute left-32 text-black flex h-10 w-fit bottom-10">
+		<div className="md:absolute md:left-10 lg:left-20 text-black flex h-8 sm:h-10 w-fit md:bottom-10 text-xs sm:text-sm lg:text-base">
 			<input
 				type="text"
 				value="Use this Link to Invite Friends!!"
 				readOnly
-				className="w-72 text-center"
+				className="w-48 sm:w-56 lg:w-72 text-center"
 			/>
 			<button
 				onClick={handleCopyClick}

@@ -7,6 +7,7 @@ export type PlayerDetails = {
 
 export type RoomSettings = {
 	roomId: string;
+	host: string;
 	whitePlayer: string;
 	blackPlayer: string;
 	time: number;
@@ -56,7 +57,7 @@ export function updateRoomSettings(
 	settingsByRoom[roomId] = roomSettings;
 }
 
-export function updateRoomColourPlayersOnDisconnect(
+export function updateRoomSettingsOnDisconnect(
 	settingsByRoom: Record<string, RoomSettings>,
 	playersByRoom: Record<string, PlayerDetails[]>,
 	roomId: string,
@@ -64,7 +65,7 @@ export function updateRoomColourPlayersOnDisconnect(
 ) {
 	if (!(roomId in playersByRoom)) {
 		delete settingsByRoom[roomId];
-	} else {
+	} else if (settingsByRoom[roomId]) {
 		if (settingsByRoom[roomId].whitePlayer === playerId) {
 			settingsByRoom[roomId].whitePlayer = "";
 		}
@@ -72,5 +73,7 @@ export function updateRoomColourPlayersOnDisconnect(
 		if (settingsByRoom[roomId].blackPlayer === playerId) {
 			settingsByRoom[roomId].blackPlayer = "";
 		}
+
+		settingsByRoom[roomId].host = playersByRoom[roomId][0].playerId
 	}
 }

@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import { ChangeEvent, useEffect } from "react";
 import { useRef } from "react";
 import { RoomSettings } from "./page";
@@ -10,9 +9,9 @@ import { Itim, Merienda } from "next/font/google";
 const labelFont = Merienda({ weight: "700", subsets: ["latin"] });
 const selectFont = Merienda({ weight: "500", subsets: ["latin"] });
 
-const divClass = `md:p-2 lg:px-4 flex md:gap-5 lg:gap-28 items-center w-full justify-center`;
-const labelClass = `${labelFont.className} text-room-primary w-96 md:text-xl lg:text-2xl`;
-const selectClass = `${selectFont.className} bg-room-secondary text-room-primary p-2 rounded-md outline-none md:w-1/2 text-center`;
+const divClass = ` md:p-2 lg:px-4 flex gap-8 md:gap-5 lg:gap-28 items-center w-full justify-start`;
+const labelClass = `${labelFont.className} text-room-primary w-1/2 sm::w-96 text-sm sm:text-base md:text-xl lg:text-2xl`;
+const selectClass = `${selectFont.className} bg-room-secondary text-room-primary py-2 sm:py-3 rounded-md outline-none w-40 text-xs sm:w-48 sm:text-sm md:w-56 md:text-base lg:w-80 lg:text-lg text-center`;
 
 type PlayerSelectBoxProps = {
 	name: string;
@@ -23,6 +22,7 @@ type PlayerSelectBoxProps = {
 	playerRef: RefObject<HTMLSelectElement>;
 	roomSettings: RoomSettings;
 	socket: Socket | null;
+	isHost: boolean;
 };
 
 type TimeSelectBoxProps = {
@@ -33,6 +33,7 @@ type TimeSelectBoxProps = {
 	onSelectChange: any;
 	roomSettings: RoomSettings;
 	socket: Socket | null;
+	isHost: boolean;
 };
 
 export function PlayerSelectBox({
@@ -44,6 +45,7 @@ export function PlayerSelectBox({
 	playerRef,
 	roomSettings,
 	socket,
+	isHost,
 }: PlayerSelectBoxProps) {
 	const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
 		const selectedValue: string | number = event.target.value;
@@ -61,17 +63,19 @@ export function PlayerSelectBox({
 	};
 
 	useEffect(() => {
-		if (roomSettings[field] === "") {
-			if (playerRef.current) {
-				playerRef.current.selectedIndex = -1;
-			}
-		} else {
-			if (playerRef.current) {
-				const options = playerRef.current.options;
-				for (let i = 0; i < options.length; i++) {
-					if (options[i].value === roomSettings[field]) {
-						playerRef.current.selectedIndex = i;
-						break;
+		if (roomSettings) {
+			if (roomSettings[field] === "") {
+				if (playerRef.current) {
+					playerRef.current.selectedIndex = -1;
+				}
+			} else {
+				if (playerRef.current) {
+					const options = playerRef.current.options;
+					for (let i = 0; i < options.length; i++) {
+						if (options[i].value === roomSettings[field]) {
+							playerRef.current.selectedIndex = i;
+							break;
+						}
 					}
 				}
 			}
@@ -86,7 +90,7 @@ export function PlayerSelectBox({
 			<select
 				ref={playerRef}
 				id="Select"
-				className={selectClass}
+				className={selectClass + ` ${isHost ? "" : "opacity-70"}`}
 				onChange={handleSelectChange}
 			>
 				{!playerRef.current?.value && <option value="" hidden></option>}
@@ -109,6 +113,7 @@ export function TimeSelectBox({
 	onSelectChange,
 	roomSettings,
 	socket,
+	isHost,
 }: TimeSelectBoxProps) {
 	const playerRef = useRef<HTMLSelectElement>(null);
 
@@ -127,7 +132,7 @@ export function TimeSelectBox({
 	};
 
 	useEffect(() => {
-		if (playerRef.current) {
+		if (playerRef.current && roomSettings) {
 			const options = playerRef.current.options;
 			for (let i = 0; i < options.length; i++) {
 				if (options[i].value === String(roomSettings[field])) {
@@ -146,7 +151,7 @@ export function TimeSelectBox({
 			<select
 				ref={playerRef}
 				id="Select"
-				className={selectClass}
+				className={selectClass + ` ${isHost ? "" : "opacity-70"}`}
 				onChange={handleSelectChange}
 			>
 				<option value="" selected disabled hidden>

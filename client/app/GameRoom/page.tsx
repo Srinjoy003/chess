@@ -8,6 +8,8 @@ import { v4 as uuidv4 } from "uuid";
 import "./index.css";
 import { Itim, Merienda } from "next/font/google";
 import CopyToClipboard from "../components/clipBoard";
+import Message from "./Message";
+import { LuCrown } from "react-icons/lu";
 
 const heading = Merienda({ weight: "800", subsets: ["latin"] });
 const playerFont = Merienda({ weight: "400", subsets: ["latin"] });
@@ -27,6 +29,7 @@ export type PlayerDetailsWithID = {
 
 export type RoomSettings = {
 	roomId: string;
+	host: string;
 	whitePlayer: string;
 	blackPlayer: string;
 	time: number;
@@ -41,8 +44,12 @@ function GameRoom() {
 	const [playerId, setPlayerId] = useState<string>("");
 	const [isSubmitted, setIsSubmitted] = useState(false);
 	const [isHost, setIsHost] = useState<boolean>(false);
+	const [messageIsVisible, setMessageIsVisible] = useState<boolean>(false);
+	const [message, setMessage] = useState<string>("");
+
 	const [roomSettings, setRoomSettings] = useState<RoomSettings>({
 		roomId: "",
+		host: "",
 		whitePlayer: "",
 		blackPlayer: "",
 		time: 1,
@@ -69,23 +76,20 @@ function GameRoom() {
 	};
 
 	const handleStart = () => {
-		
-		if (playerList.length < 2){
-			console.log("Error!! Need At Least Two Players to Start")
-
+		if (playerList.length < 2) {
+			setMessage("Need atleast two players to start");
+			setMessageIsVisible(true);
+		} else if (roomSettings.whitePlayer === roomSettings.blackPlayer) {
+			setMessage("Same player cannot play as white and black");
+			setMessageIsVisible(true);
+		} else if (roomSettings.whitePlayer === "") {
+			setMessage("Please select white");
+			setMessageIsVisible(true);
+		} else if (roomSettings.blackPlayer === "") {
+			setMessage("Please select black");
+			setMessageIsVisible(true);
 		}
-		else if (roomSettings.whitePlayer === roomSettings.blackPlayer){
-			console.log("Error!! White and Black Cannot be the Same")
-		}
-
-		else if (roomSettings.whitePlayer === ""){
-			console.log("Error!! Select White Player")
-		}
-
-		else if (roomSettings.blackPlayer === ""){
-			console.log("Error!! Select Black Player")
-		}
-	}
+	};
 
 	useEffect(() => {
 		const roomId = searchParams.get("roomId");
@@ -95,7 +99,6 @@ function GameRoom() {
 		} else {
 			const newRoomId = uuidv4();
 			setRoomId(newRoomId);
-			setIsHost(true);
 			setRoomSettings((currentRoomSettings) => ({
 				...currentRoomSettings,
 				roomId: newRoomId,
@@ -119,7 +122,6 @@ function GameRoom() {
 			return () => {
 				socket.disconnect();
 			};
-
 		}
 	}, [isSubmitted]);
 
@@ -127,8 +129,17 @@ function GameRoom() {
 		if (isSubmitted) {
 			console.log(roomSettings);
 		}
-	}, [isSubmitted,roomSettings]);
+	}, [isSubmitted, roomSettings]);
 
+	useEffect(() => {
+		if (isSubmitted) {
+			if (roomSettings.host === playerId && playerId !== "") {
+				setIsHost(true);
+			} else {
+				setIsHost(false);
+			}
+		}
+	}, [isSubmitted, playerId, roomSettings]);
 
 	useEffect(() => {
 		if (socket) {
@@ -141,6 +152,18 @@ function GameRoom() {
 			socket.on("roomSettings", (roomSettings: RoomSettings) => {
 				setRoomSettings(roomSettings);
 				console.log("RECIEVED ROOM SETTINGS", roomSettings);
+			});
+
+			socket.on("playerJoined", (playerName: string) => {
+				const newMessage = `${playerName} joined the room`;
+				setMessage(newMessage);
+				setMessageIsVisible(true);
+			});
+
+			socket.on("playerLeft", (playerName: string) => {
+				const newMessage = `${playerName} left the room`;
+				setMessage(newMessage);
+				setMessageIsVisible(true);
 			});
 		}
 	}, [socket]);
@@ -174,30 +197,39 @@ function GameRoom() {
 	else {
 		return (
 			<>
-				<div className="w-screen h-screen bg-room-bg text-white p-4 flex md:flex-row flex-col md:items-start items-center justify-start gap-32 md:gap-20">
-					<div className="h-fit md:w-1/3 p-6 rounded-md mt-10 ml-10">
+				<div className="w-screen md:h-screen bg-room-bg text-white p-4 flex md:flex-row flex-col md:items-start items-center justify-start gap-32 md:gap-20">
+					<div className="h-fit md:w-1/3 p-6 rounded-md mt-10 md:mt-5 lg:ml-10">
 						<h1
-							className={`${heading.className} md:text-3xl lg:text-4xl text-room-tertiary font-bold`}
+							className={`${heading.className} text-2xl md:text-3xl lg:text-4xl text-room-tertiary font-bold`}
 						>
 							Room Members
 						</h1>
-						{/* <h1 className="text-4xl text-shad-white font-bold">Link: {link}</h1> */}
 
 						<div
 							className={`${playerFont.className} flex-wrap flex md:flex-col gap-6 items-start mt-10 mx-3`}
 						>
 							{playerList.map((player) => (
 								<h2
-									className="w-40 md:text-base lg:text-lg md:w-48 lg:w-56 text-room-primary bg-room-secondary  py-3 px-8 rounded-md font-semibold"
+									className="text-sm sm:text-base lg:text-lg md:w-48 lg:w-56 text-room-primary bg-room-secondary py-2	px-5 sm:py-3 sm:px-8 rounded-md font-semibold flex gap-2 items-center"
 									key={uuidv4()}
 								>
-									{player.playerName}
+									{player.playerName}{" "}
+									{roomSettings.host === player.playerId && (
+										<div className="text-red-800 text-lg sm:text-2xl">
+											<LuCrown />
+										</div>
+									)}
 								</h2>
 							))}
 						</div>
 					</div>
-					<div className="h-fit w-5/6 mr-auto ml-auto md:w-1/2 md:h-5/6 md:mt-auto md:mb-auto md:mr-10 px-10 gap-5 md:gap-10 flex flex-col items-center justify-center bg-room-accent border-room-tertiary border- rounded-lg shadow-lg shadow-room-accent">
+					<div
+						className={` ${
+							isHost ? "" : "pointer-events-none"
+						} h-fit w-5/6 flex flex-col mr-auto ml-auto px-10 py-5 gap-5 md:w-1/2 md:h-5/6 md:mt-auto md:mb-auto md:mr-10 md:gap-12 items-center justify-center bg-room-accent border-room-tertiary border- rounded-lg shadow-lg shadow-room-accent`}
+					>
 						<PlayerSelectBox
+							isHost={isHost}
 							name={"White Player"}
 							field={"whitePlayer"}
 							options={playerList}
@@ -207,6 +239,7 @@ function GameRoom() {
 							socket={socket}
 						/>
 						<PlayerSelectBox
+							isHost={isHost}
 							name={"Black Player"}
 							field={"blackPlayer"}
 							options={playerList}
@@ -216,6 +249,7 @@ function GameRoom() {
 							socket={socket}
 						/>
 						<TimeSelectBox
+							isHost={isHost}
 							name={"Time"}
 							field={"time"}
 							options={[1, 3, 5, 10, 15, 20, 30, 60, 120]}
@@ -225,6 +259,7 @@ function GameRoom() {
 							socket={socket}
 						/>
 						<TimeSelectBox
+							isHost={isHost}
 							name={"Increment"}
 							field={"increment"}
 							options={[0, 1, 2, 3, 5, 10, 20]}
@@ -234,13 +269,20 @@ function GameRoom() {
 							socket={socket}
 						/>
 
-						<button onClick={handleStart} className="w-32 h-14 text-2xl text-room-secondary bg-room-primary hover:text-white hover:bg-amber-950 rounded-lg mt-10">
+						<button
+							onClick={handleStart}
+							className="mt-6 w-16 h-8 text-base sm:w-20 sm:h-10 sm:text-lg md:w-24 md:h-12 md:text-xl lg:w-32 lg:h-14 lg:mt-10 lg:text-2xl text-room-secondary bg-room-primary hover:text-white hover:bg-amber-950 rounded-lg"
+						>
 							Start!
 						</button>
-
-						<CopyToClipboard textToCopy={link} />
 					</div>
+					<CopyToClipboard textToCopy={link} />
 				</div>
+				<Message
+					message={message}
+					messageIsVisible={messageIsVisible}
+					setMessageIsVisible={setMessageIsVisible}
+				/>
 			</>
 		);
 	}
