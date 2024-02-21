@@ -1100,3 +1100,25 @@ export function CaptureMoveList(
 	);
 	return captureMoveList;
 }
+
+export function isPromotion(
+	boardState: string[][],
+	fromIndex: number,
+	toIndex: number
+) {
+	const i1 = Math.floor(fromIndex / 10);
+	const j1 = fromIndex % 10;
+
+	const i2 = Math.floor(toIndex / 10);
+	const j2 = toIndex % 10;
+
+	const piece = boardState[i1][j1];
+
+	if (piece[1] === "P") {
+		if ((piece[0] == "w" && i2 === 7) || (piece[0] == "b" && i2 === 0)) {
+			return true;
+		}
+	}
+
+	return false;
+}

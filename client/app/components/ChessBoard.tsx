@@ -29,7 +29,7 @@ import {
 	deepCopyCastling,
 } from "../chessEngine/core/MoveGenerator";
 import { PlayState } from "../page";
-import { FaChessKing } from "react-icons/fa6";
+import { FaChessRook } from "react-icons/fa6";
 import Image from "next/image";
 import { Merienda } from "next/font/google";
 
@@ -98,6 +98,9 @@ export default function ChessBoard({
 		[boolean, boolean, boolean]
 	>([false, false, false]);
 	const [pawnPromotionOpen, setpawnPromotionOpen] = useState(false);
+	const [promotionInfo, setPromotionInfo] = useState<
+		[number, number, string] | null
+	>(null);
 	const [promotedPiecePosition, setPromotedPiecePosition] = useState<
 		[number, number] | null
 	>(null);
@@ -153,98 +156,6 @@ export default function ChessBoard({
 	const draw = isStaleMate || hasInsufficientMaterial || isThreeFoldRepetion;
 	const gameEnded = victoryOrLoss || draw;
 
-	let aiRandomMoveWhite = useRef<number[]>([]);
-	let aiRandomMoveBlack = useRef<number[]>([]);
-	let aiMinimaxMove = useRef<[number, number, string] | null>(null);
-
-	useEffect(() => {
-		//Mate pos
-		// const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1";
-		// const fen = "8/k1PK4/p7/8/4B3/8/8/1R6 w - - 0 1";
-		// const fen =
-		// 	"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-		// const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-		// 	const fen =
-		// 		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
-		// const fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ";
-		// const fen =
-		// 	"r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
-		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
-		// const fen =
-		// 	"r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1R1K w kq - 0 1";
-		// const fen = "7r/8/8/8/8/6p1/6PP/5kBK b - - 0 1";
-		// const fen = "8/8/8/8/8/6pr/6PP/5kBK w - - 0 1"; //black mate
-		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 b - - 0 1"; //white mate
-		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 w - - 0 1"; //white mate
-		// const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
-		// const blackCastling: [boolean, boolean, boolean] = [true, true, true];
-		// const prevMove: [number, number] = [-1, -1];
-		// const [currentTurn, boardState] = fenToChessboard(
-		// 	fen,
-		// 	whiteCastling,
-		// 	blackCastling,
-		// 	prevMove
-		// );
-		// // const maximising = currentTurn === "w" ? true : false;
-		// setBoardState(boardState);
-		// setPrevMove(prevMove);
-		// setWhiteCastling(whiteCastling);
-		// setBlackCastling(blackCastling);
-		// const nodeCount = { value: 0 };
-		// const transpositionTable: TranspositionTable = {};
-		// const endTime = Date.now() + 3000;
-		// const tick = performance.now();
-		// const cancel = { isCancelled: false };
-		// const { bestMove, bestScore } = Minimax(
-		// 	3,
-		// 	boardState,
-		// 	currentTurn,
-		// 	prevMove,
-		// 	whiteCastling,
-		// 	blackCastling,
-		// 	maximising,
-		// 	nodeCount,
-		// 	transpositionTable,
-		// 	endTime,
-		// 	cancel
-		// );
-		// const { finalBestMove, finalBestScore } = iterativeDeepeningSearch(
-		// 	boardState,
-		// 	currentTurn,
-		// 	prevMove,
-		// 	whiteCastling,
-		// 	blackCastling,
-		// 	3000
-		// );
-		// const tock = performance.now();
-		// if (finalBestMove !== null) {
-		// 	const [fromIndex, toIndex, promotionMove] = finalBestMove;
-		// 	const fromPos = extractChessPosition(fromIndex);
-		// 	const toPos = extractChessPosition(toIndex);
-		// 	console.log("\n Final Output:\n");
-		// 	console.log(fromPos + toPos + promotionMove, finalBestScore);
-		// }
-		// console.log("Time: ", tock - tick);
-		// console.log("Nodes Searched: ", nodeCount.value);
-		// const tick = performance.now()
-		// for(let i = 1; i < 5; i++)
-		// console.log(i, MoveGenerator(i,i, boardState, currentTurn, prevMove, whiteCastling, blackCastling))
-		// const tock = performance.now()
-		// console.log("Time: ", tock - tick)
-		// const tick = performance.now();
-		// EngineTest();
-		// const tock = performance.now();
-		// console.log("Time: ", tock - tick)
-		// EvaluationTest();
-		// const moveList: string[] = ["e2e4"];
-		// const nextMove: string | null = findOpeningMove(moveList);
-		// if (nextMove !== null) {
-		// 	console.log(`The next move in the opening is: ${nextMove}`);
-		// } else {
-		// 	console.log("No matching opening line found.");
-		// }
-	}, [dispatch]);
-
 	useEffect(() => {
 		setPosition([turn, boardState]);
 	}, [turn, boardState]); //could be problematic for multiplayer
@@ -274,329 +185,19 @@ export default function ChessBoard({
 	}, [boardState, inCheck, sound, gameEnded]);
 
 	const handlePromotion = useCallback(
-		(piece: string, ai: boolean) => {
+		(piece: string) => {
 			setpawnPromotionOpen(false);
 			setSound("promote");
-
 			if (promotedPiecePosition) {
-				const updatedBoard = boardState.map((item) => {
-					return item.slice();
+				socket.emit("move", {
+					fromIndex: promotedPiecePosition[0],
+					toIndex: promotedPiecePosition[1],
+					promotionMove: piece[1],
 				});
-
-				const i1 = Math.floor(promotedPiecePosition[0] / 10);
-				const j1 = promotedPiecePosition[0] % 10;
-
-				const i2 = Math.floor(promotedPiecePosition[1] / 10);
-				const j2 = promotedPiecePosition[1] % 10;
-
-				updatedBoard[i2][j2] = piece;
-
-				if (turn === "w") {
-					updatedBoard[i1][j1] = "-";
-				} else {
-					updatedBoard[i1][j1] = "-";
-				}
-
-				dispatch(toggleTurn());
-				setBoardState(updatedBoard);
-				noOfMoves.current++;
 			}
 		},
-		[turn, boardState, promotedPiecePosition, dispatch]
+		[promotedPiecePosition, socket]
 	);
-
-	const movePiece = useCallback(
-		(
-			fromIndex: number,
-			toIndex: number,
-			ai: boolean,
-			recieved: boolean = false,
-			aiPromotionMove: string = "Q"
-		) => {
-			if (fromIndex != toIndex) {
-				const updatedBoard = boardState.map((item) => {
-					return item.slice();
-				});
-
-				const i1 = Math.floor(fromIndex / 10);
-				const j1 = fromIndex % 10;
-
-				const i2 = Math.floor(toIndex / 10);
-				const j2 = toIndex % 10;
-
-				const uciMove = moveToUCI(fromIndex, toIndex);
-				setMoveList((prevMoveList) => [...prevMoveList, uciMove]);
-
-				if (
-					!(
-						(
-							selectedPiece &&
-							selectedPiece[1][1] === "P" &&
-							((selectedPiece[1][0] == "w" && i2 === 7) ||
-								(selectedPiece[1][0] == "b" && i2 === 0))
-						) //no pawn promotion
-					)
-				) {
-					if (updatedBoard[i2][j2] === "-") setSound("move");
-					else setSound("capture");
-
-					updatedBoard[i2][j2] = updatedBoard[i1][j1];
-					updatedBoard[i1][j1] = "-";
-				}
-
-				//PAWN PROMOTION FOR AI
-
-				if (ai) {
-					//for ai
-					const aiPiece = boardState[i1][j1];
-					setSelectedPiece([fromIndex, aiPiece]);
-
-					if (
-						aiPiece[1] === "P" &&
-						((aiPiece[0] === "w" && i2 === 7) ||
-							(aiPiece[0] === "b" && i2 === 0))
-					) {
-						setPromotedPiecePosition([fromIndex, toIndex]);
-						updatedBoard[i2][j2] = turn + aiPromotionMove;
-						updatedBoard[i1][j1] = "-";
-						setSound("promote");
-						dispatch(toggleTurn());
-						setBoardState(updatedBoard);
-						noOfMoves.current++;
-						return;
-					}
-				}
-
-				if (selectedPiece || ai) {
-					const aiPiece = boardState[i1][j1];
-					let currentSelectedPiece: [number, string] = [-1, "hello"];
-
-					if (selectedPiece) currentSelectedPiece = selectedPiece;
-					else currentSelectedPiece = [fromIndex, aiPiece];
-
-					//ENPASSANT
-					const enpassantMoveList = EnPassantMoveList(
-						currentSelectedPiece[1],
-						currentSelectedPiece[0],
-						boardState,
-						prevMove
-					);
-
-					const castlingMoveList = CastlingMoveList(
-						currentSelectedPiece[1],
-						boardState,
-						whiteCastling,
-						blackCastling
-					);
-
-					if (enpassantMoveList.includes(toIndex)) {
-						setSound("capture");
-						const opponentPawnDirection =
-							currentSelectedPiece[1][0] === "w" ? -1 : 1;
-						updatedBoard[i2 + opponentPawnDirection][j2] = "-";
-					}
-
-					// PAWN PROMOTION
-
-					//for human
-					if (currentSelectedPiece[1][1] === "P") {
-						if (
-							(currentSelectedPiece[1][0] == "w" && i2 === 7) ||
-							(currentSelectedPiece[1][0] == "b" && i2 === 0)
-						) {
-							setpawnPromotionOpen(() => {
-								setPromotedPiecePosition([fromIndex, toIndex]);
-								return true;
-							});
-							socket.emit("move", {
-								fromIndex,
-								toIndex,
-								promotionMove: boardState[i2][j2][1],
-							});
-							console.log("sent promotion", boardState[i2][j2][1]);
-						}
-					}
-
-					//FOR CASTLING
-
-					if (castlingMoveList.includes(toIndex)) {
-						if (toIndex === 2) {
-							updatedBoard[0][0] = "-";
-							updatedBoard[0][3] = "wR";
-						} else if (toIndex === 6) {
-							updatedBoard[0][7] = "-";
-							updatedBoard[0][5] = "wR";
-						}
-
-						if (toIndex === 72) {
-							updatedBoard[7][0] = "-";
-							updatedBoard[7][3] = "bR";
-						} else if (toIndex === 76) {
-							updatedBoard[7][7] = "-";
-							updatedBoard[7][5] = "bR";
-						}
-					}
-
-					if (currentSelectedPiece[1][0] === "w") {
-						//white
-						if (
-							currentSelectedPiece[0] === 0 &&
-							currentSelectedPiece[1][1] === "R"
-						) {
-							//left Rook
-							setWhiteCastling((currWhiteCastling) => [
-								true,
-								currWhiteCastling[1],
-								currWhiteCastling[2],
-							]);
-						} else if (
-							currentSelectedPiece[0] === 7 &&
-							currentSelectedPiece[1][1] === "R"
-						) {
-							//  right rook
-							setWhiteCastling((currWhiteCastling) => [
-								currWhiteCastling[0],
-								currWhiteCastling[1],
-								true,
-							]);
-						} else if (
-							currentSelectedPiece[0] === 4 &&
-							currentSelectedPiece[1][1] === "K"
-						) {
-							// king
-							setWhiteCastling((currWhiteCastling) => [
-								currWhiteCastling[0],
-								true,
-								currWhiteCastling[2],
-							]);
-						}
-					}
-
-					if (currentSelectedPiece[1][0] === "b") {
-						//black
-						if (
-							currentSelectedPiece[0] === 70 &&
-							currentSelectedPiece[1][1] === "R"
-						) {
-							setBlackCastling((currBlackCastling) => [
-								true,
-								currBlackCastling[1],
-								currBlackCastling[2],
-							]);
-						} else if (
-							currentSelectedPiece[0] === 77 &&
-							currentSelectedPiece[1][1] === "R"
-						) {
-							setBlackCastling((currBlackCastling) => [
-								currBlackCastling[0],
-								currBlackCastling[1],
-								true,
-							]);
-						} else if (
-							currentSelectedPiece[0] === 74 &&
-							currentSelectedPiece[1][1] === "K"
-						) {
-							setBlackCastling((currBlackCastling) => [
-								currBlackCastling[0],
-								true,
-								currBlackCastling[2],
-							]);
-						}
-					}
-				}
-
-				if (
-					!(
-						(
-							selectedPiece &&
-							selectedPiece[1][1] === "P" &&
-							((selectedPiece[1][0] == "w" && i2 === 7) ||
-								(selectedPiece[1][0] == "b" && i2 === 0))
-						) //no pawn promotion
-					)
-				) {
-					noOfMoves.current++;
-					dispatch(toggleTurn());
-					socket.emit("move", { fromIndex, toIndex, promotionMove: "" });
-
-					setBoardState(() => {
-						return updatedBoard;
-					});
-				}
-			}
-		},
-		[
-			blackCastling,
-			whiteCastling,
-			boardState,
-			dispatch,
-			prevMove,
-			selectedPiece,
-			turn,
-			socket,
-		]
-	);
-
-	const aiMove = useCallback(() => {
-		const aiTurn: string = "b";
-		const maximising = aiTurn === "w" ? true : false;
-		const endTime = Date.now() + 3000; //change while using
-
-		if (turn === aiTurn) {
-			const nodeCount = { value: 0 };
-			const transpositionTable: TranspositionTable = {};
-			const cancel = { isCancelled: false };
-
-			const { finalBestMove, finalBestScore } = MakeEngineMove(
-				boardState,
-				aiTurn,
-				prevMove,
-				whiteCastling,
-				blackCastling,
-				4000,
-				moveList
-			);
-
-			aiMinimaxMove.current = finalBestMove;
-			console.log("Evaluation:", finalBestScore, finalBestMove);
-		}
-
-		if (turn === aiTurn) {
-			console.log("Plays Move");
-			if (aiMinimaxMove.current) {
-				movePiece(
-					aiMinimaxMove.current[0],
-					aiMinimaxMove.current[1],
-					true,
-					false,
-					aiMinimaxMove.current[2]
-				);
-				setPrevMove([aiMinimaxMove.current[0], aiMinimaxMove.current[1]]);
-				setSelectedPiece(null);
-			}
-		}
-	}, [
-		boardState,
-		blackCastling,
-		whiteCastling,
-		prevMove,
-		turn,
-		movePiece,
-		moveList,
-	]);
-
-	useEffect(() => {
-		const delay = 0; // Set the desired delay in milliseconds
-		if (!gameEnded) {
-			const timer = setTimeout(() => {
-				// aiMove();
-			}, delay);
-
-			return () => clearTimeout(timer);
-		} else {
-			console.log("Game has ended");
-		}
-	}, [boardState, aiMove, gameEnded]);
 
 	useEffect(() => {
 		if (
@@ -604,7 +205,6 @@ export default function ChessBoard({
 			moveToIndex !== null &&
 			promotionMove != null
 		) {
-			// movePiece(moveFromIndex, moveToIndex, false, true);
 			const i1 = Math.floor(moveFromIndex / 10);
 			const j1 = moveFromIndex % 10;
 
@@ -631,6 +231,12 @@ export default function ChessBoard({
 				piece[1] == "P" &&
 				((piece[0] == "w" && i2 == 7) || (piece[0] == "b" && i2 == 0));
 			const promotedPiece = promotionMove;
+
+			if (capturedPiece !== "-") {
+				setSound("capture");
+			} else {
+				setSound("move");
+			}
 
 			MoveMaker(
 				boardStateMul,
@@ -676,18 +282,17 @@ export default function ChessBoard({
 					key={i * 10 + j}
 					position={i * 10 + j}
 					colour={(i + j) % 2 ? "bg-chess-light" : "bg-chess-dark"}
-					// colour={(i + j) % 2 ? "bg-chess-light2" : "bg-chess-dark2"}
-					movePiece={movePiece}
 					selectedPiece={selectedPiece}
 					setSelectedPiece={setSelectedPiece}
 					prevMove={prevMove}
-					setPrevMove={setPrevMove}
 					whiteCastling={whiteCastling}
 					blackCastling={blackCastling}
 					pawnPromotionOpen={pawnPromotionOpen}
 					gameEnded={gameEnded}
 					socket={socket}
 					clientTurnColour={clientTurnColour}
+					setPromotedPiecePosition={setPromotedPiecePosition}
+					setpawnPromotionOpen={setpawnPromotionOpen}
 				/>
 			);
 		});
@@ -700,13 +305,13 @@ export default function ChessBoard({
 
 	return (
 		<>
-			<Image
+			{/* <Image
 				className="absolute opacity-10"
 				src="/Images/woodenBackground.jpg"
 				alt="Description of the image"
 				width={1920}
 				height={1080}
-			/>
+			/> */}
 			<div className="flex flex-row gap-10 bg-room-bg">
 				<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
 					<div className="flex flex-col-reverse">{board}</div>
@@ -768,18 +373,18 @@ export default function ChessBoard({
 			<audio ref={endSound} src="/sound/end.mp3" />
 
 			<div
-				className={`${playerFont.className} absolute w-52 h-fit p-4 bg-room-secondary text-amber-950 lg:right-3/4 lg:top-36 lg:translate-x-64 lg:-translate-y-28 lg:gap-4 flex justify-start items-center rounded-2xl font-extrabold lg:text-xl`}
+				className={`${playerFont.className} absolute md:w-48 lg:w-52 h-fit p-4 bg-room-secondary text-amber-950 md:top-1/2 md:right-1/2 md:-translate-x-14 md:-translate-y-[340px] lg:top-1/2 lg:right-1/2 lg:-translate-x-28 lg:-translate-y-[400px] lg:gap-4 md:gap-4 flex justify-start items-center rounded-xl font-extrabold lg:text-xl md:text-lg`}
 			>
-				{/* <div className=" text-xl lg:w-8 lg:h-8 flex items-center justify-center rounded-2xl text-amber-950 bg-room-secondary">
-					<FaChessKing />
-				</div> */}
+				<div className="lg:text-3xl md:text-2xl">
+					<FaChessRook />
+				</div>
 				Hellooo
 			</div>
-			<div className="absolute w-52 h-fit p-4 bg-room-secondary text-amber-950 lg:right-3/4 lg:bottom-28 lg:translate-x-64 lg:translate-y-20 lg:gap-4 flex justify-center items-center rounded-2xl font-extrabold lg:text-xl">
-				{/* <div className="text-xl lg:w-8 lg:h-8 flex items-center justify-center rounded-2xl text-amber-950 bg-room-secondary">
-					<FaChessKing />
-				</div> */}
-				Byeeeeeeeeee
+			<div className="absolute lg:w-52 md:w-48 h-fit md:p-5 lg:p-4 bg-room-secondary text-amber-950 md:bottom-1/2 md:right-1/2 md:-translate-x-14 md:translate-y-[350px] lg:top-1/2 lg:right-1/2 lg:-translate-x-28 lg:translate-y-[340px] lg:gap-3 md:gap-4 flex justify-center items-center rounded-xl font-extrabold lg:text-xl md:text-base">
+				<div className="lg:text-3xl md:text-2xl">
+					<FaChessRook />
+				</div>
+				Byeeeeeeeeeee
 			</div>
 		</>
 	);

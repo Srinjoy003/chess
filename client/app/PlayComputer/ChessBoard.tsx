@@ -14,7 +14,7 @@ import {
 	MoveList,
 	CaptureMoveList,
 } from "../helperFunctions";
-import PawnPromotion from "../components/PawnPromotion";
+import PawnPromotion from "./PawnPromotion";
 import Timer from "../components/Timer";
 import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";

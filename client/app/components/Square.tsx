@@ -8,46 +8,43 @@ import { RootState } from "../reduxStore/store";
 import { MoveList } from "../helperFunctions";
 import { EnPassantMoveList } from "../helperFunctions";
 import { extractChessPosition } from "../chessEngine/core/aiHelperFunctions";
-import { OpponentPawnAttackSquares } from "../chessEngine/core/aiHelperFunctions";
 import { Socket } from "socket.io-client";
+import { isPromotion } from "../helperFunctions";
 
 type SquareProp = {
 	pawnPromotionOpen: boolean;
 	boardState: Array<Array<string>>;
 	colour: string;
 	position: number;
-	movePiece: (
-		fromIndex: number,
-		toIndex: number,
-		ai: boolean,
-		recieved: boolean
-	) => void;
 	selectedPiece: [number, string] | null;
 	setSelectedPiece: (newSelectedPiece: [number, string] | null) => void;
 	prevMove: [number, number] | null;
-	setPrevMove: (newPrevMove: [number, number] | null) => void;
 	whiteCastling: [boolean, boolean, boolean];
 	blackCastling: [boolean, boolean, boolean];
 	gameEnded: boolean;
 	socket: Socket;
 	clientTurnColour: string | null;
+	setPromotedPiecePosition: (
+		promotedPiecePosition: [number, number] | null
+	) => void;
+	setpawnPromotionOpen: (pawnPromotionOpen: () => boolean) => void;
 };
 
 const Square = ({
 	pawnPromotionOpen,
 	colour,
 	position,
-	movePiece,
 	boardState,
 	selectedPiece,
 	setSelectedPiece,
 	prevMove,
-	setPrevMove,
 	whiteCastling,
 	blackCastling,
 	gameEnded,
 	socket,
 	clientTurnColour,
+	setPromotedPiecePosition,
+	setpawnPromotionOpen,
 }: SquareProp) => {
 	const dispatch = useDispatch();
 	const turn = useSelector((state: RootState) => state.turn);
@@ -85,19 +82,21 @@ const Square = ({
 	const [{ isOver, canDrop }, drop] = useDrop({
 		accept: "CHESS_PIECE",
 		drop: (item: any) => {
-			// Update the state to place the chess piece in the square
-			// setChessPiece(item.piece);
 			if (moveList.includes(position) && !pawnPromotionOpen && !gameEnded) {
-				// movePiece(item.position, position, false, false);
-				// setPrevMove([item.position, position]);
-				// setSelectedPiece(null);
+				if (isPromotion(boardState, item.position, position)) {
+					setpawnPromotionOpen(() => {
+						setPromotedPiecePosition([item.position, position]);
+						return true;
+					});
+				} else {
+				}
 				socket.emit("move", {
 					fromIndex: item.position,
 					toIndex: position,
 					promotionMove: "",
 				});
+
 				item.position = position;
-			
 			}
 		},
 		collect: (monitor) => ({
@@ -113,15 +112,19 @@ const Square = ({
 				selectedPiece[0] !== position &&
 				moveList.includes(position)
 			) {
-				// movePiece(selectedPiece[0], position, false, false);
-				socket.emit("move", {
-					fromIndex: selectedPiece[0],
-					toIndex: position,
-					promotionMove: "",
-				});
-				// setPrevMove([selectedPiece[0], position]);
-				// setSelectedPiece(null);
-			} else if (boardState[row][col][0] === turn /*&& turn == clientTurnColour*/) {
+				if (isPromotion(boardState, selectedPiece[0], position)) {
+					setpawnPromotionOpen(() => {
+						setPromotedPiecePosition([selectedPiece[0], position]);
+						return true;
+					});
+				} else {
+					socket.emit("move", {
+						fromIndex: selectedPiece[0],
+						toIndex: position,
+						promotionMove: "",
+					});
+				}
+			} else if (boardState[row][col][0] === turn && turn == clientTurnColour) {
 				setSelectedPiece([position, boardState[row][col]]);
 			}
 		}
@@ -138,7 +141,8 @@ const Square = ({
 		gameEnded,
 		socket,
 		clientTurnColour,
-		
+		setpawnPromotionOpen,
+		setPromotedPiecePosition
 	]);
 
 	const pieceColour = boardState[row][col][0];

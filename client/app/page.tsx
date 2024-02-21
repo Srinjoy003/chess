@@ -26,7 +26,11 @@ export default function Home() {
 	const [playState, setPlayState] = useState<PlayState | null>(null);
 
 	useEffect(() => {
-		const socket = io("http://localhost:3001", { reconnection: false });
+		const socket = io("http://localhost:3001", {
+			reconnection: false,
+			transports: ["websocket"], // Explicitly specify WebSocket transport
+		});
+
 		setSocket(socket);
 		return () => {
 			socket.disconnect();
@@ -58,17 +62,17 @@ export default function Home() {
 	}, [socket]);
 
 	return (
-		<Providers>
-			<DndProvider backend={HTML5Backend}>
-				<ChessBoard
-					moveFromIndex={moveFromIndex}
-					moveToIndex={moveToIndex}
-					promotionMove={promotionMove}
-					socket={socket}
-					clientTurnColour={colour}
-					playState={playState}
-				/>
-			</DndProvider>
-		</Providers>
+			<Providers>
+				<DndProvider backend={HTML5Backend}>
+					<ChessBoard
+						moveFromIndex={moveFromIndex}
+						moveToIndex={moveToIndex}
+						promotionMove={promotionMove}
+						socket={socket}
+						clientTurnColour={colour}
+						playState={playState}
+					/>
+				</DndProvider>
+			</Providers>
 	);
 }
