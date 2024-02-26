@@ -154,7 +154,8 @@ export default function ChessBoard({
 
 	const victoryOrLoss = isCheckMate || isTimeUp;
 	const draw = isStaleMate || hasInsufficientMaterial || isThreeFoldRepetion;
-	const gameEnded = victoryOrLoss || draw;
+	// const gameEnded = victoryOrLoss || draw;
+	const gameEnded = true;
 
 	useEffect(() => {
 		setPosition([turn, boardState]);
@@ -346,24 +347,35 @@ export default function ChessBoard({
 				</div>
 
 				<div
-					className={`absolute top-1/3 left-1/2 w-40 h-40 bg-white flex-col items-center justify-center z-50 ${
+					className={`absolute top-1/3 left-1/2 w-52 h-64 sm:w-56 sm:h-64 md:w-64 md:h-80 lg:w-72 lg:h-96 text-amber-950 text-2xl bg-room-accent flex-col items-center justify-center text-center z-50 -translate-x-32 lg:-translate-y-24 rounded-lg shadow-2xl shadow-amber-950 ${
 						gameEnded ? "" : "hidden"
 					}`}
 				>
-					<p>
-						{victoryOrLoss
-							? turn === "b"
-								? "White Wins"
-								: "Black Wins"
-							: "DRAW"}
-					</p>
-					<p>
-						{isCheckMate ? "By Checkmate" : ""}
-						{isTimeUp ? "By Timeout" : ""}
-						{isStaleMate && "By Stalemate"}{" "}
-						{hasInsufficientMaterial && "By Insufficient Material"}
-						{isThreeFoldRepetion && "by Three Fold Repetition"}
-					</p>
+					<Image
+						className="relative w-44 h-36 sm:w-48 sm:h-36 md:w-52 md:h-44 lg:w-60 lg:h-52 ml-auto mr-auto mt-4 sm:mt-4 md:mt-7 rounded-lg"
+						src="/Images/checkmate2.jpg"
+						alt="Description of the image"
+						width={1280}
+						height={800}
+					/>
+
+					<div className="flex flex-col mt-4 sm:mt-4 md:mt-5 lg:mt-8 gap-1">
+						<p className="text-2xl sm:text-2xl lg:text-3xl font-bold">
+							{victoryOrLoss
+								? turn === "b"
+									? "White Wins"
+									: "Black Wins"
+								: "DRAW"}
+						</p>
+
+						<p className="text-base sm:text-base lg:text-lg font-semibold">
+							{isCheckMate ? "By Checkmate" : ""}
+							{isTimeUp ? "By Timeout" : ""}
+							{isStaleMate && "By Stalemate"}{" "}
+							{hasInsufficientMaterial && "By Insufficient Material"}
+							{isThreeFoldRepetion && "by Three Fold Repetition"}
+						</p>
+					</div>
 				</div>
 			</div>
 			<audio ref={moveSound} src="/sound/move.mp3" />
@@ -373,17 +385,11 @@ export default function ChessBoard({
 			<audio ref={endSound} src="/sound/end.mp3" />
 
 			<div
-				className={`${playerFont.className} absolute md:w-48 lg:w-52 h-fit p-4 bg-room-secondary text-amber-950 md:top-1/2 md:right-1/2 md:-translate-x-14 md:-translate-y-[340px] lg:top-1/2 lg:right-1/2 lg:-translate-x-28 lg:-translate-y-[400px] lg:gap-4 md:gap-4 flex justify-start items-center rounded-xl font-extrabold lg:text-xl md:text-lg`}
+				className={`${playerFont.className} absolute w-32 sm:w-36 md:w-48 lg:w-52 h-fit p-4 bg-room-secondary text-amber-950 top-1/2 right-1/2 -translate-x-12 -translate-y-[255px] sm:-translate-x-14 sm:-translate-y-[290px] md:-translate-x-16 md:-translate-y-[340px] lg:-translate-x-28 lg:-translate-y-[400px] lg:gap-4 md:gap-4 sm:gap-3 gap-2 flex justify-center items-center rounded-xl font-extrabold lg:text-xl md:text-lg sm:text-sm text-sm`}
 			>
-				<div className="lg:text-3xl md:text-2xl">
-					<FaChessRook />
-				</div>
 				Hellooo
 			</div>
-			<div className="absolute lg:w-52 md:w-48 h-fit md:p-5 lg:p-4 bg-room-secondary text-amber-950 md:bottom-1/2 md:right-1/2 md:-translate-x-14 md:translate-y-[350px] lg:top-1/2 lg:right-1/2 lg:-translate-x-28 lg:translate-y-[340px] lg:gap-3 md:gap-4 flex justify-center items-center rounded-xl font-extrabold lg:text-xl md:text-base">
-				<div className="lg:text-3xl md:text-2xl">
-					<FaChessRook />
-				</div>
+			<div className="absolute w-32 lg:w-52 md:w-48 sm:w-36 p-4 sm:p-4 h-fit md:p-4 lg:p-4 bg-room-secondary text-amber-950 bottom-1/2 right-1/2 -translate-x-12 translate-y-[265px] sm:bottom-1/2 sm:right-1/2 sm:-translate-x-14 sm:translate-y-[290px] md:bottom-1/2 md:right-1/2 md:-translate-x-16 md:translate-y-[350px] lg:top-1/2 lg:right-1/2 lg:-translate-x-28 lg:translate-y-[340px] lg:gap-3 md:gap-4 sm:gap-3 gap-2 flex justify-center items-center rounded-xl font-extrabold lg:text-xl md:text-base sm:text-sm text-sm">
 				Byeeeeeeeeeee
 			</div>
 		</>
