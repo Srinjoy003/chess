@@ -10,9 +10,24 @@ import { Itim, Merienda } from "next/font/google";
 import CopyToClipboard from "../components/clipBoard";
 import Message from "./Message";
 import { LuCrown } from "react-icons/lu";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import ChessBoard from "../components/ChessBoard";
+import { Providers } from "../reduxStore/provider";
+import { current } from "@reduxjs/toolkit";
 
 const heading = Merienda({ weight: "800", subsets: ["latin"] });
 const playerFont = Merienda({ weight: "400", subsets: ["latin"] });
+
+type moveProps = { fromIndex: number; toIndex: number; promotionMove: string };
+
+export type PlayState = {
+	serverBoardState: string[][];
+	serverPrevMove: [number, number];
+	serverWhiteCastling: [boolean, boolean, boolean];
+	serverBlackCastling: [boolean, boolean, boolean];
+	serverTurn: string;
+};
 
 type PlayerDetails = {
 	playerName: string;
@@ -34,10 +49,11 @@ export type RoomSettings = {
 	blackPlayer: string;
 	time: number;
 	increment: number;
+	gameStarted: boolean;
 };
 
 function GameRoom() {
-	const [socket, setSocket] = useState<Socket | null>(null);
+	const [socket, setSocket] = useState<Socket>(io({ autoConnect: false }));
 	const [playerList, setPlayerList] = useState<PlayerDetailsWithID[]>([]);
 	const [roomId, setRoomId] = useState<string | null>(null);
 	const [playerName, setPlayerName] = useState<string>("");
@@ -47,6 +63,12 @@ function GameRoom() {
 	const [messageIsVisible, setMessageIsVisible] = useState<boolean>(false);
 	const [message, setMessage] = useState<string>("");
 
+	const [moveFromIndex, setMoveFromIndex] = useState<number | null>(null); //for sockets
+	const [moveToIndex, setMoveToIndex] = useState<number | null>(null);
+	const [promotionMove, setPromotionMove] = useState<string | null>(null);
+	const [colour, setColour] = useState<string | null>("s");
+	const [playState, setPlayState] = useState<PlayState | null>(null);
+
 	const [roomSettings, setRoomSettings] = useState<RoomSettings>({
 		roomId: "",
 		host: "",
@@ -54,6 +76,7 @@ function GameRoom() {
 		blackPlayer: "",
 		time: 1,
 		increment: 0,
+		gameStarted: false,
 	});
 
 	const whitePlayerRef = useRef<HTMLSelectElement>(null);
@@ -88,6 +111,12 @@ function GameRoom() {
 		} else if (roomSettings.blackPlayer === "") {
 			setMessage("Please select black");
 			setMessageIsVisible(true);
+		} else {
+			setRoomSettings((currentRoomSettings) => {
+				const newRoomSettings = { ...currentRoomSettings, gameStarted: true };
+				socket?.emit("roomSettings", newRoomSettings);
+				return newRoomSettings;
+			});
 		}
 	};
 
@@ -151,6 +180,17 @@ function GameRoom() {
 
 			socket.on("roomSettings", (roomSettings: RoomSettings) => {
 				setRoomSettings(roomSettings);
+				if (roomSettings.whitePlayer === playerId) {
+					setColour("w");
+					console.log("SET WHITE PLAYER");
+				} else if (roomSettings.blackPlayer === playerId) {
+					setColour("b");
+					console.log("SET BLACK PLAYER");
+				} else {
+					setColour("s");
+					console.log("SET SPECTATOR PLAYER");
+				}
+
 				console.log("RECIEVED ROOM SETTINGS", roomSettings);
 			});
 
@@ -164,6 +204,23 @@ function GameRoom() {
 				const newMessage = `${playerName} left the room`;
 				setMessage(newMessage);
 				setMessageIsVisible(true);
+			});
+
+			socket.on("move", (move: moveProps) => {
+				setMoveFromIndex(move.fromIndex);
+				setMoveToIndex(move.toIndex);
+				setPromotionMove(move.promotionMove);
+				console.log(
+					"RECIEVED DATA",
+					move.fromIndex,
+					move.toIndex,
+					move.promotionMove
+				);
+			});
+
+			socket.on("playState", (playState: PlayState) => {
+				setPlayState(playState);
+				console.log("RECIEVED PLAYSTATE", playState);
 			});
 		}
 	}, [socket]);
@@ -194,7 +251,7 @@ function GameRoom() {
 				</button>
 			</main>
 		);
-	else {
+	else if (!roomSettings.gameStarted) {
 		return (
 			<>
 				<div className="w-screen md:h-screen bg-room-bg text-white p-4 flex md:flex-row flex-col md:items-start items-center justify-start gap-32 md:gap-20">
@@ -284,6 +341,21 @@ function GameRoom() {
 					setMessageIsVisible={setMessageIsVisible}
 				/>
 			</>
+		);
+	} else if (roomSettings.gameStarted) {
+		return (
+			<Providers>
+				<DndProvider backend={HTML5Backend}>
+					<ChessBoard
+						moveFromIndex={moveFromIndex}
+						moveToIndex={moveToIndex}
+						promotionMove={promotionMove}
+						socket={socket}
+						clientTurnColour={colour}
+						playState={playState}
+					/>
+				</DndProvider>
+			</Providers>
 		);
 	}
 }

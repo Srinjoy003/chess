@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 
 type moveProps = { fromIndex: number; toIndex: number; promotionMove: string };
+
 export type PlayState = {
 	serverBoardState: string[][];
 	serverPrevMove: [number, number];

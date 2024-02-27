@@ -11,6 +11,8 @@ import {
 	updateRoomSettingsOnDisconnect,
 } from "./serverOperations/room";
 
+import { PlayState, initializePlayState } from "./serverOperations/game";
+
 const express = require("express");
 const http = require("http");
 const app = express();
@@ -21,6 +23,7 @@ type moveProps = { fromIndex: number; toIndex: number; promotionMove: string };
 const playersByRoom: Record<string, PlayerDetails[]> = {};
 const playerRoomMap: Record<string, string> = {};
 const settingsByRoom: Record<string, RoomSettings> = {};
+const playStateByRoom: Record<string, PlayState> = {};
 
 const io = new Server(server, {
 	cors: {
@@ -64,12 +67,6 @@ io.on("connection", (socket) => {
 		if (disconnectedPlayerIndex !== -1) {
 			players.splice(disconnectedPlayerIndex, 1);
 			console.log("No of players after removal:", players.length);
-
-			if (players.length === 2) {
-				io.to(players[0].id).emit("colorAssigned", "w");
-				io.to(players[1].id).emit("colorAssigned", "b");
-				console.log("reassigned");
-			}
 		}
 
 		const roomId = playerRoomMap[socket.id];
@@ -94,55 +91,38 @@ io.on("connection", (socket) => {
 
 	socket.on("move", ({ fromIndex, toIndex, promotionMove }: moveProps) => {
 		console.log("Received move:", { fromIndex, toIndex, promotionMove });
+		const roomId = playerRoomMap[socket.id];
 
 		if (
 			MoveValidator(
-				boardState,
-				currentTurn,
-				prevMove,
-				whiteCastling,
-				blackCastling,
+				playStateByRoom[roomId].serverBoardState,
+				playStateByRoom[roomId].serverTurn,
+				playStateByRoom[roomId].serverPrevMove,
+				playStateByRoom[roomId].serverWhiteCastling,
+				playStateByRoom[roomId].serverBlackCastling,
 				fromIndex,
 				toIndex
 			)
 		) {
 			PlayMove(
-				boardState,
-				currentTurn,
-				prevMove,
-				whiteCastling,
-				blackCastling,
+				playStateByRoom[roomId].serverBoardState,
+				playStateByRoom[roomId].serverTurn,
+				playStateByRoom[roomId].serverPrevMove,
+				playStateByRoom[roomId].serverWhiteCastling,
+				playStateByRoom[roomId].serverBlackCastling,
 				fromIndex,
 				toIndex,
 				promotionMove
 			);
-			currentTurn = currentTurn == "w" ? "b" : "w";
+			// currentTurn = currentTurn == "w" ? "b" : "w";
+			playStateByRoom[roomId].serverTurn =
+				playStateByRoom[roomId].serverTurn == "w" ? "b" : "w";
 
 			io.emit("move", { fromIndex, toIndex, promotionMove });
-			// socket.broadcast.emit("move", { fromIndex, toIndex, promotionMove });
 		} else {
 			console.log("Invalid Move");
 		}
 	});
-
-	if (players.length === 0) {
-		players.push({ id: socket.id, color: "w" });
-		io.to(socket.id).emit("colorAssigned", "w");
-		console.log("sent white");
-	} else if (players.length === 1) {
-		players.push({ id: socket.id, color: "b" });
-		console.log("sent black");
-		io.to(socket.id).emit("colorAssigned", "b");
-
-		// Notify both players about the colors
-		// io.to(players[0].id).emit("colorAssigned", "white");
-		// io.to(players[1].id).emit("colorAssigned", "black");
-	} else {
-		// Handle additional players (optional)
-		players.push({ id: socket.id, color: "s" });
-		console.log("sent spectator");
-		io.to(socket.id).emit("colorAssigned", "s");
-	}
 
 	socket.on(
 		"playerDetails",
@@ -175,9 +155,16 @@ io.on("connection", (socket) => {
 					blackPlayer: "",
 					time: 1,
 					increment: 0,
+					gameStarted: false,
 				};
 				socket.emit("roomSettings", settingsByRoom[roomId]);
 				console.log(playerName, "is Host");
+			}
+
+			if (roomId in playStateByRoom) {
+				socket.emit("playState", playStateByRoom[roomId]);
+			} else {
+				initializePlayState(roomId, playStateByRoom);
 			}
 
 			socket.to(roomId).emit("playerJoined", playerName);

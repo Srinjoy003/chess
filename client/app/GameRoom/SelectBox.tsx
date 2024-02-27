@@ -57,6 +57,7 @@ export function PlayerSelectBox({
 			};
 
 			socket?.emit("roomSettings", updatedSettings);
+			console.log(field, selectedValue);
 
 			return updatedSettings;
 		});
@@ -96,7 +97,7 @@ export function PlayerSelectBox({
 				{!playerRef.current?.value && <option value="" hidden></option>}
 
 				{options.map((option) => (
-					<option key={option.playerId} value={option.playerName}>
+					<option key={option.playerId} value={option.playerId}>
 						{option.playerName} {unit}
 					</option>
 				))}

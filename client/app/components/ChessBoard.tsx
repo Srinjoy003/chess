@@ -154,8 +154,8 @@ export default function ChessBoard({
 
 	const victoryOrLoss = isCheckMate || isTimeUp;
 	const draw = isStaleMate || hasInsufficientMaterial || isThreeFoldRepetion;
-	// const gameEnded = victoryOrLoss || draw;
-	const gameEnded = true;
+	const gameEnded = victoryOrLoss || draw;
+	// const gameEnded = true;
 
 	useEffect(() => {
 		setPosition([turn, boardState]);

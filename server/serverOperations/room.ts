@@ -12,6 +12,7 @@ export type RoomSettings = {
 	blackPlayer: string;
 	time: number;
 	increment: number;
+	gameStarted: boolean;
 };
 export function removePlayerFromRoom(
 	playersByRoom: Record<string, PlayerDetails[]>,
@@ -74,6 +75,7 @@ export function updateRoomSettingsOnDisconnect(
 			settingsByRoom[roomId].blackPlayer = "";
 		}
 
-		settingsByRoom[roomId].host = playersByRoom[roomId][0].playerId
+		settingsByRoom[roomId].host = playersByRoom[roomId][0].playerId;
 	}
 }
+
