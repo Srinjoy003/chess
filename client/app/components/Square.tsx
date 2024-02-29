@@ -142,7 +142,7 @@ const Square = ({
 		socket,
 		clientTurnColour,
 		setpawnPromotionOpen,
-		setPromotedPiecePosition
+		setPromotedPiecePosition,
 	]);
 
 	const pieceColour = boardState[row][col][0];
@@ -213,7 +213,8 @@ const Square = ({
 				</div>
 			)}
 
-			{positionName[1] === "1" && (
+			{((positionName[1] === "1" && clientTurnColour === "w") ||
+				(positionName[1] === "8" && clientTurnColour === "b")) && (
 				<div
 					className={`absolute right-0 bottom-0 font-semibold ${
 						colour === "bg-chess-light" ? "text-chess-dark" : "text-chess-light"

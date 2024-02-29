@@ -35,13 +35,14 @@ import { Merienda } from "next/font/google";
 
 const playerFont = Merienda({ weight: "900", subsets: ["latin"] });
 
-type moveProps = {
+type boardProps = {
 	moveFromIndex: number | null;
 	moveToIndex: number | null;
 	promotionMove: string | null;
 	socket: Socket;
 	clientTurnColour: string | null;
 	playState: PlayState | null;
+	players: { whitePlayer: string; blackPlayer: string };
 };
 
 export function CreateBoardMap() {
@@ -81,7 +82,8 @@ export default function ChessBoard({
 	socket,
 	clientTurnColour,
 	playState,
-}: moveProps) {
+	players,
+}: boardProps) {
 	type positionType = [string, string[][]];
 	const boardMap = CreateBoardMap();
 	const [boardState, setBoardState] = useState(Array.from(boardMap));
@@ -298,7 +300,12 @@ export default function ChessBoard({
 			);
 		});
 		return (
-			<div className="flex flex-row" key={uuidv4()}>
+			<div
+				className={`flex ${
+					clientTurnColour === "b" ? "flex-row-reverse" : "flex-row"
+				}`}
+				key={uuidv4()}
+			>
 				{newRow}
 			</div>
 		);
@@ -315,7 +322,13 @@ export default function ChessBoard({
 			/> */}
 			<div className="flex flex-row gap-10 bg-room-bg">
 				<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
-					<div className="flex flex-col-reverse">{board}</div>
+					<div
+						className={`flex ${
+							clientTurnColour === "w" ? "flex-col-reverse" : "flex-col"
+						}`}
+					>
+						{board}
+					</div>
 					<div className="absolute z-20 -translate-x-10">
 						<PawnPromotion
 							open={pawnPromotionOpen}
@@ -387,10 +400,10 @@ export default function ChessBoard({
 			<div
 				className={`${playerFont.className} absolute w-32 sm:w-36 md:w-48 lg:w-52 h-fit p-4 bg-room-secondary text-amber-950 top-1/2 right-1/2 -translate-x-12 -translate-y-[255px] sm:-translate-x-14 sm:-translate-y-[290px] md:-translate-x-16 md:-translate-y-[340px] lg:-translate-x-28 lg:-translate-y-[400px] lg:gap-4 md:gap-4 sm:gap-3 gap-2 flex justify-center items-center rounded-xl font-extrabold lg:text-xl md:text-lg sm:text-sm text-sm`}
 			>
-				Hellooo
+				{clientTurnColour === "b" ? players.whitePlayer : players.blackPlayer}
 			</div>
 			<div className="absolute w-32 lg:w-52 md:w-48 sm:w-36 p-4 sm:p-4 h-fit md:p-4 lg:p-4 bg-room-secondary text-amber-950 bottom-1/2 right-1/2 -translate-x-12 translate-y-[265px] sm:bottom-1/2 sm:right-1/2 sm:-translate-x-14 sm:translate-y-[290px] md:bottom-1/2 md:right-1/2 md:-translate-x-16 md:translate-y-[350px] lg:top-1/2 lg:right-1/2 lg:-translate-x-28 lg:translate-y-[340px] lg:gap-3 md:gap-4 sm:gap-3 gap-2 flex justify-center items-center rounded-xl font-extrabold lg:text-xl md:text-base sm:text-sm text-sm">
-				Byeeeeeeeeeee
+				{clientTurnColour === "b" ? players.blackPlayer : players.whitePlayer}{" "}
 			</div>
 		</>
 	);

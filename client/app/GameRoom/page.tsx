@@ -62,6 +62,10 @@ function GameRoom() {
 	const [isHost, setIsHost] = useState<boolean>(false);
 	const [messageIsVisible, setMessageIsVisible] = useState<boolean>(false);
 	const [message, setMessage] = useState<string>("");
+	const [activePlayers, setActivePlayers] = useState<{
+		whitePlayer: string;
+		blackPlayer: string;
+	}>({ whitePlayer: "", blackPlayer: "" });
 
 	const [moveFromIndex, setMoveFromIndex] = useState<number | null>(null); //for sockets
 	const [moveToIndex, setMoveToIndex] = useState<number | null>(null);
@@ -138,7 +142,7 @@ function GameRoom() {
 	useEffect(() => {
 		if (socket && roomId && isSubmitted && playerId === "") {
 			const playerDetails: PlayerDetails = { playerName, roomId, colour: "s" };
-			socket.emit("playerDetails", playerDetails, setPlayerId);
+			socket.emit("playerDetails", playerDetails);
 			console.log("Sent Player Details");
 		}
 	}, [roomId, playerName, socket, isSubmitted, playerId]);
@@ -155,10 +159,19 @@ function GameRoom() {
 	}, [isSubmitted]);
 
 	useEffect(() => {
-		if (isSubmitted) {
-			console.log(roomSettings);
+		const newActivePlayers = { whitePlayer: "", blackPlayer: "" };
+		for (let player of playerList) {
+			if (roomSettings.whitePlayer === player.playerId) {
+				newActivePlayers.whitePlayer = player.playerName;
+			}
+
+			if (roomSettings.blackPlayer === player.playerId) {
+				newActivePlayers.blackPlayer = player.playerName;
+			}
 		}
-	}, [isSubmitted, roomSettings]);
+
+		setActivePlayers(newActivePlayers)
+	}, [roomSettings, playerList]);
 
 	useEffect(() => {
 		if (isSubmitted) {
@@ -190,8 +203,16 @@ function GameRoom() {
 					setColour("s");
 					console.log("SET SPECTATOR PLAYER");
 				}
+				console.log(
+					"White",
+					roomSettings.whitePlayer,
+					"Black",
+					roomSettings.blackPlayer,
+					"Playerid",
+					playerId
+				);
 
-				console.log("RECIEVED ROOM SETTINGS", roomSettings);
+				console.log("RECIEVED ROOM SETTINGS", roomSettings, playerId);
 			});
 
 			socket.on("playerJoined", (playerName: string) => {
@@ -222,8 +243,13 @@ function GameRoom() {
 				setPlayState(playState);
 				console.log("RECIEVED PLAYSTATE", playState);
 			});
+
+			socket.on("playerId", (playerId: string) => {
+				setPlayerId(playerId);
+				console.log("RECIEVED PLAYERID", playerId);
+			});
 		}
-	}, [socket]);
+	}, [socket, playerId]);
 
 	let link = `http://localhost:3000${pathname}?roomId=${roomId}`;
 
@@ -353,6 +379,7 @@ function GameRoom() {
 						socket={socket}
 						clientTurnColour={colour}
 						playState={playState}
+						players={activePlayers}
 					/>
 				</DndProvider>
 			</Providers>

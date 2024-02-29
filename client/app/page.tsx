@@ -7,6 +7,7 @@ import { Providers } from "./reduxStore/provider";
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
+import { ACTION_SERVER_ACTION } from "next/dist/client/components/router-reducer/router-reducer-types";
 
 type moveProps = { fromIndex: number; toIndex: number; promotionMove: string };
 
@@ -64,14 +65,15 @@ export default function Home() {
 	return (
 		<Providers>
 			<DndProvider backend={HTML5Backend}>
-				<ChessBoard
+				{/* <ChessBoard
 					moveFromIndex={moveFromIndex}
 					moveToIndex={moveToIndex}
 					promotionMove={promotionMove}
 					socket={socket}
 					clientTurnColour={colour}
 					playState={playState}
-				/>
+					players={}
+				/> */}
 			</DndProvider>
 		</Providers>
 	);

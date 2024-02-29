@@ -127,8 +127,7 @@ io.on("connection", (socket) => {
 	socket.on(
 		"playerDetails",
 		(
-			{ playerName, roomId, colour }: PlayerDetails,
-			setPlayerId: (playerId: string) => void
+			{ playerName, roomId, colour }: PlayerDetails
 		) => {
 			addPlayerToRoom(playersByRoom, playerRoomMap, socket.id, roomId, {
 				playerId: socket.id,
@@ -136,7 +135,7 @@ io.on("connection", (socket) => {
 				roomId,
 				colour,
 			});
-			setPlayerId(socket.id);
+			socket.emit("playerId", socket.id);
 			socket.join(roomId);
 			console.log("Recieved Player Details", { playerName, roomId, colour });
 			console.log("Player List", playersByRoom);
@@ -175,7 +174,7 @@ io.on("connection", (socket) => {
 		console.log("Received Room Settings:", roomSettings);
 		updateRoomSettings(settingsByRoom, roomSettings.roomId, roomSettings);
 		console.log("New Room Settings:", settingsByRoom);
-		socket.to(roomSettings.roomId).emit("roomSettings", roomSettings);
+		io.to(roomSettings.roomId).emit("roomSettings", roomSettings);
 	});
 });
 
