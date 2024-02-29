@@ -14,7 +14,6 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import ChessBoard from "../components/ChessBoard";
 import { Providers } from "../reduxStore/provider";
-import { current } from "@reduxjs/toolkit";
 
 const heading = Merienda({ weight: "800", subsets: ["latin"] });
 const playerFont = Merienda({ weight: "400", subsets: ["latin"] });
@@ -85,13 +84,6 @@ function GameRoom() {
 
 	const whitePlayerRef = useRef<HTMLSelectElement>(null);
 	const blackPlayerRef = useRef<HTMLSelectElement>(null);
-	const playerListExample = [
-		"Zen",
-		"Beastmode",
-		"Vatira",
-		"ApparentlyJack",
-		"FirstKiller",
-	];
 
 	const searchParams = useSearchParams();
 	let pathname = usePathname();
@@ -170,7 +162,7 @@ function GameRoom() {
 			}
 		}
 
-		setActivePlayers(newActivePlayers)
+		setActivePlayers(newActivePlayers);
 	}, [roomSettings, playerList]);
 
 	useEffect(() => {
@@ -255,7 +247,7 @@ function GameRoom() {
 
 	if (!isSubmitted)
 		return (
-			<main className="w-screen h-screen bg-dark-background flex flex-col items-center justify-center gap-10">
+			<main className="w-screen h-screen bg-room-bg flex flex-col items-center justify-center gap-10">
 				<div>
 					<div className="inputbox">
 						<input
@@ -271,7 +263,7 @@ function GameRoom() {
 
 				<button
 					onClick={handleSubmit}
-					className="h-10 w-32 sm:w-36 text-zinc-700 hover:text-zinc-200 backdrop-blur-lg bg-gradient-to-tr from-transparent via-[rgba(121,121,121,0.16)] to-transparent rounded-md py-2 px-6 shadow hover:shadow-zinc-400 duration-700"
+					className="h-10 w-32 sm:w-36 text-zinc-700 hover:text-room-tertiary backdrop-blur-lg bg-gradient-to-tr from-transparent via-[rgba(121,121,121,0.16)] to-transparent rounded-md py-2 px-6 shadow hover:shadow-room-tertiary duration-700"
 				>
 					Submit
 				</button>
@@ -380,6 +372,7 @@ function GameRoom() {
 						clientTurnColour={colour}
 						playState={playState}
 						players={activePlayers}
+						roomSettings={roomSettings}
 					/>
 				</DndProvider>
 			</Providers>

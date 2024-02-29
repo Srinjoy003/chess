@@ -65,15 +65,16 @@ export default function Home() {
 	return (
 		<Providers>
 			<DndProvider backend={HTML5Backend}>
-				{/* <ChessBoard
+				<ChessBoard
 					moveFromIndex={moveFromIndex}
 					moveToIndex={moveToIndex}
 					promotionMove={promotionMove}
 					socket={socket}
 					clientTurnColour={colour}
 					playState={playState}
-					players={}
-				/> */}
+					players={{whitePlayer:"zen", blackPlayer:"vati"}}
+					roomSettings={{whitePlayer:""}}
+				/>
 			</DndProvider>
 		</Providers>
 	);

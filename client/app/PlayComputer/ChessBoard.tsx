@@ -530,7 +530,7 @@ export default function ChessBoard() {
 				prevMove,
 				whiteCastling,
 				blackCastling,
-				20000,
+				5000,
 				moveList
 			);
 

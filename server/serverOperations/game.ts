@@ -1,4 +1,5 @@
 import { CreateBoardMap } from "../chessFunctions/moves";
+import { PlayerDetails } from "./room";
 
 export type PlayState = {
 	serverBoardState: string[][];
@@ -25,4 +26,13 @@ export function initializePlayState(
 		serverBlackCastling: blackCastling,
 		serverTurn: currentTurn,
 	};
+}
+
+export function updatePlayStateByRoomOnDisconnect(
+	roomId: string,
+	playStateByRoom: Record<string, PlayState>,
+	playersByRoom: Record<string, PlayerDetails[]>
+) {
+	if (roomId in playStateByRoom && !(roomId in playersByRoom))
+		delete playStateByRoom[roomId];
 }

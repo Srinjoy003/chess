@@ -20,18 +20,15 @@ import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";
 
 import { Socket } from "socket.io-client";
-import { TranspositionTable } from "../chessEngine/core/aiSearch";
-import { moveToUCI } from "../chessEngine/openings/openingParser";
-import { MakeEngineMove } from "../chessEngine/core/aiMain";
 import {
 	MoveMaker,
 	deepCopyBoard,
 	deepCopyCastling,
 } from "../chessEngine/core/MoveGenerator";
 import { PlayState } from "../page";
-import { FaChessRook } from "react-icons/fa6";
 import Image from "next/image";
 import { Merienda } from "next/font/google";
+import { RoomSettings } from "../GameRoom/page";
 
 const playerFont = Merienda({ weight: "900", subsets: ["latin"] });
 
@@ -43,6 +40,7 @@ type boardProps = {
 	clientTurnColour: string | null;
 	playState: PlayState | null;
 	players: { whitePlayer: string; blackPlayer: string };
+	roomSettings: RoomSettings
 };
 
 export function CreateBoardMap() {
@@ -83,6 +81,7 @@ export default function ChessBoard({
 	clientTurnColour,
 	playState,
 	players,
+	roomSettings
 }: boardProps) {
 	type positionType = [string, string[][]];
 	const boardMap = CreateBoardMap();
@@ -108,7 +107,7 @@ export default function ChessBoard({
 	>(null);
 
 	const [isTimeUp, setIsTimeUp] = useState(false);
-	const [playTime, setplayTime] = useState(10);
+	const [playTime, setplayTime] = useState(roomSettings.time);
 
 	const turn = useSelector((state: RootState) => state.turn);
 	const dispatch = useDispatch();

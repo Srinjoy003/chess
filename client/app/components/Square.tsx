@@ -203,7 +203,8 @@ const Square = ({
 					></div>
 				)}
 
-			{positionName[0] === "a" && (
+			{((positionName[0] === "a" && clientTurnColour === "w") ||
+				(positionName[0] === "h" && clientTurnColour === "b")) && (
 				<div
 					className={`absolute left-0 top-0 font-semibold ${
 						colour === "bg-chess-light" ? "text-chess-dark" : "text-chess-light"

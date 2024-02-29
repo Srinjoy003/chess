@@ -1,7 +1,9 @@
 import React from "react";
-import Countdown from "react-countdown";
+import Countdown, { CountdownTimeDelta } from "react-countdown";
 import { CountdownRenderProps, CountdownApi } from "react-countdown";
 import { useState, useEffect, useRef } from "react";
+import { Inter } from "next/font/google";
+
 type TimerProps = {
 	playTime: number;
 	timerFor: string;
@@ -9,6 +11,7 @@ type TimerProps = {
 	pawnPromotionOpen: boolean;
 	setIsTimeUp: (isTimeUp: boolean) => void;
 	gameEnded: boolean;
+	increment?: number;
 };
 
 export default function Timer({
@@ -18,11 +21,13 @@ export default function Timer({
 	pawnPromotionOpen,
 	setIsTimeUp,
 	gameEnded,
+	increment = 0,
 }: TimerProps) {
 	const timeGiven = playTime * 60000;
 	const [time, setTime] = useState(Date.now());
 	const [initialTimeSet, setInitialTimeSet] = useState(false);
 	const countdownRef = useRef<Countdown>(null);
+	const [countdownTime, setCountDownTime] = useState(time + timeGiven);
 
 	const api = countdownRef.current?.api;
 
@@ -47,15 +52,17 @@ export default function Timer({
 		}
 	}, [turn, timerFor, initialTimeSet]);
 
-	const countdownTime = time + timeGiven;
+	useEffect(() => {
+		setCountDownTime(time + timeGiven);
+	}, [time, setCountDownTime, timeGiven]);
 
-	const renderer = ({ minutes, seconds }: CountdownRenderProps) => {
+	const renderer = ({ hours, minutes, seconds }: CountdownRenderProps) => {
 		return (
 			<p
 				className={`h-12 w-24 text-4xl px-16 py-8 md:h-14 md:w-28 md:text-[40px] md:px-20 md:py-10 lg:h-24 lg:w-48 lg:text-5xl flex items-center justify-center rounded-xl text-bold ${
 					timerFor === turn ? "bg-white text-black" : "bg-black text-gray-400"
 				}`}
-			>{`${minutes}:${seconds < 10 ? "0" : ""}${seconds}`}</p>
+			>{`${hours * 60 + minutes}:${seconds < 10 ? "0" : ""}${seconds}`}</p>
 		);
 	};
 

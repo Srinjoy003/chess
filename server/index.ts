@@ -11,7 +11,11 @@ import {
 	updateRoomSettingsOnDisconnect,
 } from "./serverOperations/room";
 
-import { PlayState, initializePlayState } from "./serverOperations/game";
+import {
+	PlayState,
+	initializePlayState,
+	updatePlayStateByRoomOnDisconnect,
+} from "./serverOperations/game";
 
 const express = require("express");
 const http = require("http");
@@ -37,23 +41,9 @@ type Player = {
 };
 
 const players: Player[] = [];
-const boardState: string[][] = CreateBoardMap();
-const prevMove: [number, number] = [-1, -1];
-const whiteCastling: [boolean, boolean, boolean] = [false, false, false];
-const blackCastling: [boolean, boolean, boolean] = [false, false, false];
-let currentTurn: string = "w";
 
 io.on("connection", (socket) => {
 	console.log("connected with ", socket.id);
-	const playState = {
-		serverBoardState: boardState,
-		serverPrevMove: prevMove,
-		serverWhiteCastling: whiteCastling,
-		serverBlackCastling: blackCastling,
-		serverTurn: currentTurn,
-	};
-	socket.emit("playState", playState);
-	console.log("Sent PlayState");
 
 	socket.on("disconnect", () => {
 		console.log("disconnected: ", socket.id);
@@ -81,6 +71,10 @@ io.on("connection", (socket) => {
 			roomId,
 			socket.id
 		);
+
+		updatePlayStateByRoomOnDisconnect(roomId, playStateByRoom, playersByRoom);
+		console.log(playStateByRoom)
+
 		const playersInRoom = playersByRoom[roomId] ?? [];
 		const roomSettings: RoomSettings = settingsByRoom[roomId];
 
@@ -118,7 +112,7 @@ io.on("connection", (socket) => {
 			playStateByRoom[roomId].serverTurn =
 				playStateByRoom[roomId].serverTurn == "w" ? "b" : "w";
 
-			io.emit("move", { fromIndex, toIndex, promotionMove });
+			io.to(roomId).emit("move", { fromIndex, toIndex, promotionMove });
 		} else {
 			console.log("Invalid Move");
 		}
@@ -126,9 +120,7 @@ io.on("connection", (socket) => {
 
 	socket.on(
 		"playerDetails",
-		(
-			{ playerName, roomId, colour }: PlayerDetails
-		) => {
+		({ playerName, roomId, colour }: PlayerDetails) => {
 			addPlayerToRoom(playersByRoom, playerRoomMap, socket.id, roomId, {
 				playerId: socket.id,
 				playerName,

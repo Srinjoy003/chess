@@ -23,12 +23,8 @@ export const colour = {
 
 	"chess-background": "#302e2b",
 	"timer-black": "#1f1f1f",
-	"test-primary": "#3b82f6",
-	"test-secondary": "#1e293b",
 	"dark-background": "#212121",
-	"shad-dark": "#09090b",
-	"shad-border": "#27272a",
-	"shad-white": "#f6f6f6",
+	"wooden-background": "#5d4035",
 
 	"room-bg": "#1A120B",
 	"room-primary": "#3C2A21",
