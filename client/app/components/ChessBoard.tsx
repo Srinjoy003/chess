@@ -29,6 +29,7 @@ import { PlayState } from "../page";
 import Image from "next/image";
 import { Merienda } from "next/font/google";
 import { RoomSettings } from "../GameRoom/page";
+import Resignation from "../GameRoom/Resignation";
 
 const playerFont = Merienda({ weight: "900", subsets: ["latin"] });
 
@@ -40,7 +41,7 @@ type boardProps = {
 	clientTurnColour: string | null;
 	playState: PlayState | null;
 	players: { whitePlayer: string; blackPlayer: string };
-	roomSettings: RoomSettings
+	roomSettings: RoomSettings;
 };
 
 export function CreateBoardMap() {
@@ -81,7 +82,7 @@ export default function ChessBoard({
 	clientTurnColour,
 	playState,
 	players,
-	roomSettings
+	roomSettings,
 }: boardProps) {
 	type positionType = [string, string[][]];
 	const boardMap = CreateBoardMap();
@@ -119,6 +120,11 @@ export default function ChessBoard({
 
 	const [moveList, setMoveList] = useState<string[]>([]);
 
+	const [resignation, setResignation] = useState<[boolean, string]>([
+		false,
+		"",
+	]);
+
 	const [sound, setSound] = useState<
 		"move" | "capture" | "check" | "promote" | "end"
 	>("move");
@@ -155,8 +161,7 @@ export default function ChessBoard({
 
 	const victoryOrLoss = isCheckMate || isTimeUp;
 	const draw = isStaleMate || hasInsufficientMaterial || isThreeFoldRepetion;
-	const gameEnded = victoryOrLoss || draw;
-	// const gameEnded = true;
+	const gameEnded = victoryOrLoss || draw || resignation[0];
 
 	useEffect(() => {
 		setPosition([turn, boardState]);
@@ -276,6 +281,16 @@ export default function ChessBoard({
 		// eslint-disable-next-line
 	}, [playState, dispatch]);
 
+	useEffect(() => {
+		socket.on("resignation", (winnerName: string) => {
+			setResignation([true, winnerName]);
+		});
+	}, [socket]);
+
+	const handleReturn = () => {
+		socket.emit('return');
+	}
+
 	const board = boardState.map((row, i) => {
 		let newRow = row.map((_, j) => {
 			return (
@@ -312,13 +327,7 @@ export default function ChessBoard({
 
 	return (
 		<>
-			{/* <Image
-				className="absolute opacity-10"
-				src="/Images/woodenBackground.jpg"
-				alt="Description of the image"
-				width={1920}
-				height={1080}
-			/> */}
+		
 			<div className="flex flex-row gap-10 bg-room-bg">
 				<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
 					<div
@@ -359,7 +368,7 @@ export default function ChessBoard({
 				</div>
 
 				<div
-					className={`absolute top-1/3 left-1/2 w-52 h-64 sm:w-56 sm:h-64 md:w-64 md:h-80 lg:w-72 lg:h-96 text-amber-950 text-2xl bg-room-accent flex-col items-center justify-center text-center z-50 -translate-x-32 lg:-translate-y-24 rounded-lg shadow-2xl shadow-amber-950 ${
+					className={`absolute top-1/3 left-1/2 w-52 h-[310px] sm:w-56 sm:h-[310px] md:w-64 md:h-[370px] lg:w-72 lg:h-[450px] text-amber-950 text-2xl bg-room-accent flex-col items-center justify-center text-center z-50 -translate-x-32 lg:-translate-y-24 rounded-lg shadow-2xl shadow-amber-950 ${
 						gameEnded ? "" : "hidden"
 					}`}
 				>
@@ -373,11 +382,13 @@ export default function ChessBoard({
 
 					<div className="flex flex-col mt-4 sm:mt-4 md:mt-5 lg:mt-8 gap-1">
 						<p className="text-2xl sm:text-2xl lg:text-3xl font-bold">
-							{victoryOrLoss
-								? turn === "b"
-									? "White Wins"
-									: "Black Wins"
-								: "DRAW"}
+							{!resignation[0] &&
+								(victoryOrLoss
+									? turn === "b"
+										? `${players.whitePlayer} Won`
+										: `${players.blackPlayer} Won`
+									: "DRAW")}
+							{resignation[0] && `${resignation[1]} Won`}
 						</p>
 
 						<p className="text-base sm:text-base lg:text-lg font-semibold">
@@ -386,8 +397,14 @@ export default function ChessBoard({
 							{isStaleMate && "By Stalemate"}{" "}
 							{hasInsufficientMaterial && "By Insufficient Material"}
 							{isThreeFoldRepetion && "by Three Fold Repetition"}
+							{resignation[0] && "by Resignation"}
+
 						</p>
 					</div>
+
+					<button onClick={handleReturn} className="px-3 py-1 md:px-4 md:py-1 lg:px-5 lg:py-2 rounded-lg mt-6 sm:mt-6 md:mt-7 lg:mt-10 text-base sm:text-base md:text-lg lg:text-xl text-room-secondary bg-room-primary hover:text-white hover:bg-amber-950 font-semibold">
+						Return
+					</button>
 				</div>
 			</div>
 			<audio ref={moveSound} src="/sound/move.mp3" />
@@ -399,10 +416,25 @@ export default function ChessBoard({
 			<div
 				className={`${playerFont.className} absolute w-32 sm:w-36 md:w-48 lg:w-52 h-fit p-4 bg-room-secondary text-amber-950 top-1/2 right-1/2 -translate-x-12 -translate-y-[255px] sm:-translate-x-14 sm:-translate-y-[290px] md:-translate-x-16 md:-translate-y-[340px] lg:-translate-x-28 lg:-translate-y-[400px] lg:gap-4 md:gap-4 sm:gap-3 gap-2 flex justify-center items-center rounded-xl font-extrabold lg:text-xl md:text-lg sm:text-sm text-sm`}
 			>
-				{clientTurnColour === "b" ? players.whitePlayer : players.blackPlayer}
+				{clientTurnColour === "b" ? players.whitePlayer : players.blackPlayer}{" "}
+				Vatira
 			</div>
 			<div className="absolute w-32 lg:w-52 md:w-48 sm:w-36 p-4 sm:p-4 h-fit md:p-4 lg:p-4 bg-room-secondary text-amber-950 bottom-1/2 right-1/2 -translate-x-12 translate-y-[265px] sm:bottom-1/2 sm:right-1/2 sm:-translate-x-14 sm:translate-y-[290px] md:bottom-1/2 md:right-1/2 md:-translate-x-16 md:translate-y-[350px] lg:top-1/2 lg:right-1/2 lg:-translate-x-28 lg:translate-y-[340px] lg:gap-3 md:gap-4 sm:gap-3 gap-2 flex justify-center items-center rounded-xl font-extrabold lg:text-xl md:text-base sm:text-sm text-sm">
 				{clientTurnColour === "b" ? players.blackPlayer : players.whitePlayer}{" "}
+				Zen
+			</div>
+
+			<div className="absolute top-1/2 left-1/2 translate-y-[350px] -translate-x-16">
+				{!gameEnded && clientTurnColour !== "s" && (
+					<Resignation
+						socket={socket}
+						winnerName={
+							clientTurnColour === "b"
+								? players.whitePlayer
+								: players.blackPlayer
+						}
+					/>
+				)}
 			</div>
 		</>
 	);

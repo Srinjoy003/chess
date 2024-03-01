@@ -73,7 +73,7 @@ io.on("connection", (socket) => {
 		);
 
 		updatePlayStateByRoomOnDisconnect(roomId, playStateByRoom, playersByRoom);
-		console.log(playStateByRoom)
+		console.log(playStateByRoom);
 
 		const playersInRoom = playersByRoom[roomId] ?? [];
 		const roomSettings: RoomSettings = settingsByRoom[roomId];
@@ -167,6 +167,21 @@ io.on("connection", (socket) => {
 		updateRoomSettings(settingsByRoom, roomSettings.roomId, roomSettings);
 		console.log("New Room Settings:", settingsByRoom);
 		io.to(roomSettings.roomId).emit("roomSettings", roomSettings);
+	});
+
+	socket.on("resignation", (winnerName: string) => {
+		const roomId = playerRoomMap[socket.id];
+		io.to(roomId).emit("resignation", winnerName);
+	});
+
+	socket.on('return', () => {
+		const roomId = playerRoomMap[socket.id];
+		initializePlayState(roomId, playStateByRoom)
+		settingsByRoom[roomId].gameStarted = false
+
+		io.to(roomId).emit("playState", playStateByRoom[roomId]);
+		io.to(roomId).emit("roomSettings", settingsByRoom[roomId]);
+
 	});
 });
 
