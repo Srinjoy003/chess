@@ -11,28 +11,16 @@ import {
 	StaleMate,
 	InsufficientMaterial,
 	ThreeFoldRepetition,
-	MoveList,
-	CaptureMoveList,
 } from "../helperFunctions";
 import PawnPromotion from "./PawnPromotion";
 import Timer from "../components/Timer";
 import { useDispatch } from "react-redux";
 import { toggleTurn } from "../reduxStore/turnSlice";
 
-import { current } from "@reduxjs/toolkit";
-import { Socket } from "socket.io-client";
-import { Minimax } from "../chessEngine/core/aiSearch";
-import { TranspositionTable } from "../chessEngine/core/aiSearch";
-import { iterativeDeepeningSearch } from "../chessEngine/core/iterativeDeepening";
 import { moveToUCI } from "../chessEngine/openings/openingParser";
-import { findOpeningMove } from "../chessEngine/openings/openingParser";
-import { MakeEngineMove } from "../chessEngine/core/aiMain";
-import {
-	MoveMaker,
-	deepCopyBoard,
-	deepCopyCastling,
-} from "../chessEngine/core/MoveGenerator";
-import { FaChessKing } from "react-icons/fa6";
+
+import { Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 import { fenToChessboard } from "../chessEngine/core/aiHelperFunctions";
 
 export function CreateBoardMap() {
@@ -103,6 +91,8 @@ export default function ChessBoard() {
 		"move" | "capture" | "check" | "promote" | "end"
 	>("move");
 
+	const [socket, setSocket] = useState<Socket>(io({ autoConnect: false }));
+
 	const noOfMoves = useRef(0);
 
 	const moveSound = useRef<HTMLAudioElement | null>(null);
@@ -137,9 +127,20 @@ export default function ChessBoard() {
 	const draw = isStaleMate || hasInsufficientMaterial || isThreeFoldRepetion;
 	const gameEnded = victoryOrLoss || draw;
 
-	let aiRandomMoveWhite = useRef<number[]>([]);
-	let aiRandomMoveBlack = useRef<number[]>([]);
-	let aiMinimaxMove = useRef<[number, number, string] | null>(null);
+	const aiRandomMoveWhite = useRef<number[]>([]);
+	const aiRandomMoveBlack = useRef<number[]>([]);
+	const aiMinimaxMove = useRef<[number, number, string] | null>(null);
+
+	useEffect(() => {
+		const socket = io("http://localhost:3002", { reconnection: false });
+		setSocket(socket);
+
+		return () => {
+			socket.disconnect();
+		};
+	}, []);
+
+	
 
 	useEffect(() => {
 		//Mate pos
@@ -160,22 +161,21 @@ export default function ChessBoard() {
 		// const fen = "8/8/8/8/8/6pr/6PP/5kBK w - - 0 1"; //black mate
 		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 b - - 0 1"; //white mate
 		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 w - - 0 1"; //white mate
-		const fen = "8/8/4k3/8/4P3/4K3/8/8 w - - 0 1";
-		const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
-		const blackCastling: [boolean, boolean, boolean] = [true, true, true];
-		const prevMove: [number, number] = [-1, -1];
-		const [currentTurn, boardState] = fenToChessboard(
-			fen,
-			whiteCastling,
-			blackCastling,
-			prevMove
-		);
-		// // const maximising = currentTurn === "w" ? true : false;
-		setBoardState(boardState);
-		setPrevMove(prevMove);
-		setWhiteCastling(whiteCastling);
-		setBlackCastling(blackCastling);
-
+		// const fen = "8/8/4k3/8/4P3/4K3/8/8 w - - 0 1";
+		// const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
+		// const blackCastling: [boolean, boolean, boolean] = [true, true, true];
+		// const prevMove: [number, number] = [-1, -1];
+		// const [currentTurn, boardState] = fenToChessboard(
+		// 	fen,
+		// 	whiteCastling,
+		// 	blackCastling,
+		// 	prevMove
+		// );
+		// // // const maximising = currentTurn === "w" ? true : false;
+		// setBoardState(boardState);
+		// setPrevMove(prevMove);
+		// setWhiteCastling(whiteCastling);
+		// setBlackCastling(blackCastling);
 		// const nodeCount = { value: 0 };
 		// const transpositionTable: TranspositionTable = {};
 		// const endTime = Date.now() + 3000;
@@ -516,54 +516,33 @@ export default function ChessBoard() {
 
 	const aiMove = useCallback(() => {
 		const aiTurn: string = "b";
-		const maximising = aiTurn === "w" ? true : false;
-		const endTime = Date.now() + 3000; //change while using
 
 		if (turn === aiTurn) {
-			const nodeCount = { value: 0 };
-			const transpositionTable: TranspositionTable = {};
-			const cancel = { isCancelled: false };
-
-			const { finalBestMove, finalBestScore } = MakeEngineMove(
+			socket.emit("aiMove", {
 				boardState,
 				aiTurn,
 				prevMove,
 				whiteCastling,
 				blackCastling,
-				5000,
-				moveList
-			);
+				timeLimit: 5000, // Assuming time limit is fixed at 5000 milliseconds
+				moveList,
+			});
 
-			aiMinimaxMove.current = finalBestMove;
-			console.log("Evaluation:", finalBestScore, finalBestMove);
 		}
 
-		if (turn === aiTurn) {
-			console.log("Plays Move");
-			if (aiMinimaxMove.current) {
-				movePiece(
-					aiMinimaxMove.current[0],
-					aiMinimaxMove.current[1],
-					true,
-					false,
-					aiMinimaxMove.current[2]
-				);
-				setPrevMove([aiMinimaxMove.current[0], aiMinimaxMove.current[1]]);
-				setSelectedPiece(null);
-			}
-		}
+		
 	}, [
 		boardState,
 		blackCastling,
 		whiteCastling,
 		prevMove,
 		turn,
-		movePiece,
 		moveList,
+		socket,
 	]);
 
 	useEffect(() => {
-		const delay = 0; // Set the desired delay in milliseconds
+		const delay = 0; 
 		if (!gameEnded) {
 			const timer = setTimeout(() => {
 				aiMove();
@@ -574,6 +553,20 @@ export default function ChessBoard() {
 			console.log("Game has ended");
 		}
 	}, [boardState, aiMove, gameEnded]);
+
+	useEffect(() => {
+		socket.on("aiMove", ({ finalBestMove, finalBestScore }) => {
+			movePiece(
+				finalBestMove[0],
+				finalBestMove[1],
+				true,
+				false,
+				finalBestMove[2]
+			);
+			setPrevMove([finalBestMove[0], finalBestMove[1]]);
+			setSelectedPiece(null);
+		});
+	}, [movePiece, socket]);
 
 	const board = boardState.map((row, i) => {
 		let newRow = row.map((_, j) => {
