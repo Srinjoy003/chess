@@ -21,7 +21,11 @@ import { moveToUCI } from "../chessEngine/openings/openingParser";
 
 import { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
-import { fenToChessboard } from "../chessEngine/core/aiHelperFunctions";
+import { Slider } from "@/components/ui/slider";
+import { Merienda } from "next/font/google";
+import Resignation from "./Resignation";
+import Image from "next/image";
+const playerFont = Merienda({ weight: "900", subsets: ["latin"] });
 
 export function CreateBoardMap() {
 	const board = [];
@@ -75,8 +79,8 @@ export default function ChessBoard() {
 	>(null);
 
 	const [isTimeUp, setIsTimeUp] = useState(false);
-	const [playTime, setplayTime] = useState(30);
-
+	const [resignation, setResignation] = useState(false);
+	const [engineMoveTime, setEngineMoveTime] = useState<number>(5);
 	const turn = useSelector((state: RootState) => state.turn);
 	const dispatch = useDispatch();
 
@@ -125,11 +129,7 @@ export default function ChessBoard() {
 
 	const victoryOrLoss = isCheckMate || isTimeUp;
 	const draw = isStaleMate || hasInsufficientMaterial || isThreeFoldRepetion;
-	const gameEnded = victoryOrLoss || draw;
-
-	const aiRandomMoveWhite = useRef<number[]>([]);
-	const aiRandomMoveBlack = useRef<number[]>([]);
-	const aiMinimaxMove = useRef<[number, number, string] | null>(null);
+	const gameEnded = victoryOrLoss || draw || resignation;
 
 	useEffect(() => {
 		const socket = io("http://localhost:3002", { reconnection: false });
@@ -139,97 +139,6 @@ export default function ChessBoard() {
 			socket.disconnect();
 		};
 	}, []);
-
-	
-
-	useEffect(() => {
-		//Mate pos
-		// const fen = "8/3Qr2B/N2q4/3N4/2b1R3/P2k4/rP3B2/R3K3 w - - 0 1";
-		// const fen = "8/k1PK4/p7/8/4B3/8/8/1R6 w - - 0 1";
-		// const fen =
-		// 	"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-		// const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-		// 	const fen =
-		// 		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
-		// const fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ";
-		// const fen =
-		// 	"r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
-		// const fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
-		// const fen =
-		// 	"r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1R1K w kq - 0 1";
-		// const fen = "7r/8/8/8/8/6p1/6PP/5kBK b - - 0 1";
-		// const fen = "8/8/8/8/8/6pr/6PP/5kBK w - - 0 1"; //black mate
-		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 b - - 0 1"; //white mate
-		// const fen = "kbK5/pp6/RP6/8/8/8/8/8 w - - 0 1"; //white mate
-		// const fen = "8/8/4k3/8/4P3/4K3/8/8 w - - 0 1";
-		// const whiteCastling: [boolean, boolean, boolean] = [true, true, true];
-		// const blackCastling: [boolean, boolean, boolean] = [true, true, true];
-		// const prevMove: [number, number] = [-1, -1];
-		// const [currentTurn, boardState] = fenToChessboard(
-		// 	fen,
-		// 	whiteCastling,
-		// 	blackCastling,
-		// 	prevMove
-		// );
-		// // // const maximising = currentTurn === "w" ? true : false;
-		// setBoardState(boardState);
-		// setPrevMove(prevMove);
-		// setWhiteCastling(whiteCastling);
-		// setBlackCastling(blackCastling);
-		// const nodeCount = { value: 0 };
-		// const transpositionTable: TranspositionTable = {};
-		// const endTime = Date.now() + 3000;
-		// const tick = performance.now();
-		// const cancel = { isCancelled: false };
-		// const { bestMove, bestScore } = Minimax(
-		// 	3,
-		// 	boardState,
-		// 	currentTurn,
-		// 	prevMove,
-		// 	whiteCastling,
-		// 	blackCastling,
-		// 	maximising,
-		// 	nodeCount,
-		// 	transpositionTable,
-		// 	endTime,
-		// 	cancel
-		// );
-		// const { finalBestMove, finalBestScore } = iterativeDeepeningSearch(
-		// 	boardState,
-		// 	currentTurn,
-		// 	prevMove,
-		// 	whiteCastling,
-		// 	blackCastling,
-		// 	3000
-		// );
-		// const tock = performance.now();
-		// if (finalBestMove !== null) {
-		// 	const [fromIndex, toIndex, promotionMove] = finalBestMove;
-		// 	const fromPos = extractChessPosition(fromIndex);
-		// 	const toPos = extractChessPosition(toIndex);
-		// 	console.log("\n Final Output:\n");
-		// 	console.log(fromPos + toPos + promotionMove, finalBestScore);
-		// }
-		// console.log("Time: ", tock - tick);
-		// console.log("Nodes Searched: ", nodeCount.value);
-		// const tick = performance.now()
-		// for(let i = 1; i < 5; i++)
-		// console.log(i, MoveGenerator(i,i, boardState, currentTurn, prevMove, whiteCastling, blackCastling))
-		// const tock = performance.now()
-		// console.log("Time: ", tock - tick)
-		// const tick = performance.now();
-		// EngineTest();
-		// const tock = performance.now();
-		// console.log("Time: ", tock - tick)
-		// EvaluationTest();
-		// const moveList: string[] = ["e2e4"];
-		// const nextMove: string | null = findOpeningMove(moveList);
-		// if (nextMove !== null) {
-		// 	console.log(`The next move in the opening is: ${nextMove}`);
-		// } else {
-		// 	console.log("No matching opening line found.");
-		// }
-	}, [dispatch]);
 
 	useEffect(() => {
 		setPosition([turn, boardState]);
@@ -524,13 +433,10 @@ export default function ChessBoard() {
 				prevMove,
 				whiteCastling,
 				blackCastling,
-				timeLimit: 5000, // Assuming time limit is fixed at 5000 milliseconds
+				timeLimit: engineMoveTime, // Assuming time limit is fixed at 5000 milliseconds
 				moveList,
 			});
-
 		}
-
-		
 	}, [
 		boardState,
 		blackCastling,
@@ -539,10 +445,11 @@ export default function ChessBoard() {
 		turn,
 		moveList,
 		socket,
+		engineMoveTime,
 	]);
 
 	useEffect(() => {
-		const delay = 0; 
+		const delay = 0;
 		if (!gameEnded) {
 			const timer = setTimeout(() => {
 				aiMove();
@@ -567,6 +474,10 @@ export default function ChessBoard() {
 			setSelectedPiece(null);
 		});
 	}, [movePiece, socket]);
+
+	const handleReturn = () => {
+		window.location.reload();
+	};
 
 	const board = boardState.map((row, i) => {
 		let newRow = row.map((_, j) => {
@@ -596,8 +507,8 @@ export default function ChessBoard() {
 	});
 
 	return (
-		<>
-			<div className="flex flex-row gap-10 bg-yellow-950">
+		<div className="max-h-screen">
+			<div className="flex flex-row gap-10 bg-room-bg">
 				<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
 					<div className="flex flex-col-reverse">{board}</div>
 					<div className="absolute z-20 -translate-x-10">
@@ -608,7 +519,7 @@ export default function ChessBoard() {
 					</div>
 				</div>
 
-				<div className="absolute flex flex-col top-1/2 right-1/2 translate-x-44 -translate-y-[260px] sm:top-1/2 sm:right-1/2 sm:translate-x-52 sm:-translate-y-72 md:top-1/2 md:right-1/2 md:translate-x-64 md:-translate-y-[360px] lg:right-10 lg:top-1/4 lg:translate-x-0 lg:translate-y-0 item-start justify-center">
+				{/* <div className="absolute flex flex-col top-1/2 right-1/2 translate-x-44 -translate-y-[260px] sm:top-1/2 sm:right-1/2 sm:translate-x-52 sm:-translate-y-72 md:top-1/2 md:right-1/2 md:translate-x-64 md:-translate-y-[360px] lg:right-10 lg:top-1/4 lg:translate-x-0 lg:translate-y-0 item-start justify-center">
 					<Timer
 						playTime={playTime}
 						timerFor={"b"}
@@ -628,27 +539,48 @@ export default function ChessBoard() {
 						setIsTimeUp={setIsTimeUp}
 						gameEnded={gameEnded}
 					/>
-				</div>
+				</div> */}
 
 				<div
-					className={`absolute top-1/3 left-1/2 w-40 h-40 bg-white flex-col items-center justify-center z-50 ${
+					className={`absolute top-1/3 left-1/2 w-52 h-[310px] sm:w-56 sm:h-[310px] md:w-64 md:h-[370px] lg:w-72 lg:h-[450px] text-amber-950 text-2xl bg-room-accent flex-col items-center justify-center text-center z-50 -translate-x-32 lg:-translate-y-24 rounded-lg shadow-2xl shadow-amber-950 ${
 						gameEnded ? "" : "hidden"
 					}`}
 				>
-					<p>
-						{victoryOrLoss
-							? turn === "b"
-								? "White Wins"
-								: "Black Wins"
-							: "DRAW"}
-					</p>
-					<p>
-						{isCheckMate ? "By Checkmate" : ""}
-						{isTimeUp ? "By Timeout" : ""}
-						{isStaleMate && "By Stalemate"}{" "}
-						{hasInsufficientMaterial && "By Insufficient Material"}
-						{isThreeFoldRepetion && "by Three Fold Repetition"}
-					</p>
+					<Image
+						className="relative w-44 h-36 sm:w-48 sm:h-36 md:w-52 md:h-44 lg:w-60 lg:h-52 ml-auto mr-auto mt-4 sm:mt-4 md:mt-7 rounded-lg"
+						src="/Images/checkmate2.jpg"
+						alt="Description of the image"
+						width={1280}
+						height={800}
+					/>
+
+					<div className="flex flex-col mt-4 sm:mt-4 md:mt-5 lg:mt-8 gap-1">
+						<p className="text-2xl sm:text-2xl lg:text-3xl font-bold">
+							{!resignation &&
+								(victoryOrLoss
+									? turn === "b"
+										? `You Won`
+										: `Computer Won`
+									: "DRAW")}
+							{resignation && `Computer Won`}
+						</p>
+
+						<p className="text-base sm:text-base lg:text-lg font-semibold">
+							{isCheckMate ? "By Checkmate" : ""}
+							{isTimeUp ? "By Timeout" : ""}
+							{isStaleMate && "By Stalemate"}{" "}
+							{hasInsufficientMaterial && "By Insufficient Material"}
+							{isThreeFoldRepetion && "by Three Fold Repetition"}
+							{resignation && "by Resignation"}
+						</p>
+					</div>
+
+					<button
+						onClick={handleReturn}
+						className="px-3 py-1 md:px-4 md:py-1 lg:px-5 lg:py-2 rounded-lg mt-6 sm:mt-6 md:mt-7 lg:mt-10 text-base sm:text-base md:text-lg lg:text-xl text-room-secondary bg-room-primary hover:text-white hover:bg-amber-950 font-semibold"
+					>
+						Play Again
+					</button>
 				</div>
 			</div>
 			<audio ref={moveSound} src="/sound/move.mp3" />
@@ -657,9 +589,38 @@ export default function ChessBoard() {
 			<audio ref={promoteSound} src="/sound/promote.mp3" />
 			<audio ref={endSound} src="/sound/end.mp3" />
 
-			{/* <div className="absolute bg-slate-600 w-32 h-32 top-1/2 right-1/2 text-white flex justify-center items-center text-7xl rounded-2xl">
-				<FaChessKing />
-			</div> */}
-		</>
+			<div
+				className={`fixed w-32 sm:w-36 md:w-48 lg:w-52 h-fit p-3 bg-room-secondary text-amber-950 top-1/2 right-1/2 -translate-x-12 -translate-y-[255px] sm:-translate-x-14 sm:-translate-y-[290px] md:-translate-x-16 md:-translate-y-[340px] lg:-translate-x-28 lg:-translate-y-[400px] lg:gap-4 md:gap-4 sm:gap-3 gap-2 flex justify-center items-center rounded-xl font-extrabold lg:text-2xl md:text-xl text-lg`}
+			>
+				Computer
+			</div>
+			<div
+				className={`fixed w-32 lg:w-52 md:w-48 sm:w-36 h-fit p-3 bg-room-secondary text-amber-950 bottom-1/2 right-1/2 -translate-x-12 translate-y-[265px] sm:bottom-1/2 sm:right-1/2 sm:-translate-x-14 sm:translate-y-[290px] md:bottom-1/2 md:right-1/2 md:-translate-x-16 md:translate-y-[350px] lg:top-1/2 lg:right-1/2 lg:-translate-x-28 lg:translate-y-[340px] lg:gap-3 md:gap-4 sm:gap-3 gap-2 flex justify-center items-center rounded-xl font-extrabold lg:text-2xl md:text-xl text-lg`}
+			>
+				You
+			</div>
+
+			<div className="absolute bottom-10 left-28 sm:left-56 md:top-4 md:left-2 flex flex-col gap-5">
+				<p className="text-room-accent md:text-base lg:text-lg text-center flex gap-2">
+					<span className="font-semibold">Computer Time:{""}</span>
+					<span className="text-room-secondary">{engineMoveTime} sec</span>
+				</p>
+				<Slider
+					defaultValue={[5]}
+					min={1}
+					max={60}
+					step={1}
+					className="w-48"
+					value={[engineMoveTime]}
+					onValueChange={(value) => {
+						setEngineMoveTime(value[0]);
+					}}
+				/>
+			</div>
+
+			<div className="fixed top-1/2 left-1/2 translate-y-[350px] -translate-x-16 z-50">
+				{!gameEnded && <Resignation setResignation={setResignation} />}
+			</div>
+		</div>
 	);
 }

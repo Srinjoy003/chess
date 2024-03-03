@@ -7,11 +7,9 @@ import { Providers } from "../reduxStore/provider";
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
-
+import { Slider } from "@/components/ui/slider";
 
 export default function Home() {
-
-
 	return (
 		<Providers>
 			<DndProvider backend={HTML5Backend}>
