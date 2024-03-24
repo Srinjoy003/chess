@@ -4,7 +4,7 @@ import { Socket } from "socket.io-client";
 
 type resignProps = {
 	socket: Socket;
-	winnerName: string
+	winnerName: string;
 };
 
 export const Resignation = ({ socket, winnerName }: resignProps) => {
@@ -25,15 +25,15 @@ export const Resignation = ({ socket, winnerName }: resignProps) => {
 		<div>
 			{!showConfirmation && (
 				<button
-					className="text-5xl text-room-secondary font-thin hover:text-room-tertiary"
+					className="text-4xl md:text-5xl text-room-secondary font-thin hover:text-room-tertiary"
 					onClick={handleButtonClick}
 				>
 					<LiaFlagCheckeredSolid />{" "}
 				</button>
 			)}
 			{showConfirmation && (
-				<div className="-translate-y-80 flex flex-col gap-5 bg-room-accent p-4 rounded-lg z-10 font-bold shadow-lg shadow-room-bg">
-					<p>Are you sure you want to resign?</p>
+				<div className="md:text-base text-sm backdrop-blur-3xl -translate-y-72 -translate-x-20 md:-translate-y-96 md:-translate-x-20 flex flex-col gap-5 bg-room-accent p-4 rounded-lg z-10 font-bold shadow-lg shadow-room-bg">
+				<p>Are you sure you want to resign?</p>
 					<div className="flex items-center justify-center gap-10 text-room-secondary">
 						<button
 							className="px-4 py-1 rounded-lg bg-amber-900"

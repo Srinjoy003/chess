@@ -92,8 +92,8 @@ export default function ChessBoard() {
 	const [moveList, setMoveList] = useState<string[]>([]);
 
 	const [sound, setSound] = useState<
-		"move" | "capture" | "check" | "promote" | "end"
-	>("move");
+		"move" | "capture" | "check" | "promote" | "end" | "none"
+	>("none");
 
 	const [socket, setSocket] = useState<Socket>(io({ autoConnect: false }));
 
@@ -519,28 +519,6 @@ export default function ChessBoard() {
 					</div>
 				</div>
 
-				{/* <div className="absolute flex flex-col top-1/2 right-1/2 translate-x-44 -translate-y-[260px] sm:top-1/2 sm:right-1/2 sm:translate-x-52 sm:-translate-y-72 md:top-1/2 md:right-1/2 md:translate-x-64 md:-translate-y-[360px] lg:right-10 lg:top-1/4 lg:translate-x-0 lg:translate-y-0 item-start justify-center">
-					<Timer
-						playTime={playTime}
-						timerFor={"b"}
-						turn={turn}
-						pawnPromotionOpen={pawnPromotionOpen}
-						setIsTimeUp={setIsTimeUp}
-						gameEnded={gameEnded}
-					/>
-				</div>
-
-				<div className="absolute flex flex-col top-1/2 right-1/2 translate-x-44 translate-y-52 sm:bottom-1/2 sm:right-1/2 sm:translate-x-52 sm:translate-y-64 md:top-1/2 md:right-1/2 md:translate-x-64 md:translate-y-80 lg:right-10 lg:bottom-1/4 lg:translate-x-0 lg:translate-y-0 item-start justify-center">
-					<Timer
-						playTime={playTime}
-						timerFor={"w"}
-						turn={turn}
-						pawnPromotionOpen={pawnPromotionOpen}
-						setIsTimeUp={setIsTimeUp}
-						gameEnded={gameEnded}
-					/>
-				</div> */}
-
 				<div
 					className={`absolute top-1/3 left-1/2 w-52 h-[310px] sm:w-56 sm:h-[310px] md:w-64 md:h-[370px] lg:w-72 lg:h-[450px] text-amber-950 text-2xl bg-room-accent flex-col items-center justify-center text-center z-50 -translate-x-32 lg:-translate-y-24 rounded-lg shadow-2xl shadow-amber-950 ${
 						gameEnded ? "" : "hidden"
@@ -582,6 +560,7 @@ export default function ChessBoard() {
 						Play Again
 					</button>
 				</div>
+				
 			</div>
 			<audio ref={moveSound} src="/sound/move.mp3" />
 			<audio ref={checkSound} src="/sound/check.mp3" />
@@ -618,7 +597,7 @@ export default function ChessBoard() {
 				/>
 			</div>
 
-			<div className="fixed top-1/2 left-1/2 translate-y-[350px] -translate-x-16 z-50">
+			<div className="fixed top-1/2 left-1/2 translate-y-[220px] sm:translate-y-[250px] -translate-x-9 md:translate-y-[310px] md:-translate-x-10 lg:translate-y-[350px] lg:-translate-x-16 z-50">
 				{!gameEnded && <Resignation setResignation={setResignation} />}
 			</div>
 		</div>

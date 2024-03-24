@@ -126,8 +126,8 @@ export default function ChessBoard({
 	]);
 
 	const [sound, setSound] = useState<
-		"move" | "capture" | "check" | "promote" | "end"
-	>("move");
+		"move" | "capture" | "check" | "promote" | "end" | "none"
+	>("none");
 
 	const noOfMoves = useRef(0);
 
@@ -288,8 +288,8 @@ export default function ChessBoard({
 	}, [socket]);
 
 	const handleReturn = () => {
-		socket.emit('return');
-	}
+		socket.emit("return");
+	};
 
 	const board = boardState.map((row, i) => {
 		let newRow = row.map((_, j) => {
@@ -327,7 +327,6 @@ export default function ChessBoard({
 
 	return (
 		<>
-		
 			<div className="flex flex-row gap-10 bg-room-bg">
 				<div className="flex flex-col-reverse items-center justify-center w-screen h-screen">
 					<div
@@ -398,11 +397,13 @@ export default function ChessBoard({
 							{hasInsufficientMaterial && "By Insufficient Material"}
 							{isThreeFoldRepetion && "by Three Fold Repetition"}
 							{resignation[0] && "by Resignation"}
-
 						</p>
 					</div>
 
-					<button onClick={handleReturn} className="px-3 py-1 md:px-4 md:py-1 lg:px-5 lg:py-2 rounded-lg mt-6 sm:mt-6 md:mt-7 lg:mt-10 text-base sm:text-base md:text-lg lg:text-xl text-room-secondary bg-room-primary hover:text-white hover:bg-amber-950 font-semibold">
+					<button
+						onClick={handleReturn}
+						className="px-3 py-1 md:px-4 md:py-1 lg:px-5 lg:py-2 rounded-lg mt-6 sm:mt-6 md:mt-7 lg:mt-10 text-base sm:text-base md:text-lg lg:text-xl text-room-secondary bg-room-primary hover:text-white hover:bg-amber-950 font-semibold"
+					>
 						Return
 					</button>
 				</div>
@@ -422,7 +423,7 @@ export default function ChessBoard({
 				{clientTurnColour === "b" ? players.blackPlayer : players.whitePlayer}{" "}
 			</div>
 
-			<div className="absolute top-1/2 left-1/2 translate-y-[350px] -translate-x-16">
+			<div className="fixed top-1/2 left-1/2 translate-y-[220px] sm:translate-y-[250px] -translate-x-9 md:translate-y-[300px] md:-translate-x-10 lg:translate-y-[350px] lg:-translate-x-16 z-50">
 				{!gameEnded && clientTurnColour !== "s" && (
 					<Resignation
 						socket={socket}

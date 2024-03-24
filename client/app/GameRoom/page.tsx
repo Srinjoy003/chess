@@ -247,7 +247,6 @@ function GameRoom() {
 	let link = `http://localhost:3000${pathname}?roomId=${roomId}`;
 
 	if (!isSubmitted)
-	// if (false)
 		return (
 			<main className="w-screen h-screen bg-room-bg flex flex-col items-center justify-center gap-10">
 				<div>
@@ -272,7 +271,6 @@ function GameRoom() {
 			</main>
 		);
 	else if (!roomSettings.gameStarted) {
-	// else if (false) {
 		return (
 			<>
 				<div className="w-screen md:h-screen bg-room-bg text-white p-4 flex md:flex-row flex-col md:items-start items-center justify-start gap-32 md:gap-20">
@@ -364,7 +362,6 @@ function GameRoom() {
 			</>
 		);
 		} else if (roomSettings.gameStarted) {
-	// } else if (true) {
 		return (
 				<Providers>
 					<DndProvider backend={HTML5Backend}>

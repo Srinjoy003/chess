@@ -24,14 +24,14 @@ export const Resignation = ({ setResignation }: resignProps) => {
 		<div>
 			{!showConfirmation && (
 				<button
-					className="text-4xl text-room-secondary font-thin hover:text-room-tertiary"
+					className="text-3xl md:text-4xl text-room-secondary font-thin hover:text-room-tertiary"
 					onClick={handleButtonClick}
 				>
 					<LiaFlagCheckeredSolid />{" "}
 				</button>
 			)}
 			{showConfirmation && (
-				<div className="backdrop-blur-3xl -translate-y-96 -translate-x-20 flex flex-col gap-5 bg-room-accent p-4 rounded-lg z-10 font-bold shadow-lg shadow-room-bg">
+				<div className="md:text-base text-sm backdrop-blur-3xl -translate-y-72 -translate-x-20 md:-translate-y-96 md:-translate-x-20 flex flex-col gap-5 bg-room-accent p-4 rounded-lg z-10 font-bold shadow-lg shadow-room-bg">
 					<p>Are you sure you want to resign?</p>
 					<div className="flex items-center justify-center gap-10 text-room-secondary">
 						<button
