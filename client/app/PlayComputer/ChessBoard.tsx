@@ -433,7 +433,7 @@ export default function ChessBoard() {
 				prevMove,
 				whiteCastling,
 				blackCastling,
-				timeLimit: engineMoveTime, // Assuming time limit is fixed at 5000 milliseconds
+				timeLimit: engineMoveTime*1000, // Assuming time limit is fixed at 5000 milliseconds
 				moveList,
 			});
 		}
@@ -518,6 +518,7 @@ export default function ChessBoard() {
 						/>
 					</div>
 				</div>
+
 
 				<div
 					className={`absolute top-1/3 left-1/2 w-52 h-[310px] sm:w-56 sm:h-[310px] md:w-64 md:h-[370px] lg:w-72 lg:h-[450px] text-amber-950 text-2xl bg-room-accent flex-col items-center justify-center text-center z-50 -translate-x-32 lg:-translate-y-24 rounded-lg shadow-2xl shadow-amber-950 ${

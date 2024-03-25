@@ -3,6 +3,7 @@ import Countdown, { CountdownTimeDelta } from "react-countdown";
 import { CountdownRenderProps, CountdownApi } from "react-countdown";
 import { useState, useEffect, useRef } from "react";
 import { Inter } from "next/font/google";
+import { count } from "console";
 
 type TimerProps = {
 	playTime: number;
@@ -24,10 +25,10 @@ export default function Timer({
 	increment = 0,
 }: TimerProps) {
 	const timeGiven = playTime * 60000;
-	const [time, setTime] = useState(Date.now());
 	const [initialTimeSet, setInitialTimeSet] = useState(false);
 	const countdownRef = useRef<Countdown>(null);
-	const [countdownTime, setCountDownTime] = useState(time + timeGiven);
+	const [countdownTime, setCountDownTime] = useState(Date.now() + timeGiven);
+	const initialPause = useRef(false);
 
 	const api = countdownRef.current?.api;
 
@@ -46,15 +47,10 @@ export default function Timer({
 
 	useEffect(() => {
 		if (turn === timerFor && !initialTimeSet) {
-			// Set the initial time when turn === timerFor
-			setTime(Date.now());
 			setInitialTimeSet(true);
+			setCountDownTime(Date.now() + timeGiven);
 		}
-	}, [turn, timerFor, initialTimeSet]);
-
-	useEffect(() => {
-		setCountDownTime(time + timeGiven);
-	}, [time, setCountDownTime, timeGiven]);
+	}, [turn, timerFor, initialTimeSet, timeGiven]);
 
 	const renderer = ({ hours, minutes, seconds }: CountdownRenderProps) => {
 		return (
@@ -70,10 +66,20 @@ export default function Timer({
 		<Countdown
 			ref={countdownRef}
 			date={countdownTime}
+			// key={countdownTime}
 			renderer={renderer}
 			controlled={false}
 			autoStart={false}
 			onComplete={() => setIsTimeUp(true)}
+			onPause={(countdownTime) => {
+				if (timerFor === "b" && !initialPause.current) {
+					initialPause.current = true;
+					return;
+				}
+
+				setCountDownTime(countdownTime.total + Date.now() + increment * 1000);
+				console.log(countdownTime.seconds * 1000 + increment * 1000);
+			}}
 		/>
 	);
 }

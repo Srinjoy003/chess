@@ -82,7 +82,7 @@ const Square = ({
 		drop: (item: any) => {
 			// Update the state to place the chess piece in the square
 			// setChessPiece(item.piece);
-			if (moveList.includes(position) && !pawnPromotionOpen && !gameEnded) {
+			if (moveList.includes(position) && !pawnPromotionOpen && !gameEnded && turn === "w") {
 				movePiece(item.position, position, false, false);
 				setPrevMove([item.position, position]);
 				setSelectedPiece(null);
@@ -106,7 +106,7 @@ const Square = ({
 				setPrevMove([selectedPiece[0], position]);
 				setSelectedPiece(null);
 			} else if (
-				boardState[row][col][0] === turn /*&& turn == clientTurnColour*/
+				boardState[row][col][0] === turn && turn === "w"
 			) {
 				setSelectedPiece([position, boardState[row][col]]);
 			}

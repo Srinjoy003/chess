@@ -17,7 +17,7 @@ io.on("connection", (socket) => {
 
 	socket.on(
 		"aiMove",
-		({
+		async({
 			boardState,
 			aiTurn,
 			prevMove,
@@ -26,7 +26,7 @@ io.on("connection", (socket) => {
 			timeLimit,
 			moveList,
 		}) => {
-            const result = MakeEngineMove(boardState, aiTurn, prevMove, whiteCastling, blackCastling, timeLimit, moveList); 
+            const result = await MakeEngineMove(boardState, aiTurn, prevMove, whiteCastling, blackCastling, timeLimit, moveList); 
             socket.emit('aiMove', result)
 		}
 	);
