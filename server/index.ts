@@ -17,8 +17,9 @@ import {
 	updatePlayStateByRoomOnDisconnect,
 } from "./serverOperations/game";
 
-const express = require("express");
-const http = require("http");
+import express from "express";
+import http from "http";
+
 const app = express();
 const server = http.createServer(app);
 
