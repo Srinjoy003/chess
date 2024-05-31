@@ -63,4 +63,5 @@ export function CreateBoardMap(): string[][] {
 	return board;
 }
 
-module.exports = { CreateBoardMap, ImprovedTotalMoveList };
+// module.exports = { CreateBoardMap, ImprovedTotalMoveList };
+
