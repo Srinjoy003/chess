@@ -246,7 +246,8 @@ function GameRoom() {
 		}
 	}, [socket, playerId]);
 
-	let link = `http://localhost:3000${pathname}?roomId=${roomId}`;
+	let url = window.location.href
+	let link = `${url}${pathname}?roomId=${roomId}`;
 
 	if (!isSubmitted)
 		return (
