@@ -184,6 +184,8 @@ io.on("connection", (socket) => {
 	});
 });
 
-server.listen(3001, () => {
-	console.log("Server Listening on port 3001");
+const port = process.env.PORT || 4000;
+
+server.listen(port, () => {
+	console.log(`Server Listening on port ${port}`);
 });

@@ -141,7 +141,9 @@ function GameRoom() {
 
 	useEffect(() => {
 		if (isSubmitted) {
-			const socket = io("http://localhost:3001", { reconnection: false });
+			// const socket = io("http://localhost:3001", { reconnection: false });
+			const socket = io("https://chess-reuy.onrender.com", { reconnection: false });
+
 			setSocket(socket);
 
 			return () => {
