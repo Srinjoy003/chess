@@ -247,7 +247,7 @@ function GameRoom() {
 	}, [socket, playerId]);
 
 	let url = window.location.href
-	let link = `${url}${pathname}?roomId=${roomId}`;
+	let link = `${url}?roomId=${roomId}`;
 
 	if (!isSubmitted)
 		return (
