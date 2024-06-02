@@ -132,7 +132,7 @@ export default function ChessBoard() {
 	const gameEnded = victoryOrLoss || draw || resignation;
 
 	useEffect(() => {
-		const socket = io("http://localhost:3002", { reconnection: false });
+		const socket = io("https://chess-ai-4cb3.onrender.com", { reconnection: false });
 		setSocket(socket);
 
 		return () => {
